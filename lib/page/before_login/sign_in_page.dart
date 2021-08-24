@@ -25,6 +25,7 @@ class _SignInPageState extends State<SignInPage> {
 
   bool clickEye = true;
   bool saveLogin = false;
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -175,7 +176,7 @@ class _SignInPageState extends State<SignInPage> {
                     height: height * 0.08,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: kButtonColor,
+                        primary: titleColor,
                       ),
                       onPressed: () async {
                         if (signInFromKey.currentState!.validate()) {
@@ -186,17 +187,14 @@ class _SignInPageState extends State<SignInPage> {
                                 "user_pw": signInPassword.text
                               })) as SignInModel;
                           if (signInModel.signInCode == "success") {
+                            Provider.of<SignInModel>(context, listen: false)
+                                .setSignInSuccess(signInModel);
+
                             SharedPreferences prefs =
                                 await SharedPreferences.getInstance();
-                            if (saveLogin) {
-                              prefs.setBool("auto", true);
-                              prefs.setString('email', signInEmail.text);
-                              prefs.setString('pw', signInPassword.text);
-                            } else {
-                              prefs.setBool("auto", false);
-                              Provider.of<SignInModel>(context, listen: false)
-                                  .setSignInSuccess(signInModel);
-                            }
+                            prefs.setString('email', signInEmail.text);
+                            prefs.setString('pw', signInPassword.text);
+                            prefs.setInt('idx', signInModel.userIdx);
 
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
