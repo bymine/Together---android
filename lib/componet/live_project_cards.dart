@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/componet/circle_avator_widget.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/live_project_model.dart';
 import 'package:together_android/page/after_login/make_project/make_project_page.dart';
@@ -172,25 +173,7 @@ class _LiveProjectCardsState extends State<LiveProjectCards> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: project.photoes.map((e) {
-        return e.contains('assets')
-            ? Container(
-                padding: EdgeInsets.all(5),
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                    border: Border.all(width: 3, color: Colors.grey),
-                    shape: BoxShape.circle,
-                    image: DecorationImage(image: AssetImage(e))),
-              )
-            : Container(
-                margin: EdgeInsets.all(5),
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                    border: Border.all(width: 3, color: Colors.grey),
-                    shape: BoxShape.circle,
-                    image: DecorationImage(image: NetworkImage(e))),
-              );
+        return CircleAvatorComponent(width: 60, height: 60, serverImage: e);
       }).toList(),
     );
   }

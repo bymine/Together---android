@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:provider/provider.dart';
 import 'package:together_android/componet/showDialog.dart';
-import 'package:together_android/model/sign_in_model.dart';
 import 'package:together_android/page/after_login/live_project/live_project_page.dart';
 import 'package:together_android/page/after_login/match_member/match_member_page.dart';
 import 'package:together_android/page/after_login/match_project/match_project_page.dart';
@@ -47,7 +45,9 @@ class _MainPageState extends State<MainPage> {
                     border: Border(bottom: BorderSide(color: Colors.grey))),
                 width: width,
                 height: height * 0.4,
-                child: Image.asset("assets/exit.png")),
+                child: Image.asset(
+                  "assets/exit.png",
+                )),
             SizedBox(
               height: 1,
             ),
@@ -108,7 +108,7 @@ class _MainPageState extends State<MainPage> {
             iconSize: 24,
             tabBackgroundColor: Colors.green.withOpacity(0.1),
             padding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            duration: Duration(milliseconds: 100),
+            duration: Duration(milliseconds: 1000),
             tabs: [
               GButton(
                 icon: Icons.home_outlined,

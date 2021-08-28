@@ -9,7 +9,7 @@ void showAlertDialog(BuildContext context, Widget title, Widget content,
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           title: title,
-          titlePadding: EdgeInsets.all(0),
+          titlePadding: EdgeInsets.all(10),
           contentPadding: EdgeInsets.all(0),
           content: content,
           actions: actions == [] ? [] : actions,

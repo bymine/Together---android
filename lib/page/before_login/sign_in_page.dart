@@ -8,6 +8,7 @@ import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/sign_in_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
+import 'package:together_android/page/before_login/search_account_page.dart';
 import 'package:together_android/service/api.dart';
 
 class SignInPage extends StatefulWidget {
@@ -24,7 +25,7 @@ class _SignInPageState extends State<SignInPage> {
   final signInFromKey = GlobalKey<FormState>();
 
   bool clickEye = true;
-  bool saveLogin = false;
+  bool autoLogin = false;
 
   @override
   Widget build(BuildContext context) {
@@ -157,10 +158,10 @@ class _SignInPageState extends State<SignInPage> {
                       Container(
                         alignment: Alignment.centerLeft,
                         child: Checkbox(
-                          value: saveLogin,
+                          value: autoLogin,
                           onChanged: (bool? value) {
                             setState(() {
-                              saveLogin = value!;
+                              autoLogin = value!;
                             });
                           },
                         ),
@@ -190,11 +191,13 @@ class _SignInPageState extends State<SignInPage> {
                             Provider.of<SignInModel>(context, listen: false)
                                 .setSignInSuccess(signInModel);
 
-                            SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
-                            prefs.setString('email', signInEmail.text);
-                            prefs.setString('pw', signInPassword.text);
-                            prefs.setInt('idx', signInModel.userIdx);
+                            if (autoLogin) {
+                              SharedPreferences prefs =
+                                  await SharedPreferences.getInstance();
+                              prefs.setString('email', signInEmail.text);
+                              prefs.setString('pw', signInPassword.text);
+                              prefs.setInt('idx', signInModel.userIdx);
+                            }
 
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
@@ -238,9 +241,14 @@ class _SignInPageState extends State<SignInPage> {
                       //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => SearchAccountPage(
+                                        type: "email",
+                                      )));
+                            },
                             child: Text(
-                              "아이디 찾기",
+                              "이메일 찾기",
                               style: TextStyle(color: Colors.black),
                             )),
                         Container(
@@ -252,7 +260,12 @@ class _SignInPageState extends State<SignInPage> {
                           ),
                         ),
                         TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => SearchAccountPage(
+                                        type: "pw",
+                                      )));
+                            },
                             child: Text(
                               "비밀번호 찾기",
                               style: TextStyle(color: Colors.black),

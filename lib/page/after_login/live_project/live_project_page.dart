@@ -5,7 +5,6 @@ import 'package:together_android/componet/empty_data_display.dart';
 import 'package:together_android/componet/live_project_cards.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/sign_in_model.dart';
-import 'package:together_android/page/after_login/make_project/make_project_page.dart';
 import 'package:together_android/service/api.dart';
 
 class LiveProjectBody extends StatefulWidget {
@@ -26,8 +25,8 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
 
   Future getDeviceUserIdx() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var email = prefs.getString('email');
-    var pw = prefs.getString('pw');
+    // var email = prefs.getString('email');
+    // var pw = prefs.getString('pw');
     var idx = prefs.getInt('idx');
 
     if (idx != 0)
@@ -54,11 +53,6 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
           } else if (snapshot.hasError) {
             print("error");
             return Text("$snapshot.error");
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            print("waiting");
-            return Center(
-              child: CircularProgressIndicator(),
-            );
           } else {
             showFloatingButton = false;
             print("empty state");

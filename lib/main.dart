@@ -11,7 +11,7 @@ Future<void> main() async {
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
   var idx = prefs.getInt('idx');
-
+  print(idx);
   idx == 0
       ? runApp(MyApp(
           skip: false,
@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
   MyApp({required this.skip});
   @override
   Widget build(BuildContext context) {
+    print(skip);
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
