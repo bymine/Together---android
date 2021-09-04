@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/page/before_login/sign_in_page.dart';
 
-class SearchResultPage extends StatefulWidget {
-  final String name;
-  final String email;
-  SearchResultPage({required this.name, required this.email});
+class SignUpResultPage extends StatefulWidget {
+  const SignUpResultPage({Key? key}) : super(key: key);
 
   @override
-  _SearchResultPageState createState() => _SearchResultPageState();
+  _SignUpResultPageState createState() => _SignUpResultPageState();
 }
 
-class _SearchResultPageState extends State<SearchResultPage> {
+class _SignUpResultPageState extends State<SignUpResultPage> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -20,7 +18,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: titleColor,
-        title: Text("이메일 찾기"),
+        title: Text("회원가입"),
       ),
       body: Container(
         padding: EdgeInsets.symmetric(
@@ -39,20 +37,10 @@ class _SearchResultPageState extends State<SearchResultPage> {
               child: Center(
                 child: RichText(
                   text: TextSpan(
-                      text: "${widget.name}님의 이메일은\n",
-                      style: TextStyle(
-                          fontSize: width * 0.054, color: Colors.black),
-                      children: [
-                        TextSpan(
-                            text: '${widget.email}',
-                            style: TextStyle(
-                                color: titleColor,
-                                fontSize: width * 0.064,
-                                fontWeight: FontWeight.bold)),
-                        TextSpan(
-                            text: ' 입니다.',
-                            style: TextStyle(color: Colors.black)),
-                      ]),
+                    text: "회원가입이 되었습니다.\n",
+                    style:
+                        TextStyle(fontSize: width * 0.054, color: Colors.black),
+                  ),
                 ),
               ),
             ),

@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_countdown_timer/countdown.dart';
 import 'package:flutter_countdown_timer/countdown_controller.dart';
-import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
-import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/componet/textfield_widget.dart';
 import 'package:together_android/constant.dart';
@@ -12,6 +10,7 @@ import 'package:together_android/page/before_login/search_email_result_page.dart
 import 'package:together_android/page/before_login/sign_in_page.dart';
 import 'package:together_android/reg.dart';
 import 'package:together_android/service/api.dart';
+import 'package:together_android/utils.dart';
 
 // ignore: must_be_immutable
 class SearchAccountPage extends StatefulWidget {
@@ -165,18 +164,17 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
                                                     findCode.value = "not yet";
                                                   }
 
-                                                  var code =
-                                                      await beforeLoginPostAPI(
-                                                          '/user/checkInfoForFindId',
-                                                          jsonEncode({
-                                                            "user_name":
-                                                                findNameController
-                                                                    .text,
-                                                            "user_phone":
-                                                                phoneNumerFormat(
-                                                                    findPhoneController
-                                                                        .text)
-                                                          }));
+                                                  var code = await togetherPostAPI(
+                                                      '/user/checkInfoForFindId',
+                                                      jsonEncode({
+                                                        "user_name":
+                                                            findNameController
+                                                                .text,
+                                                        "user_phone":
+                                                            phoneNumerFormat(
+                                                                findPhoneController
+                                                                    .text)
+                                                      }));
                                                   print(
                                                       findNameController.text);
                                                   setState(() {
@@ -187,10 +185,46 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
                                                   if (findPhone == "fail") {
                                                     showAlertDialog(
                                                         context,
-                                                        Text("이메일 찾기 실패"),
-                                                        Text(
-                                                            "입력하신 정보가 올바르지 않습니다"),
-                                                        []);
+                                                        null,
+                                                        Container(
+                                                          height: height * 0.2,
+                                                          child: Wrap(
+                                                            children: [
+                                                              Text(
+                                                                  "입력하신 정보가 올바르지 않습니다",
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          width *
+                                                                              0.048)),
+                                                              SizedBox(
+                                                                height: height *
+                                                                    0.02,
+                                                              ),
+                                                              Divider(),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        [
+                                                          Center(
+                                                            child: TextButton(
+                                                                style: TextButton
+                                                                    .styleFrom(
+                                                                        primary:
+                                                                            Colors
+                                                                                .black),
+                                                                onPressed: () {
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop();
+                                                                },
+                                                                child: Text(
+                                                                    "확인",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            width *
+                                                                                0.048))),
+                                                          )
+                                                        ]);
                                                   } else {
                                                     emailCodeController =
                                                         CountdownController(
@@ -209,21 +243,20 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
                                                   findCodeController.clear();
                                                   findCode.value = "not yet";
 
-                                                  var code =
-                                                      await beforeLoginPostAPI(
-                                                          '/user/checkInfoForChangePw',
-                                                          jsonEncode({
-                                                            "user_name":
-                                                                findNameController
-                                                                    .text,
-                                                            "user_email":
-                                                                findEmailController
-                                                                    .text,
-                                                            "user_phone":
-                                                                phoneNumerFormat(
-                                                                    findPhoneController
-                                                                        .text)
-                                                          }));
+                                                  var code = await togetherPostAPI(
+                                                      '/user/checkInfoForChangePw',
+                                                      jsonEncode({
+                                                        "user_name":
+                                                            findNameController
+                                                                .text,
+                                                        "user_email":
+                                                            findEmailController
+                                                                .text,
+                                                        "user_phone":
+                                                            phoneNumerFormat(
+                                                                findPhoneController
+                                                                    .text)
+                                                      }));
                                                   print(code);
                                                   setState(() {
                                                     findPhone = code;
@@ -358,7 +391,7 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
                                   print("이메일 찾기 버튼 클릭");
                                   // api 연결할것!!!
 
-                                  var code = await beforeLoginGetAPI(
+                                  var code = await togetherGetAPI(
                                       '/user/checkDeviceValidation',
                                       "?validation_code=$authCode&code_type=P&user_device=$phone");
 
@@ -369,7 +402,7 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
                                     if (emailCodeController.isRunning) {
                                       emailCodeController.stop();
                                     }
-                                    String founEmail = await beforeLoginPostAPI(
+                                    String founEmail = await togetherPostAPI(
                                         '/user/findUserId',
                                         jsonEncode({
                                           "user_name": findNameController.text,
@@ -395,7 +428,7 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
                                 }
                               } else {
                                 if (findPwKey.currentState!.validate()) {
-                                  var code = await beforeLoginGetAPI(
+                                  var code = await togetherGetAPI(
                                       '/user/checkDeviceValidation',
                                       "?validation_code=$authCode&code_type=P&user_device=$phone");
                                   findCode.value = code; //서버 repsonse.body 값
@@ -541,7 +574,7 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
                                                               if (changePwKey
                                                                   .currentState!
                                                                   .validate()) {
-                                                                var code = await beforeLoginPostAPI(
+                                                                var code = await togetherPostAPI(
                                                                     '/user/changePw',
                                                                     jsonEncode({
                                                                       "user_name":
@@ -596,7 +629,8 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
                             child: Text(
                                 widget.type == "pw" ? "비밀번호 찾기" : "이메일 찾기")),
                       ),
-                    )
+                    ),
+                    Text(findCode.value)
                   ],
                 ),
               ),
@@ -645,30 +679,4 @@ class _SearchAccountPageState extends State<SearchAccountPage> {
           )),
     );
   }
-}
-
-String phoneNumerFormat(String phone) {
-  String first;
-  String second;
-  String third;
-
-  first = phone.substring(0, 3);
-
-  if (phone.length == 10) {
-    second = phone.substring(3, 6);
-    third = phone.substring(6, 10);
-  } else {
-    second = phone.substring(3, 7);
-    third = phone.substring(7, 11);
-  }
-  print(first + "-" + second + "-" + third);
-
-  return first + "-" + second + "-" + third;
-}
-
-String durationFormatTime(Duration duration) {
-  String twoDigits(int n) => n.toString().padLeft(2, "0");
-  String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-  String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-  return "$twoDigitMinutes:$twoDigitSeconds";
 }

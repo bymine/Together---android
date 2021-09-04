@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:together_android/constant.dart';
 import 'package:together_android/model/live_project_model.dart';
 import 'package:together_android/model/sign_in_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
           title: 'Together',
           theme: ThemeData(
-              primarySwatch: Colors.green,
+              appBarTheme: AppBarTheme(color: titleColor),
               elevatedButtonTheme: ElevatedButtonThemeData(
                   style: ButtonStyle(
                       //backgroundColor: Color(0xff82C290),

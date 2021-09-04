@@ -9,6 +9,7 @@ import 'package:together_android/constant.dart';
 import 'package:together_android/model/sign_in_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/before_login/search_account_page.dart';
+import 'package:together_android/page/before_login/sign_up_page.dart';
 import 'package:together_android/service/api.dart';
 
 class SignInPage extends StatefulWidget {
@@ -181,7 +182,7 @@ class _SignInPageState extends State<SignInPage> {
                       ),
                       onPressed: () async {
                         if (signInFromKey.currentState!.validate()) {
-                          var signInModel = await beforeLoginPostAPI(
+                          var signInModel = await togetherPostAPI(
                               '/user/login',
                               jsonEncode({
                                 "user_email": signInEmail.text,
@@ -279,7 +280,10 @@ class _SignInPageState extends State<SignInPage> {
                           ),
                         ),
                         TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => SignUpPage()));
+                            },
                             child: Text(
                               "회원 가입",
                               style: TextStyle(color: Colors.black),

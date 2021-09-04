@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:together_android/page/after_login/make_project/make_project_page.dart';
 
 class EmptyDataDisplay extends StatefulWidget {
-  const EmptyDataDisplay({Key? key}) : super(key: key);
+  // const EmptyDataDisplay({Key? key}) : super(key: key);
 
   @override
   _EmptyDataDisplayState createState() => _EmptyDataDisplayState();
@@ -17,6 +17,8 @@ class _EmptyDataDisplayState extends State<EmptyDataDisplay> {
       body: Column(
         children: [
           Container(
+            width: width,
+            height: height * 0.5,
             child: Image.asset('assets/empty.png'),
           ),
           Text(
