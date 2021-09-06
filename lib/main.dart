@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
   MyApp({required this.skip});
   @override
   Widget build(BuildContext context) {
-    print(skip);
+    //print(skip);
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(

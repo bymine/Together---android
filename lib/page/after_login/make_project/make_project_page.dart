@@ -37,7 +37,6 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
   DateTime endDate = DateTime.now();
   List<String> userList = [];
   List<String> member = [];
-
   List<String> category = [];
   List<String> tag = [];
   List<String> containTag = [];
@@ -45,7 +44,6 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
   String selectedTag = "롤";
   List<String> projectCategory = [];
   List<String> projectTag = [];
-  bool multiInviteMode = false;
   Map mappingTag = Map<String, String>();
 
   @override
@@ -328,6 +326,14 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                           if (value != null) {
                                             setState(() {
                                               startDate = value;
+                                              if (startDate.isAfter(endDate)) {
+                                                endDate = DateTime(
+                                                  startDate.year,
+                                                  startDate.month,
+                                                  startDate.day,
+                                                  // hour이 더 늦을경우에는?
+                                                );
+                                              }
                                             });
                                           }
                                         });
@@ -359,7 +365,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                         await showDatePicker(
                                           context: context,
                                           initialDate: startDate,
-                                          firstDate: DateTime(2020),
+                                          firstDate: startDate,
                                           lastDate: DateTime(2025),
                                         ).then((value) {
                                           if (value != null) {
@@ -408,7 +414,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                     member.length == 0
                                         ? Expanded(child: Text(""))
                                         : Expanded(
-                                            child: Row(
+                                            child: Wrap(
                                             children: member.map((e) {
                                               return Chip(label: Text(e));
                                             }).toList(),
@@ -418,17 +424,12 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                           showSearch(
                                               context: context,
                                               delegate: SearchPage(
+                                                  showItemsOnEmpty: true,
                                                   barTheme: ThemeData(
                                                       appBarTheme: AppBarTheme(
                                                           color: titleColor)),
                                                   builder: (person) => Card(
                                                         child: ListTile(
-                                                          onLongPress: () {
-                                                            setState(() {
-                                                              multiInviteMode =
-                                                                  true;
-                                                            });
-                                                          },
                                                           onTap: () async {
                                                             UserProfile
                                                                 userProfile =
@@ -438,11 +439,13 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
 
                                                             Navigator.of(
                                                                     context)
-                                                                .push(MaterialPageRoute(
-                                                                    builder: (context) =>
-                                                                        ShowUserDetailPage(
-                                                                            userProfile:
-                                                                                userProfile)))
+                                                                .push(
+                                                                    MaterialPageRoute(
+                                                                        builder: (context) =>
+                                                                            ShowUserDetailPage(
+                                                                              userProfile: userProfile,
+                                                                              members: member,
+                                                                            )))
                                                                 .then(
                                                                     (newMember) {
                                                               setState(() {
@@ -458,15 +461,16 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                                               });
                                                             });
                                                           },
-                                                          leading: Visibility(
-                                                            visible:
-                                                                multiInviteMode,
-                                                            child: Checkbox(
-                                                              onChanged: (bool?
-                                                                  value) {},
-                                                              value: false,
-                                                            ),
-                                                          ),
+                                                          trailing:
+                                                              member.contains(
+                                                                      person)
+                                                                  ? Icon(
+                                                                      Icons
+                                                                          .check_circle_outline_outlined,
+                                                                      color:
+                                                                          titleColor,
+                                                                    )
+                                                                  : null,
                                                           title: Text(person
                                                               .toString()),
                                                         ),
@@ -478,6 +482,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                                           person.toString()))
                                                         a.add(element);
                                                     });
+
                                                     return a;
                                                   },
                                                   failure: Center(

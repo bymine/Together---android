@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:together_android/model/live_project_model.dart';
+import 'package:together_android/model/my_profile_model.dart';
 import 'package:together_android/model/sign_in_model.dart';
 import 'package:together_android/model/user_profile_model.dart';
 
-//String serverUrl = "http://101.101.216.93:8080";
-String serverUrl = "http://10.0.2.2:8080";
+String serverUrl = "http://101.101.216.93:8080";
+//String serverUrl = "http://10.0.2.2:8080";
 
 Future togetherGetAPI(String service, String parameter) async {
   final response = await http.get(Uri.parse(serverUrl + service + parameter));
@@ -48,6 +49,10 @@ Future togetherGetAPI(String service, String parameter) async {
     case "/project/getTagList":
       var parsedData = json.decode(utf8.decode(response.bodyBytes));
       return parsedData;
+
+    case "/user/detail_profile":
+      return MyProfileDetail.fromJson(
+          jsonDecode(utf8.decode(response.bodyBytes)));
   }
 }
 
