@@ -5,6 +5,8 @@ TextStyle appBarStyle = TextStyle(
   color: Colors.black,
 );
 
+TextStyle sheetHeaderStyle = TextStyle(fontWeight: FontWeight.bold);
+
 Color titleColor = Colors.green.withOpacity(0.5);
 
 class GradientColors {

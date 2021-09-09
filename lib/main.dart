@@ -6,6 +6,7 @@ import 'package:together_android/model/live_project_model.dart';
 import 'package:together_android/model/sign_in_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/before_login/sign_in_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +53,14 @@ class MyApp extends StatelessWidget {
                   style: ButtonStyle(
                       //backgroundColor: Color(0xff82C290),
                       ))),
+          localizationsDelegates: [
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: [
+            Locale('ko', ''),
+            Locale('en', ''),
+          ],
           home: skip == true ? MainPage() : SignInPage()),
     );
   }

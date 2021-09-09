@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:provider/provider.dart';
 import 'package:together_android/componet/showDialog.dart';
-import 'package:together_android/model/my_profile_model.dart';
-import 'package:together_android/model/sign_in_model.dart';
 import 'package:together_android/page/after_login/live_project/live_project_page.dart';
 import 'package:together_android/page/after_login/match_member/match_member_page.dart';
 import 'package:together_android/page/after_login/match_project/match_project_page.dart';
-import 'package:together_android/page/after_login/profile/user_profile.dart';
-import 'package:together_android/service/api.dart';
+import 'package:together_android/page/after_login/profile/user_detail_profile.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -32,14 +28,13 @@ class _MainPageState extends State<MainPage> {
     LiveProjectBody(),
     MatchProjectBody(),
     MatchMemberBody(),
-    UserProfileBody()
+    UserDetailProfilePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    var user = Provider.of<SignInModel>(context);
     return WillPopScope(
       onWillPop: () async {
         showAlertDialog(

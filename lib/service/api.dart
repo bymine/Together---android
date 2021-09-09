@@ -5,6 +5,7 @@ import 'package:together_android/model/live_project_model.dart';
 import 'package:together_android/model/my_profile_model.dart';
 import 'package:together_android/model/sign_in_model.dart';
 import 'package:together_android/model/user_profile_model.dart';
+import 'package:together_android/page/after_login/profile/user_schedule_page.dart';
 
 String serverUrl = "http://101.101.216.93:8080";
 //String serverUrl = "http://10.0.2.2:8080";
@@ -32,6 +33,12 @@ Future togetherGetAPI(String service, String parameter) async {
       //   return;
       // else
       //   return returnData;
+      return returnData;
+
+    case "/user/getUserSchedules":
+      List returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<Event>((json) => Event.fromJson(json))
+          .toList();
       return returnData;
 
     case "/project/UserInfo":
@@ -78,6 +85,9 @@ Future togetherPostAPI(String service, String body) async {
 
     case "/user/join": //sign up
       return response.statusCode;
+
+    case "/user/validationEditEmail":
+      return response.body;
 
     case "/project/searchMember":
       return json.decode(utf8.decode(response.bodyBytes));

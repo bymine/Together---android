@@ -82,7 +82,6 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
         });
 
         category.add('기타');
-        ;
 
         print(category);
         print(tag);
@@ -96,8 +95,8 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
           "project_exp": expController.text,
           "start_date": startDate.toIso8601String(),
           "end_date": endDate.toIso8601String(),
-          "professionality": ProjectEnumFormat(projectLevel),
-          "project_type": ProjectEnumFormat(projectType),
+          "professionality": projectEnumFormat(projectLevel),
+          "project_type": projectEnumFormat(projectType),
           "tag_num": projectTag.length,
           "tag_name": projectCategory,
           "detail_name": projectTag
@@ -111,8 +110,8 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
               "project_exp": expController.text,
               "start_date": startDate.toIso8601String(),
               "end_date": endDate.toIso8601String(),
-              "professionality": ProjectEnumFormat(projectLevel),
-              "project_type": ProjectEnumFormat(projectType),
+              "professionality": projectEnumFormat(projectLevel),
+              "project_type": projectEnumFormat(projectType),
               "tag_num": projectTag.length,
               "tag_name": projectCategory,
               "detail_name": projectTag

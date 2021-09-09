@@ -46,7 +46,7 @@ String toTime(DateTime dateTime) {
   return '$time';
 }
 
-String ProjectEnumFormat(String value) {
+String projectEnumFormat(String value) {
   switch (value) {
     case "상":
       return "High";
@@ -72,4 +72,8 @@ String ProjectEnumFormat(String value) {
     default:
       return "Any";
   }
+}
+
+int getHashCode(DateTime key) {
+  return key.day * 1000000 + key.month * 10000 + key.year;
 }
