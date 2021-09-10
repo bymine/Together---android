@@ -77,3 +77,11 @@ String projectEnumFormat(String value) {
 int getHashCode(DateTime key) {
   return key.day * 1000000 + key.month * 10000 + key.year;
 }
+
+DateTime getDateTime(int hash) {
+  int day = hash ~/ 1000000;
+  int month = (hash % 1000000) ~/ 10000;
+  int year = (hash % 1000000) % 10000;
+
+  return DateTime(year, month, day);
+}

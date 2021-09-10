@@ -23,24 +23,16 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
   List<Event> _selectedEvents = [];
   List datekeys = [];
   CalendarFormat _calendarFormat = CalendarFormat.month;
+  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOff;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-
+  DateTime? _rangeStart;
+  DateTime? _rangeEnd;
   TextEditingController titleController = TextEditingController();
   TextEditingController contentController = TextEditingController();
+
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
-
-  // Map<DateTime, List<Event>> mappingSchedule = Map<DateTime, List<Event>>();
-  // Map<DateTime, List<Event>> mappingSchedule = {
-  //   DateTime(2021, 9, 8): [
-  //     Event(
-  //         title: "example1",
-  //         contnet: "contnet",
-  //         startTime: DateTime(2021, 9, 8).toIso8601String(),
-  //         endTime: DateTime(2021, 9, 8).toIso8601String())
-  //   ]
-  // };
 
   var events = LinkedHashMap(
     equals: isSameDay,
@@ -52,18 +44,22 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
     super.initState();
     fetchPrivateSchedule().then((value) => setState(() {
           _allEvents = value;
-
           _allEvents.forEach((event) {
-            DateTime time = DateTime.parse(event.startTime);
-            List<Event> list = events[time] ?? [];
-            list.add(event);
-            events[time] = list;
+            DateTime start = DateTime.parse(event.startTime);
+            DateTime end = DateTime.parse(event.endTime);
+
+            int startCode = getHashCode(start);
+            int endCode = getHashCode(end);
+
+            for (startCode = startCode;
+                startCode <= endCode;
+                startCode = startCode + 1000000) {
+              List<Event> list = events[getDateTime(startCode)] ?? [];
+              list.add(event);
+              events[getDateTime(startCode)] = list;
+            }
           });
         }));
-  }
-
-  List<Event> _getEventsForDay(DateTime day) {
-    return events[day] ?? [];
   }
 
   Future<List<Event>> fetchPrivateSchedule() async {
@@ -71,6 +67,37 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
     var list =
         await togetherGetAPI("/user/getUserSchedules", "?user_idx=$userIdx");
     return list as List<Event>;
+  }
+
+  List<Event> _getEventsForDay(DateTime day) {
+    return events[day] ?? [];
+  }
+
+  List<Event> _getEventsForRange(DateTime start, DateTime end) {
+    final dayCount = end.difference(start).inDays + 1;
+
+    final days = List.generate(dayCount,
+        (index) => DateTime(start.year, start.month, start.day + index));
+
+    return [for (var d in days) ..._getEventsForDay(d)];
+  }
+
+  void _onRangeSelected(DateTime? start, DateTime? end, DateTime focusedDay) {
+    setState(() {
+      _selectedDay = null;
+      _focusedDay = focusedDay;
+      _rangeStart = start;
+      _rangeEnd = end;
+      _rangeSelectionMode = RangeSelectionMode.toggledOn;
+    });
+
+    if (start != null && end != null) {
+      _selectedEvents = _getEventsForRange(start, end);
+    } else if (start != null) {
+      _selectedEvents = _getEventsForDay(start);
+    } else if (end != null) {
+      _selectedEvents = _getEventsForDay(end);
+    }
   }
 
   @override
@@ -86,9 +113,19 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
         child: Column(
           children: [
             TableCalendar(
+              calendarStyle: CalendarStyle(
+                outsideDaysVisible: true,
+                weekendTextStyle: TextStyle().copyWith(color: Colors.red),
+                holidayTextStyle: TextStyle().copyWith(color: Colors.blue[800]),
+              ),
               locale: 'ko-KR',
               firstDay: DateTime(2021),
               lastDay: DateTime(2023),
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              rangeStartDay: _rangeStart,
+              rangeEndDay: _rangeEnd,
+              rangeSelectionMode: _rangeSelectionMode,
+              onRangeSelected: _onRangeSelected,
               focusedDay: _focusedDay,
               calendarFormat: _calendarFormat,
               onFormatChanged: (format) {
@@ -109,6 +146,9 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                   setState(() {
                     _selectedDay = selectedDay;
                     _focusedDay = focusedDay;
+                    _rangeStart = null;
+                    _rangeEnd = null;
+                    _rangeSelectionMode = RangeSelectionMode.toggledOff;
                   });
 
                   _selectedEvents = _getEventsForDay(selectedDay);
@@ -117,14 +157,52 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
             ),
             // Text("focused: " + _focusedDay.toString()),
             // Text("selected: " + _selectedDay.toString()),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Daily Task",
+                  style: TextStyle(
+                      fontSize: width * 0.048, fontWeight: FontWeight.bold),
+                )),
             Expanded(
                 child: ListView.builder(
                     itemCount: _selectedEvents.length,
                     itemBuilder: (context, index) {
+                      int from = getHashCode(
+                          DateTime.parse(_selectedEvents[index].startTime));
+                      int to = getHashCode(
+                          DateTime.parse(_selectedEvents[index].endTime));
                       return Card(
                         child: ListTile(
                           title: Text(_selectedEvents[index].title),
-                          subtitle: Text(_selectedEvents[index].startTime),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(_selectedEvents[index].content),
+                              from == to
+                                  ? Text(toDateTime(
+                                        DateTime.parse(
+                                            _selectedEvents[index].startTime),
+                                      ) +
+                                      " ~ " +
+                                      toTime(DateTime.parse(
+                                          _selectedEvents[index].endTime)))
+                                  : Text(
+                                      toDateTime(
+                                            DateTime.parse(
+                                                _selectedEvents[index]
+                                                    .startTime),
+                                          ) +
+                                          " ~ " +
+                                          toDateTime(
+                                            DateTime.parse(
+                                                _selectedEvents[index].endTime),
+                                          ),
+                                    ),
+                            ],
+                          ),
+                          trailing: IconButton(
+                              onPressed: () {}, icon: Icon(Icons.more_vert)),
                         ),
                       );
                     }))
@@ -134,6 +212,13 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: titleColor,
         onPressed: () async {
+          if (_rangeSelectionMode == RangeSelectionMode.toggledOn) {
+            startDate = _rangeStart!;
+            endDate = _rangeEnd ?? startDate;
+          } else {
+            startDate = _selectedDay!;
+            endDate = _selectedDay!;
+          }
           showModalBottomSheet(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
@@ -176,11 +261,18 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                                       },
                                     ),
                                   );
-                                  List<Event> list = events[startDate] ?? [];
-                                  list.add(event);
-                                  setState(() {
-                                    events[startDate] = list;
-                                  });
+                                  int from = getHashCode(startDate);
+                                  int to = getHashCode(endDate);
+
+                                  for (from = from;
+                                      from <= to;
+                                      from = from + 1000000) {
+                                    List<Event> list =
+                                        events[getDateTime(from)] ?? [];
+                                    list.add(event);
+                                    events[getDateTime(from)] = list;
+                                  }
+
                                   Navigator.of(context).pop();
                                 }),
                             Container(
@@ -244,8 +336,8 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                                     children: [
                                       Container(
                                         width: width * 0.45,
-                                        padding:
-                                            EdgeInsets.only(left: width * 0.02),
+                                        padding: EdgeInsets.only(
+                                            left: width * 0.004),
                                         decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(8),
@@ -289,7 +381,7 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                                       Container(
                                         width: width * 0.3,
                                         padding:
-                                            EdgeInsets.only(left: width * 0.08),
+                                            EdgeInsets.only(left: width * 0.02),
                                         decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(8),
@@ -302,23 +394,20 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                                             Text(toTime(startDate)),
                                             IconButton(
                                                 onPressed: () async {
-                                                  await showDatePicker(
-                                                    context: context,
-                                                    initialDate: DateTime.now(),
-                                                    firstDate: DateTime(2020),
-                                                    lastDate: DateTime(2025),
-                                                  ).then((value) {
+                                                  await showTimePicker(
+                                                          context: context,
+                                                          initialTime: TimeOfDay
+                                                              .fromDateTime(
+                                                                  startDate))
+                                                      .then((value) {
                                                     if (value != null) {
                                                       setState(() {
-                                                        startDate = value;
-                                                        if (startDate
-                                                            .isAfter(endDate)) {
-                                                          endDate = DateTime(
+                                                        startDate = DateTime(
                                                             startDate.year,
                                                             startDate.month,
                                                             startDate.day,
-                                                          );
-                                                        }
+                                                            value.hour,
+                                                            value.minute);
                                                       });
                                                     }
                                                   });
@@ -350,8 +439,8 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                                     children: [
                                       Container(
                                         width: width * 0.45,
-                                        padding:
-                                            EdgeInsets.only(left: width * 0.02),
+                                        padding: EdgeInsets.only(
+                                            left: width * 0.004),
                                         decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(8),
@@ -387,7 +476,7 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                                       Container(
                                         width: width * 0.3,
                                         padding:
-                                            EdgeInsets.only(left: width * 0.08),
+                                            EdgeInsets.only(left: width * 0.02),
                                         decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(8),
@@ -400,23 +489,29 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                                             Text(toTime(endDate)),
                                             IconButton(
                                                 onPressed: () async {
-                                                  await showDatePicker(
-                                                    context: context,
-                                                    initialDate: DateTime.now(),
-                                                    firstDate: DateTime(2020),
-                                                    lastDate: DateTime(2025),
-                                                  ).then((value) {
+                                                  await showTimePicker(
+                                                          context: context,
+                                                          initialTime: TimeOfDay
+                                                              .fromDateTime(
+                                                                  startDate))
+                                                      .then((value) {
                                                     if (value != null) {
                                                       setState(() {
-                                                        startDate = value;
+                                                        endDate = DateTime(
+                                                            endDate.year,
+                                                            endDate.month,
+                                                            endDate.day,
+                                                            value.hour,
+                                                            value.minute);
                                                         if (startDate
-                                                            .isAfter(endDate)) {
+                                                            .isAfter(endDate))
                                                           endDate = DateTime(
-                                                            startDate.year,
-                                                            startDate.month,
-                                                            startDate.day,
-                                                          );
-                                                        }
+                                                              endDate.year,
+                                                              endDate.month,
+                                                              endDate.day,
+                                                              startDate.hour +
+                                                                  1,
+                                                              value.minute);
                                                       });
                                                     }
                                                   });
