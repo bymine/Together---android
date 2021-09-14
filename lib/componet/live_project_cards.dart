@@ -5,6 +5,7 @@ import 'package:together_android/componet/circle_avator_widget.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/live_project_model.dart';
 import 'package:together_android/page/after_login/make_project/make_project_page.dart';
+import 'package:together_android/page/after_project/project_main_page.dart';
 
 class LiveProjectCards extends StatefulWidget {
   final List<LiveProject> projects;
@@ -26,7 +27,7 @@ class _LiveProjectCardsState extends State<LiveProjectCards> {
             itemBuilder: (context, index) {
               var project = widget.projects[index];
               var gradientColor =
-                  GradientTemplate.gradientTemplate[index].colors;
+                  GradientTemplate.gradientTemplate[index % 5].colors;
               return GestureDetector(
                 onTap: () {
                   Provider.of<LiveProject>(context, listen: false)
@@ -35,6 +36,8 @@ class _LiveProjectCardsState extends State<LiveProjectCards> {
                       Provider.of<LiveProject>(context, listen: false)
                           .projectIdx
                           .toString());
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => ProjectMainPage()));
                 },
                 child: Container(
                     decoration: BoxDecoration(

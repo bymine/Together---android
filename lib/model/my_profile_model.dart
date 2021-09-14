@@ -68,9 +68,9 @@ class MyProfileDetail {
       userPhone: json['user_phone'],
       userBirth: json['user_birth'],
       userAge: json['user_age'],
-      license1: json['license1'] == null ? "등록된 값이 없습니다" : json['license1'],
-      license2: json['license2'] == null ? "등록된 값이 없습니다" : json['license2'],
-      license3: json['license3'] == null ? "등록된 값이 없습니다" : json['license3'],
+      license1: json['license1'] ?? "",
+      license2: json['license2'] ?? "",
+      license3: json['license3'] ?? "",
       mainAddr: json['main_addr'] == null ? "" : json['main_addr'],
       referenceAddr:
           json['reference_addr'] == null ? "" : json['reference_addr'],

@@ -29,9 +29,11 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
     // var pw = prefs.getString('pw');
     var idx = prefs.getInt('idx');
 
-    if (idx != 0)
+    if (idx != 0) {
+      Provider.of<SignInModel>(context, listen: false).userIdx = idx!;
+
       return togetherGetAPI('/main', '?user_idx=$idx');
-    else {
+    } else {
       var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
       return togetherGetAPI('/main', '?user_idx=$userIdx');
     }

@@ -19,6 +19,10 @@ String phoneNumerFormat(String phone) {
   return first + "-" + second + "-" + third;
 }
 
+String toPhoneString(String number) {
+  return number.replaceAll('-', '');
+}
+
 String durationFormatTime(Duration duration) {
   String twoDigits(int n) => n.toString().padLeft(2, "0");
   String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
@@ -84,4 +88,22 @@ DateTime getDateTime(int hash) {
   int year = (hash % 1000000) % 10000;
 
   return DateTime(year, month, day);
+}
+
+String licenseToString(String license1, String license2, String license3) {
+  String string = "";
+  string = license1 + "," + license2 + "," + license3;
+
+  string = string.replaceAll(",,", ",");
+
+  if (string[0] == ",") {
+    print("first");
+    string = string.substring(1, string.length);
+  }
+  if (string.length != 0 && string[string.length - 1] == ",") {
+    print("last");
+    string = string.substring(0, string.length - 1);
+  }
+  if (string.length == 0) string = "";
+  return string;
 }

@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:together_android/model/hobby_model.dart';
+import 'package:together_android/model/invitaion_model.dart';
 import 'package:together_android/model/live_project_model.dart';
 import 'package:together_android/model/my_profile_model.dart';
 import 'package:together_android/model/sign_in_model.dart';
@@ -29,15 +31,27 @@ Future togetherGetAPI(String service, String parameter) async {
       List returnData = jsonDecode(utf8.decode(response.bodyBytes))
           .map<LiveProject>((json) => LiveProject.fromJson(json))
           .toList();
-      // if (returnData.isEmpty)
-      //   return;
-      // else
-      //   return returnData;
       return returnData;
 
     case "/user/getUserSchedules":
       List returnData = jsonDecode(utf8.decode(response.bodyBytes))
           .map<Event>((json) => Event.fromJson(json))
+          .toList();
+      return returnData;
+
+    case "/user/detail_profile":
+      return MyProfileDetail.fromJson(
+          jsonDecode(utf8.decode(response.bodyBytes)));
+
+    case "/user/invitationList":
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<Invitaion>((json) => Invitaion.fromJson(json))
+          .toList();
+      return returnData;
+
+    case "/user/edit_hobby":
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<FetchHobby>((json) => FetchHobby.fromJson(json))
           .toList();
       return returnData;
 
@@ -56,10 +70,6 @@ Future togetherGetAPI(String service, String parameter) async {
     case "/project/getTagList":
       var parsedData = json.decode(utf8.decode(response.bodyBytes));
       return parsedData;
-
-    case "/user/detail_profile":
-      return MyProfileDetail.fromJson(
-          jsonDecode(utf8.decode(response.bodyBytes)));
   }
 }
 
@@ -87,6 +97,9 @@ Future togetherPostAPI(String service, String body) async {
       return response.statusCode;
 
     case "/user/validationEditEmail":
+      return response.body;
+
+    case "/user/validationEditPhone":
       return response.body;
 
     case "/project/searchMember":
