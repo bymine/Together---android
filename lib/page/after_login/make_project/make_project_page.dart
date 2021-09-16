@@ -5,8 +5,9 @@ import 'package:group_button/group_button.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/textfield_widget.dart';
 import 'package:together_android/constant.dart';
-import 'package:together_android/model/sign_in_model.dart';
-import 'package:together_android/model/user_profile_model.dart';
+import 'package:together_android/model/after_login_model/live_project_model.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/model/after_login_model/user_profile_model.dart';
 import 'package:together_android/page/after_login/make_project/show_user_detail_page.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
@@ -80,6 +81,8 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
             mappingTag[element['tag_detail_name']] = element['tag_name'];
           }
         });
+        category.removeAt(0);
+        tag.remove(0);
 
         category.add('기타');
 
@@ -89,18 +92,19 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
 
         _currentStep < 2 ? setState(() => _currentStep += 1) : null;
       } else if (_currentStep == 2) {
-        print(jsonEncode({
-          "user_idx": Provider.of<SignInModel>(context, listen: false).userIdx,
-          "project_name": titleController.text,
-          "project_exp": expController.text,
-          "start_date": startDate.toIso8601String(),
-          "end_date": endDate.toIso8601String(),
-          "professionality": projectEnumFormat(projectLevel),
-          "project_type": projectEnumFormat(projectType),
-          "tag_num": projectTag.length,
-          "tag_name": projectCategory,
-          "detail_name": projectTag
-        }));
+        List<String> photo = [];
+        photo.add("http://101.101.216.93:8080/images/" +
+            Provider.of<SignInModel>(context, listen: false).userPhoto);
+        LiveProject liveProject = LiveProject(
+            projectIdx: 0,
+            memberCount: 1,
+            files: 0,
+            projectName: titleController.text,
+            projectExp: expController.text,
+            startDate: toDate(startDate),
+            endDate: toDate(endDate),
+            photoes: photo);
+
         var code = await togetherPostAPI(
             "/project/createProject",
             jsonEncode({
@@ -116,7 +120,8 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
               "tag_name": projectCategory,
               "detail_name": projectTag
             }));
-        if (code.toString() == "success") Navigator.of(context).pop();
+        if (code.toString() == "success")
+          Navigator.of(context).pop(liveProject);
       }
     }
 

@@ -7,7 +7,8 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:together_android/componet/bottom_sheet_top_bar.dart';
 import 'package:together_android/componet/textfield_widget.dart';
 import 'package:together_android/constant.dart';
-import 'package:together_android/model/sign_in_model.dart';
+import 'package:together_android/model/after_login_model/private_schedule_model.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
 
@@ -79,7 +80,7 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
     final days = List.generate(dayCount,
         (index) => DateTime(start.year, start.month, start.day + index));
 
-    return [for (var d in days) ..._getEventsForDay(d)];
+    return [for (var d in days) ..._getEventsForDay(d)].toSet().toList();
   }
 
   void _onRangeSelected(DateTime? start, DateTime? end, DateTime focusedDay) {
@@ -103,7 +104,6 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.green[50],
       appBar: AppBar(
@@ -216,8 +216,8 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
             startDate = _rangeStart!;
             endDate = _rangeEnd ?? startDate;
           } else {
-            startDate = _selectedDay!;
-            endDate = _selectedDay!;
+            startDate = _selectedDay ?? DateTime.now();
+            endDate = _selectedDay ?? DateTime.now();
           }
           showModalBottomSheet(
               shape: RoundedRectangleBorder(
@@ -227,312 +227,319 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
               isScrollControlled: true,
               context: context,
               builder: (context) {
-                return SingleChildScrollView(
-                  child: StatefulBuilder(builder: (context, setState) {
-                    return Padding(
-                      padding: MediaQuery.of(context).viewInsets,
-                      child: Container(
-                        child: Column(
-                          children: [
-                            BottomSheetTopBar(
-                                title: "스케줄 추가",
-                                onPressed: () async {
-                                  var userIdx = Provider.of<SignInModel>(
-                                          context,
-                                          listen: false)
-                                      .userIdx;
-                                  Event event = Event(
-                                      title: titleController.text,
-                                      content: contentController.text,
-                                      startTime: startDate.toIso8601String(),
-                                      endTime: endDate.toIso8601String());
-                                  await togetherPostAPI(
-                                    "/user/addSchedule",
-                                    jsonEncode(
-                                      {
-                                        "schedule_name": titleController.text,
-                                        "schedule_content":
-                                            contentController.text,
-                                        "schedule_start_datetime":
-                                            startDate.toIso8601String(),
-                                        "schedule_end_datetime":
-                                            endDate.toIso8601String(),
-                                        "writer_idx": userIdx,
-                                      },
-                                    ),
-                                  );
-                                  int from = getHashCode(startDate);
-                                  int to = getHashCode(endDate);
-
-                                  for (from = from;
-                                      from <= to;
-                                      from = from + 1000000) {
-                                    List<Event> list =
-                                        events[getDateTime(from)] ?? [];
-                                    list.add(event);
-                                    events[getDateTime(from)] = list;
-                                  }
-
-                                  Navigator.of(context).pop();
-                                }),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: width * 0.02,
-                                  horizontal: width * 0.02),
-                              decoration: BoxDecoration(
-                                  border: Border(
-                                      bottom: BorderSide(
-                                          width: 1, color: Colors.grey))),
-                              child: TextFormFieldWidget(
-                                  header: Text("제목"),
-                                  body: TextFormField(
-                                    controller: titleController,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                    ),
-                                  ),
-                                  footer: null,
-                                  heightPadding: 0),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: width * 0.02,
-                                  horizontal: width * 0.02),
-                              decoration: BoxDecoration(
-                                  border: Border(
-                                      bottom: BorderSide(
-                                          width: 1, color: Colors.grey))),
-                              child: TextFormFieldWidget(
-                                  header: Text("세부 내용"),
-                                  body: TextField(
-                                    controller: contentController,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                    ),
-                                  ),
-                                  footer: null,
-                                  heightPadding: 0),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: width * 0.02,
-                                  horizontal: width * 0.02),
-                              decoration: BoxDecoration(
-                                  border: Border(
-                                      bottom: BorderSide(
-                                          width: 1, color: Colors.grey))),
-                              child: TextFormFieldWidget(
-                                  header: Text(
-                                    "시작 시간",
-                                    style: TextStyle(fontSize: width * 0.04),
-                                  ),
-                                  body: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Container(
-                                        width: width * 0.45,
-                                        padding: EdgeInsets.only(
-                                            left: width * 0.004),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                                width: 1, color: Colors.grey)),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(toDate(startDate)),
-                                            IconButton(
-                                                onPressed: () async {
-                                                  await showDatePicker(
-                                                    context: context,
-                                                    initialDate: DateTime.now(),
-                                                    firstDate: DateTime(2020),
-                                                    lastDate: DateTime(2025),
-                                                  ).then((value) {
-                                                    if (value != null) {
-                                                      setState(() {
-                                                        startDate = value;
-                                                        if (startDate
-                                                            .isAfter(endDate)) {
-                                                          endDate = DateTime(
-                                                            startDate.year,
-                                                            startDate.month,
-                                                            startDate.day,
-                                                          );
-                                                        }
-                                                      });
-                                                    }
-                                                  });
-                                                },
-                                                icon: Icon(
-                                                    Icons
-                                                        .arrow_drop_down_outlined,
-                                                    size: 32))
-                                          ],
-                                        ),
+                return SafeArea(
+                  child: SingleChildScrollView(
+                    child: StatefulBuilder(builder: (context, setState) {
+                      return Padding(
+                        padding: MediaQuery.of(context).viewInsets,
+                        child: Container(
+                          child: Column(
+                            children: [
+                              BottomSheetTopBar(
+                                  title: "스케줄 추가",
+                                  onPressed: () async {
+                                    var userIdx = Provider.of<SignInModel>(
+                                            context,
+                                            listen: false)
+                                        .userIdx;
+                                    Event event = Event(
+                                        title: titleController.text,
+                                        content: contentController.text,
+                                        startTime: startDate.toIso8601String(),
+                                        endTime: endDate.toIso8601String());
+                                    await togetherPostAPI(
+                                      "/user/addSchedule",
+                                      jsonEncode(
+                                        {
+                                          "schedule_name": titleController.text,
+                                          "schedule_content":
+                                              contentController.text,
+                                          "schedule_start_datetime":
+                                              startDate.toIso8601String(),
+                                          "schedule_end_datetime":
+                                              endDate.toIso8601String(),
+                                          "writer_idx": userIdx,
+                                        },
                                       ),
-                                      Container(
-                                        width: width * 0.3,
-                                        padding:
-                                            EdgeInsets.only(left: width * 0.02),
-                                        decoration: BoxDecoration(
+                                    );
+                                    int from = getHashCode(startDate);
+                                    int to = getHashCode(endDate);
+
+                                    for (from = from;
+                                        from <= to;
+                                        from = from + 1000000) {
+                                      List<Event> list =
+                                          events[getDateTime(from)] ?? [];
+                                      list.add(event);
+                                      events[getDateTime(from)] = list;
+                                    }
+
+                                    Navigator.of(context).pop();
+                                  }),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: width * 0.01,
+                                    horizontal: width * 0.02),
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        bottom: BorderSide(
+                                            width: 1, color: Colors.grey))),
+                                child: TextFormFieldWidget(
+                                    header: Text("제목"),
+                                    body: TextFormField(
+                                      controller: titleController,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(
                                             borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                                width: 1, color: Colors.grey)),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(toTime(startDate)),
-                                            IconButton(
-                                                onPressed: () async {
-                                                  await showTimePicker(
-                                                          context: context,
-                                                          initialTime: TimeOfDay
-                                                              .fromDateTime(
-                                                                  startDate))
-                                                      .then((value) {
-                                                    if (value != null) {
-                                                      setState(() {
-                                                        startDate = DateTime(
-                                                            startDate.year,
-                                                            startDate.month,
-                                                            startDate.day,
-                                                            value.hour,
-                                                            value.minute);
-                                                      });
-                                                    }
-                                                  });
-                                                },
-                                                icon: Icon(
-                                                    Icons
-                                                        .arrow_drop_down_outlined,
-                                                    size: 32))
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  footer: null,
-                                  heightPadding: 0),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: height * 0.02,
-                                  horizontal: width * 0.02),
-                              child: TextFormFieldWidget(
-                                  header: Text(
-                                    "종료 시간",
-                                    style: TextStyle(fontSize: width * 0.04),
-                                  ),
-                                  body: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Container(
-                                        width: width * 0.45,
-                                        padding: EdgeInsets.only(
-                                            left: width * 0.004),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                                width: 1, color: Colors.grey)),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(toDate(endDate)),
-                                            IconButton(
-                                                onPressed: () async {
-                                                  await showDatePicker(
-                                                    context: context,
-                                                    initialDate: startDate,
-                                                    firstDate: startDate,
-                                                    lastDate: DateTime(2025),
-                                                  ).then((value) {
-                                                    if (value != null) {
-                                                      setState(() {
-                                                        endDate = value;
-                                                      });
-                                                    }
-                                                  });
-                                                },
-                                                icon: Icon(
-                                                    Icons
-                                                        .arrow_drop_down_outlined,
-                                                    size: 32))
-                                          ],
-                                        ),
+                                                BorderRadius.circular(8)),
                                       ),
-                                      Container(
-                                        width: width * 0.3,
-                                        padding:
-                                            EdgeInsets.only(left: width * 0.02),
-                                        decoration: BoxDecoration(
+                                    ),
+                                    footer: null,
+                                    heightPadding: 0),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: width * 0.01,
+                                    horizontal: width * 0.02),
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        bottom: BorderSide(
+                                            width: 1, color: Colors.grey))),
+                                child: TextFormFieldWidget(
+                                    header: Text("세부 내용"),
+                                    body: TextField(
+                                      controller: contentController,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(
                                             borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                                width: 1, color: Colors.grey)),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(toTime(endDate)),
-                                            IconButton(
-                                                onPressed: () async {
-                                                  await showTimePicker(
-                                                          context: context,
-                                                          initialTime: TimeOfDay
-                                                              .fromDateTime(
-                                                                  startDate))
-                                                      .then((value) {
-                                                    if (value != null) {
-                                                      setState(() {
-                                                        endDate = DateTime(
-                                                            endDate.year,
-                                                            endDate.month,
-                                                            endDate.day,
-                                                            value.hour,
-                                                            value.minute);
-                                                        if (startDate
-                                                            .isAfter(endDate))
+                                                BorderRadius.circular(8)),
+                                      ),
+                                    ),
+                                    footer: null,
+                                    heightPadding: 0),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: width * 0.01,
+                                    horizontal: width * 0.02),
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                        bottom: BorderSide(
+                                            width: 1, color: Colors.grey))),
+                                child: TextFormFieldWidget(
+                                    header: Text(
+                                      "시작 시간",
+                                      style: TextStyle(fontSize: width * 0.04),
+                                    ),
+                                    body: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Container(
+                                          width: width * 0.45,
+                                          padding: EdgeInsets.only(
+                                              left: width * 0.004),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                  width: 1,
+                                                  color: Colors.grey)),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(toDate(startDate)),
+                                              IconButton(
+                                                  onPressed: () async {
+                                                    await showDatePicker(
+                                                      context: context,
+                                                      initialDate:
+                                                          DateTime.now(),
+                                                      firstDate: DateTime(2020),
+                                                      lastDate: DateTime(2025),
+                                                    ).then((value) {
+                                                      if (value != null) {
+                                                        setState(() {
+                                                          startDate = value;
+                                                          if (startDate.isAfter(
+                                                              endDate)) {
+                                                            endDate = DateTime(
+                                                              startDate.year,
+                                                              startDate.month,
+                                                              startDate.day,
+                                                            );
+                                                          }
+                                                        });
+                                                      }
+                                                    });
+                                                  },
+                                                  icon: Icon(
+                                                      Icons
+                                                          .arrow_drop_down_outlined,
+                                                      size: 32))
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          width: width * 0.3,
+                                          padding: EdgeInsets.only(
+                                              left: width * 0.02),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                  width: 1,
+                                                  color: Colors.grey)),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(toTime(startDate)),
+                                              IconButton(
+                                                  onPressed: () async {
+                                                    await showTimePicker(
+                                                            context: context,
+                                                            initialTime: TimeOfDay
+                                                                .fromDateTime(
+                                                                    startDate))
+                                                        .then((value) {
+                                                      if (value != null) {
+                                                        setState(() {
+                                                          startDate = DateTime(
+                                                              startDate.year,
+                                                              startDate.month,
+                                                              startDate.day,
+                                                              value.hour,
+                                                              value.minute);
+                                                        });
+                                                      }
+                                                    });
+                                                  },
+                                                  icon: Icon(
+                                                      Icons
+                                                          .arrow_drop_down_outlined,
+                                                      size: 32))
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    footer: null,
+                                    heightPadding: 0),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: width * 0.01,
+                                    horizontal: width * 0.02),
+                                child: TextFormFieldWidget(
+                                    header: Text(
+                                      "종료 시간",
+                                      style: TextStyle(fontSize: width * 0.04),
+                                    ),
+                                    body: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Container(
+                                          width: width * 0.45,
+                                          padding: EdgeInsets.only(
+                                              left: width * 0.004),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                  width: 1,
+                                                  color: Colors.grey)),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(toDate(endDate)),
+                                              IconButton(
+                                                  onPressed: () async {
+                                                    await showDatePicker(
+                                                      context: context,
+                                                      initialDate: startDate,
+                                                      firstDate: startDate,
+                                                      lastDate: DateTime(2025),
+                                                    ).then((value) {
+                                                      if (value != null) {
+                                                        setState(() {
+                                                          endDate = value;
+                                                        });
+                                                      }
+                                                    });
+                                                  },
+                                                  icon: Icon(
+                                                      Icons
+                                                          .arrow_drop_down_outlined,
+                                                      size: 32))
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          width: width * 0.3,
+                                          padding: EdgeInsets.only(
+                                              left: width * 0.02),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                  width: 1,
+                                                  color: Colors.grey)),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(toTime(endDate)),
+                                              IconButton(
+                                                  onPressed: () async {
+                                                    await showTimePicker(
+                                                            context: context,
+                                                            initialTime: TimeOfDay
+                                                                .fromDateTime(
+                                                                    startDate))
+                                                        .then((value) {
+                                                      if (value != null) {
+                                                        setState(() {
                                                           endDate = DateTime(
                                                               endDate.year,
                                                               endDate.month,
                                                               endDate.day,
-                                                              startDate.hour +
-                                                                  1,
+                                                              value.hour,
                                                               value.minute);
-                                                      });
-                                                    }
-                                                  });
-                                                },
-                                                icon: Icon(
-                                                    Icons
-                                                        .arrow_drop_down_outlined,
-                                                    size: 32))
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  footer: null,
-                                  heightPadding: 0),
-                            )
-                          ],
+                                                          if (startDate
+                                                              .isAfter(endDate))
+                                                            endDate = DateTime(
+                                                                endDate.year,
+                                                                endDate.month,
+                                                                endDate.day,
+                                                                startDate.hour +
+                                                                    1,
+                                                                value.minute);
+                                                        });
+                                                      }
+                                                    });
+                                                  },
+                                                  icon: Icon(
+                                                      Icons
+                                                          .arrow_drop_down_outlined,
+                                                      size: 32))
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    footer: null,
+                                    heightPadding: 0),
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 );
               }).then((value) => setState(() {}));
         },
@@ -543,35 +550,5 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
         ),
       ),
     );
-  }
-}
-
-class Event {
-  String title;
-  String content;
-  String startTime;
-  String endTime;
-  Event(
-      {required this.title,
-      required this.content,
-      required this.startTime,
-      required this.endTime});
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['title'] = this.title;
-    data['body'] = this.content;
-    data['start_datetime'] = this.startTime;
-    data['end_datetime'] = this.endTime;
-
-    return data;
-  }
-
-  factory Event.fromJson(Map<String, dynamic> json) {
-    return Event(
-        title: json['title'],
-        content: json['body'] ?? "",
-        startTime: json['start_datetime'],
-        endTime: json['end_datetime']);
   }
 }

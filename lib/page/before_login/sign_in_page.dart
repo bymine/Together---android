@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
-import 'package:together_android/model/sign_in_model.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/before_login/search_account_page.dart';
 import 'package:together_android/page/before_login/sign_up_page.dart';

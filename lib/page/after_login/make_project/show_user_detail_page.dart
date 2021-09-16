@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:together_android/constant.dart';
-import 'package:together_android/model/user_profile_model.dart';
+import 'package:together_android/model/after_login_model/user_profile_model.dart';
 import 'package:together_android/service/api.dart';
 
 class ShowUserDetailPage extends StatelessWidget {

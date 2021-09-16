@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:together_android/componet/showDialog.dart';
+import 'package:together_android/page/after_project/project_file/project_file_page.dart';
 import 'package:together_android/page/after_project/project_schedule/project_schedule_page.dart';
+import 'package:together_android/page/after_project/project_setting/project_setting_page.dart';
 
 class ProjectMainPage extends StatefulWidget {
   const ProjectMainPage({Key? key}) : super(key: key);
@@ -16,14 +16,13 @@ class _ProjectMainPageState extends State<ProjectMainPage> {
 
   List<Widget> _children = [
     ProjectSchedulePage(),
+    ProjectFilePage(),
     ProjectSchedulePage(),
     ProjectSchedulePage(),
-    ProjectSchedulePage()
   ];
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       body: _children[_selectedMenuIndex],
       bottomNavigationBar: Container(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/circle_avator_widget.dart';
 import 'package:together_android/constant.dart';
-import 'package:together_android/model/live_project_model.dart';
+import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/page/after_login/make_project/make_project_page.dart';
 import 'package:together_android/page/after_project/project_main_page.dart';
 
@@ -165,9 +165,18 @@ class _LiveProjectCardsState extends State<LiveProjectCards> {
         backgroundColor: Colors.green.withOpacity(0.5),
         onPressed: () {
           Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => MakeProjectBody()));
+              .push(MaterialPageRoute(builder: (context) => MakeProjectBody()))
+              .then((value) => setState(() {
+                    if (value != null) {
+                      value as LiveProject;
+                      widget.projects.add(value);
+                    }
+                  }));
         },
-        child: Icon(Icons.add),
+        child: Icon(
+          Icons.post_add,
+          size: 32,
+        ),
       ),
     );
   }

@@ -56,3 +56,59 @@ class _EmptyDataDisplayState extends State<EmptyDataDisplay> {
     );
   }
 }
+
+class EmptyFileDataDisplay extends StatefulWidget {
+  const EmptyFileDataDisplay({Key? key}) : super(key: key);
+
+  @override
+  _EmptyFileDataDisplayState createState() => _EmptyFileDataDisplayState();
+}
+
+class _EmptyFileDataDisplayState extends State<EmptyFileDataDisplay> {
+  @override
+  Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+    return Scaffold(
+      body: Column(
+        children: [
+          Container(
+            width: width,
+            height: height * 0.5,
+            child: Image.asset('assets/empty.png'),
+          ),
+          Text(
+            "공유한 파일이 없습니다.",
+            style:
+                TextStyle(fontSize: width * 0.048, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            "새로운 파일을 업로드 하세요",
+            style:
+                TextStyle(fontSize: width * 0.042, color: Colors.grey.shade500),
+          ),
+          SizedBox(
+            height: height * 0.08,
+          ),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  minimumSize: Size(width * 0.6, height * 0.1),
+                  primary: Colors.green.withOpacity(0.5)),
+              onPressed: () {
+                // Navigator.of(context).push(
+                //     MaterialPageRoute(builder: (context) => MakeProjectBody()));
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud_upload),
+                  Text("파일 업로드 하기"),
+                ],
+              ))
+        ],
+      ),
+    );
+  }
+}

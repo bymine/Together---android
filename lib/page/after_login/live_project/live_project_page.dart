@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/componet/empty_data_display.dart';
 import 'package:together_android/componet/live_project_cards.dart';
 import 'package:together_android/constant.dart';
-import 'package:together_android/model/sign_in_model.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
 
 class LiveProjectBody extends StatefulWidget {

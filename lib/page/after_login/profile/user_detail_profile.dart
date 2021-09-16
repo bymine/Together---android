@@ -13,10 +13,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/componet/bottom_sheet_top_bar.dart';
 import 'package:together_android/componet/textfield_widget.dart';
 import 'package:together_android/constant.dart';
-import 'package:together_android/model/hobby_model.dart';
-import 'package:together_android/model/invitaion_model.dart';
-import 'package:together_android/model/my_profile_model.dart';
-import 'package:together_android/model/sign_in_model.dart';
+import 'package:together_android/model/after_login_model/hobby_model.dart';
+import 'package:together_android/model/after_login_model/invitaion_model.dart';
+import 'package:together_android/model/after_login_model/my_profile_model.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_login/profile/user_invitaion_page.dart';
 import 'package:together_android/page/after_login/profile/user_schedule_page.dart';
 import 'package:together_android/page/before_login/sign_in_page.dart';
@@ -618,7 +618,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         listen: false)
                                     .userIdx;
 
-                                final code = await togetherPostAPI(
+                                await togetherPostAPI(
                                   "/user/editNickname",
                                   jsonEncode(
                                     {
@@ -743,7 +743,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         listen: false)
                                     .userIdx;
 
-                                final code = await togetherPostAPI(
+                                await togetherPostAPI(
                                   "/user/editEmailPhone",
                                   jsonEncode(
                                     {
@@ -978,7 +978,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         listen: false)
                                     .userIdx;
 
-                                final code = await togetherPostAPI(
+                                await togetherPostAPI(
                                   "/user/editEmailPhone",
                                   jsonEncode(
                                     {

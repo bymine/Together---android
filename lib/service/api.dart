@@ -1,13 +1,16 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:together_android/model/hobby_model.dart';
-import 'package:together_android/model/invitaion_model.dart';
-import 'package:together_android/model/live_project_model.dart';
-import 'package:together_android/model/my_profile_model.dart';
-import 'package:together_android/model/sign_in_model.dart';
-import 'package:together_android/model/user_profile_model.dart';
-import 'package:together_android/page/after_login/profile/user_schedule_page.dart';
+import 'package:together_android/model/after_login_model/hobby_model.dart';
+import 'package:together_android/model/after_login_model/invitaion_model.dart';
+import 'package:together_android/model/after_login_model/live_project_model.dart';
+import 'package:together_android/model/after_login_model/my_profile_model.dart';
+import 'package:together_android/model/after_login_model/private_schedule_model.dart';
+import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
+import 'package:together_android/model/after_project_model/project_file_version_model.dart';
+import 'package:together_android/model/after_project_model/project_schedule_model.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/model/after_login_model/user_profile_model.dart';
 
 String serverUrl = "http://101.101.216.93:8080";
 //String serverUrl = "http://10.0.2.2:8080";
@@ -36,6 +39,12 @@ Future togetherGetAPI(String service, String parameter) async {
     case "/user/getUserSchedules":
       List returnData = jsonDecode(utf8.decode(response.bodyBytes))
           .map<Event>((json) => Event.fromJson(json))
+          .toList();
+      return returnData;
+
+    case "/project/main":
+      List returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<Schedule>((json) => Schedule.fromJson(json))
           .toList();
       return returnData;
 
@@ -70,6 +79,19 @@ Future togetherGetAPI(String service, String parameter) async {
     case "/project/getTagList":
       var parsedData = json.decode(utf8.decode(response.bodyBytes));
       return parsedData;
+
+    case "/file/main":
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<SimpleFile>((json) => SimpleFile.fromJson(json))
+          .toList();
+      return returnData;
+
+    case "/file/version":
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<VersionFile>((json) => VersionFile.fromJson(json))
+          .toList();
+
+      return returnData;
   }
 }
 
