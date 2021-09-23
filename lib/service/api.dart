@@ -6,11 +6,13 @@ import 'package:together_android/model/after_login_model/invitaion_model.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_login_model/my_profile_model.dart';
 import 'package:together_android/model/after_login_model/private_schedule_model.dart';
+import 'package:together_android/model/after_project_model/project_file_detail_model.dart';
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
 import 'package:together_android/model/after_project_model/project_file_version_model.dart';
 import 'package:together_android/model/after_project_model/project_schedule_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/model/after_login_model/user_profile_model.dart';
+import 'package:together_android/page/after_project/project_file/file_reservation_page.dart';
 
 String serverUrl = "http://101.101.216.93:8080";
 //String serverUrl = "http://10.0.2.2:8080";
@@ -90,7 +92,15 @@ Future togetherGetAPI(String service, String parameter) async {
       var returnData = jsonDecode(utf8.decode(response.bodyBytes))
           .map<VersionFile>((json) => VersionFile.fromJson(json))
           .toList();
+      return returnData;
 
+    case "/file/detail":
+      return DetailFile.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+
+    case "/file/detail/reserveFileList":
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<BookingFile>((json) => BookingFile.fromJson(json))
+          .toList();
       return returnData;
   }
 }
@@ -134,6 +144,9 @@ Future togetherPostAPI(String service, String body) async {
       print(response.statusCode);
       print(response.body);
       return response.body;
+
+    case "/file/detail/reserveFile":
+      return response.statusCode;
 
     default:
   }

@@ -1,4 +1,6 @@
-class SimpleFile {
+import 'package:flutter/cupertino.dart';
+
+class SimpleFile extends ChangeNotifier {
   int fileIdx;
   String fileName;
   String fileExt;
@@ -19,5 +21,14 @@ class SimpleFile {
         fileExt: json['file_extension'],
         fileType: json['file_type'],
         fileFlag: json['file_sema_flag']);
+  }
+
+  void setFileService(SimpleFile simpleFile) {
+    this.fileIdx = simpleFile.fileIdx;
+    this.fileName = simpleFile.fileName;
+    this.fileExt = simpleFile.fileExt;
+    this.fileType = simpleFile.fileType;
+
+    notifyListeners();
   }
 }

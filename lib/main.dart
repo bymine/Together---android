@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
+import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/before_login/sign_in_page.dart';
@@ -43,7 +44,14 @@ class MyApp extends StatelessWidget {
                 projectExp: "",
                 startDate: "",
                 endDate: "",
-                photoes: []))
+                photoes: [])),
+        ChangeNotifierProvider(
+            create: (_) => SimpleFile(
+                fileIdx: 0,
+                fileName: "",
+                fileExt: "",
+                fileType: "",
+                fileFlag: ""))
       ],
       child: MaterialApp(
           title: 'Together',

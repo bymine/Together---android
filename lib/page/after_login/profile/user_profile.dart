@@ -52,7 +52,6 @@ class _UserProfileBodyState extends State<UserProfileBody> {
   }
 
   Future fetchProfil() async {
-    print("user/detail_profile api play");
     var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
     return togetherGetAPI("/user/detail_profile", "?user_idx=$userIdx");
   }
