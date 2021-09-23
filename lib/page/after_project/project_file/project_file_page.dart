@@ -34,6 +34,7 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
       body: FutureBuilder<List<SimpleFile>>(
           future: fetchFileSimpleDetail(),
           builder: (context, snapshot) {
+            print("공유 파일 builder 실행");
             if (snapshot.hasData) {
               if (snapshot.data!.isEmpty) {
                 return EmptyFileDataDisplay();
@@ -49,9 +50,10 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
 }
 
 String SvgIconAsset(String type) {
+  type = type.toLowerCase();
   switch (type) {
     case "png":
-      return "assets/svg_icon/pdf.svg";
+      return "assets/svg_icon/png.svg";
 
     case "jpg":
       return "assets/svg_icon/jpg.svg";
