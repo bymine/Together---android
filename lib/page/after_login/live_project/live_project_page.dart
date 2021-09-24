@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/componet/circle_avator_widget.dart';
 import 'package:together_android/componet/empty_data_display.dart';
 import 'package:together_android/constant.dart';
+import 'package:together_android/main.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_login/make_project/make_project_page.dart';
@@ -77,6 +78,7 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
                               .gradientTemplate[index % 5].colors;
                           return GestureDetector(
                             onTap: () {
+                              chatRoom = project.projectIdx;
                               Provider.of<LiveProject>(context, listen: false)
                                   .enterProject(project);
                               print("선택한 프로젝트 idx: " +

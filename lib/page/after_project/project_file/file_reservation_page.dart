@@ -24,9 +24,6 @@ class FileReservation extends StatefulWidget {
 class _FileReservationState extends State<FileReservation> {
   late Future future;
 
-  List<BookingFile> allBooking = [];
-  List<BookingFile> dateBooking = [];
-
   DateTime date = DateTime.now();
   var reservations = LinkedHashMap(
     equals: isSameDay,
@@ -43,26 +40,26 @@ class _FileReservationState extends State<FileReservation> {
   @override
   void initState() {
     super.initState();
-    fetchBooking().then((value) => setState(() {
-          allBooking = value;
-          allBooking.forEach((book) {
-            DateTime start = DateTime.parse(book.startTime);
-            DateTime end = DateTime.parse(book.endTime);
+    // fetchBooking().then((value) => setState(() {
+    //       allBooking = value;
+    //       allBooking.forEach((book) {
+    //         DateTime start = DateTime.parse(book.startTime);
+    //         DateTime end = DateTime.parse(book.endTime);
 
-            int startCode = getHashCode(start);
-            int endCode = getHashCode(end);
+    //         int startCode = getHashCode(start);
+    //         int endCode = getHashCode(end);
 
-            for (startCode = startCode;
-                startCode <= endCode;
-                startCode = startCode + 1000000) {
-              List<BookingFile> list =
-                  reservations[getDateTime(startCode)] ?? [];
-              list.add(book);
-              reservations[getDateTime(startCode)] = list;
-            }
-          });
-          dateBooking = _getBookingFiles(date);
-        }));
+    //         for (startCode = startCode;
+    //             startCode <= endCode;
+    //             startCode = startCode + 1000000) {
+    //           List<BookingFile> list =
+    //               reservations[getDateTime(startCode)] ?? [];
+    //           list.add(book);
+    //           reservations[getDateTime(startCode)] = list;
+    //         }
+    //       });
+    //       dateBooking = _getBookingFiles(date);
+    //     }));
   }
 
   Future<List<BookingFile>> fetchBooking() async {
@@ -83,75 +80,92 @@ class _FileReservationState extends State<FileReservation> {
       appBar: AppBar(
         title: Text("파일 예약"),
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(8),
-            width: width,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      date = date.add(Duration(days: -1));
-                      dateBooking = _getBookingFiles(date);
-                    });
-                  },
-                  icon: Icon(
-                    Icons.chevron_left,
-                    size: 32,
-                  ),
-                ),
-                Text(
-                  toDate(date),
-                  style: TextStyle(fontSize: width * 0.048),
-                ),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      date = date.add(Duration(days: 1));
-                      dateBooking = _getBookingFiles(date);
-                    });
-                  },
-                  icon: Icon(
-                    Icons.chevron_right,
-                    size: 32,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              child: Timeline.tileBuilder(
-                builder: TimelineTileBuilder.fromStyle(
-                    contentsAlign: ContentsAlign.alternating,
-                    itemCount: dateBooking.length,
-                    contentsBuilder: (context, i) {
-                      var book = dateBooking;
-                      return Container(
-                        child: Card(
-                          child: Column(
-                            children: [
-                              Text(dateBooking[i].user),
-                              Text(
-                                toTime(DateTime.parse(
-                                        dateBooking[i].startTime)) +
-                                    " ~ " +
-                                    toTime(
-                                        DateTime.parse(dateBooking[i].endTime)),
-                              )
-                            ],
+      body: FutureBuilder(
+          future: fetchBooking(),
+          builder: (context, snapsot) {
+            print("builder 실행");
+            //print(snapsot.data);
+            List<BookingFile> allBooking = [];
+            List<BookingFile> dateBooking = [];
+
+            if (snapsot.hasData) {
+              if (snapsot.data != null) {
+                allBooking = snapsot.data as List<BookingFile>;
+              }
+              print(allBooking.length);
+              return Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    width: width,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              date = date.add(Duration(days: -1));
+                              // dateBooking = _getBookingFiles(date);
+                            });
+                          },
+                          icon: Icon(
+                            Icons.chevron_left,
+                            size: 32,
                           ),
                         ),
-                      );
-                    }),
-              ),
-            ),
-          )
-        ],
-      ),
+                        Text(
+                          toDate(date),
+                          style: TextStyle(fontSize: width * 0.048),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              date = date.add(Duration(days: 1));
+                              // dateBooking = _getBookingFiles(date);
+                            });
+                          },
+                          icon: Icon(
+                            Icons.chevron_right,
+                            size: 32,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      child: Timeline.tileBuilder(
+                        builder: TimelineTileBuilder.fromStyle(
+                            contentsAlign: ContentsAlign.alternating,
+                            itemCount: allBooking.length,
+                            contentsBuilder: (context, i) {
+                              return Container(
+                                child: Card(
+                                  child: Column(
+                                    children: [
+                                      Text(allBooking[i].user),
+                                      Text(
+                                        toTime(DateTime.parse(
+                                                allBooking[i].startTime)) +
+                                            " ~ " +
+                                            toTime(DateTime.parse(
+                                                allBooking[i].endTime)),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                      ),
+                    ),
+                  )
+                ],
+              );
+            } else if (snapsot.hasError) {
+              return Text("error");
+            }
+            return CircularProgressIndicator();
+          }),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           showModalBottomSheet(
@@ -186,7 +200,9 @@ class _FileReservationState extends State<FileReservation> {
                                           startDate.toIso8601String(),
                                       'end_datetime': endDate.toIso8601String(),
                                     }));
-                                if (code == 200) Navigator.of(context).pop();
+                                if (code == 200) {
+                                  Navigator.of(context).pop();
+                                }
                               }),
                           Container(
                             padding: EdgeInsets.symmetric(
@@ -403,9 +419,7 @@ class _FileReservationState extends State<FileReservation> {
                     ),
                   );
                 });
-              }).then((value) => setState(() {
-                dateBooking = _getBookingFiles(date);
-              }));
+              }).then((value) => setState(() {}));
         },
         child: Icon(Icons.edit),
       ),

@@ -214,7 +214,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
               },
               steps: [
                 Step(
-                  title: Text("프로젝트 생성"),
+                  title: Text("생성"),
                   content: Container(
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -261,7 +261,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                       : StepState.disabled,
                 ),
                 Step(
-                  title: Text('세부 설정1'),
+                  title: Text('세부 설정'),
                   content: Container(
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -395,7 +395,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                       : StepState.disabled,
                 ),
                 Step(
-                  title: Text('세부 설정2'),
+                  title: Text('세부 설정'),
                   content: Container(
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(

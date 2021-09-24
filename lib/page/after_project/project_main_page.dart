@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:together_android/page/after_project/project_chat/project_chat_page.dart';
 import 'package:together_android/page/after_project/project_file/project_file_page.dart';
 import 'package:together_android/page/after_project/project_schedule/project_schedule_page.dart';
-import 'package:together_android/page/after_project/project_setting/project_setting_page.dart';
 
 class ProjectMainPage extends StatefulWidget {
   const ProjectMainPage({Key? key}) : super(key: key);
@@ -17,9 +17,24 @@ class _ProjectMainPageState extends State<ProjectMainPage> {
   List<Widget> _children = [
     ProjectSchedulePage(),
     ProjectFilePage(),
-    ProjectSchedulePage(),
+    ProjectChatPage(),
     ProjectSchedulePage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    stompClient.activate();
+  }
+
+  @override
+  void dispose() {
+    print("deactive");
+
+    stompClient.deactivate();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;

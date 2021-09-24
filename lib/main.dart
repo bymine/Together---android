@@ -9,6 +9,8 @@ import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/before_login/sign_in_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+int chatRoom = 0;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

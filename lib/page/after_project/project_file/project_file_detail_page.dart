@@ -72,16 +72,27 @@ class _FileDetailPageState extends State<FileDetailPage> {
                               ? MainAxisAlignment.spaceBetween
                               : MainAxisAlignment.spaceEvenly,
                           children: [
-                            Container(
-                                padding: EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.orange.withOpacity(0.4)),
-                                child: Icon(
-                                  Icons.download,
-                                  color: Colors.orange,
-                                  size: 32,
-                                )),
+                            GestureDetector(
+                              onTap: () async {
+                                var fileIdx = Provider.of<SimpleFile>(context,
+                                        listen: false)
+                                    .fileIdx;
+
+                                var bytes = await togetherGetAPI(
+                                    "/file/detail/download/read", "/$fileIdx");
+                                print(bytes);
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.orange.withOpacity(0.4)),
+                                  child: Icon(
+                                    Icons.download,
+                                    color: Colors.orange,
+                                    size: 32,
+                                  )),
+                            ),
                             detialFile.fileType == "All"
                                 ? GestureDetector(
                                     onTap: () {

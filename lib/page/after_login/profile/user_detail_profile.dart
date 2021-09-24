@@ -528,11 +528,11 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         BottomSheetTopBar(
                                             title: "관심사 변경",
                                             onPressed: () async {
-                                              var userIdx =
-                                                  Provider.of<SignInModel>(
-                                                          context,
-                                                          listen: false)
-                                                      .userIdx;
+                                              // var userIdx =
+                                              //     Provider.of<SignInModel>(
+                                              //             context,
+                                              //             listen: false)
+                                              //         .userIdx;
 
                                               //Navigator.of(context).pop();
                                             }),

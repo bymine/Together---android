@@ -8,7 +8,6 @@ import 'package:group_button/group_button.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines/timelines.dart';
 import 'package:together_android/componet/bottom_sheet_top_bar.dart';
-import 'package:together_android/componet/empty_data_display.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
@@ -76,7 +75,7 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                           fontSize: width * 0.042, color: Colors.grey.shade500),
                     ),
                     SizedBox(
-                      height: height * 0.08,
+                      height: height * 0.04,
                     ),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
