@@ -1145,7 +1145,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                                   phoneController.text);
                                               var code = await togetherGetAPI(
                                                   "/user/checkDeviceValidation",
-                                                  "?validation_code=${phoneAuthController.text}&code_type=P&user_device=${phone}");
+                                                  "?validation_code=${phoneAuthController.text}&code_type=P&user_device=$phone");
                                               print(code);
                                               phoneAuthFlag.value = code;
                                               if (phoneAuthFlag.value ==

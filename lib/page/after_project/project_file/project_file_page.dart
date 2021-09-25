@@ -249,13 +249,16 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                                           listen: false)
                                       .setFileService(snapshot.data![index]);
 
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (context) => FileDetailPage(
-                                            fileName: snapshot
-                                                    .data![index].fileName +
-                                                "." +
-                                                snapshot.data![index].fileExt,
-                                          )));
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(
+                                          builder: (context) => FileDetailPage(
+                                                fileName: snapshot
+                                                        .data![index].fileName +
+                                                    "." +
+                                                    snapshot
+                                                        .data![index].fileExt,
+                                              )))
+                                      .then((value) => setState(() {}));
                                 },
                                 leading: Container(
                                     width: width * 0.12,
@@ -265,7 +268,7 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                                             right: BorderSide(
                                                 width: 1, color: Colors.grey))),
                                     child: SvgPicture.asset(
-                                      SvgIconAsset(
+                                      svgIconAsset(
                                           snapshot.data![index].fileExt),
                                       // color: titleColor,
                                       fit: BoxFit.fill,
@@ -677,7 +680,7 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
   }
 }
 
-String SvgIconAsset(String type) {
+String svgIconAsset(String type) {
   type = type.toLowerCase();
   switch (type) {
     case "png":

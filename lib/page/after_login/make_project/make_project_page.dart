@@ -55,8 +55,12 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
     continued() async {
       if (_currentStep == 0) {
         if (makeStep1.currentState!.validate()) {
-          _currentStep < 2 ? setState(() => _currentStep += 1) : null;
+          // _currentStep < 2 ? setState(() => _currentStep += 1) : null;
 
+          if (_currentStep < 2)
+            setState(() {
+              _currentStep += 1;
+            });
           var parsedNickName = await togetherPostAPI(
               '/project/searchMember',
               jsonEncode({
@@ -90,7 +94,11 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
         print(tag);
         print(mappingTag);
 
-        _currentStep < 2 ? setState(() => _currentStep += 1) : null;
+        //_currentStep < 2 ? setState(() => _currentStep += 1) : null;
+        if (_currentStep < 2)
+          setState(() {
+            _currentStep += 1;
+          });
       } else if (_currentStep == 2) {
         List<String> photo = [];
         photo.add("http://101.101.216.93:8080/images/" +
@@ -127,7 +135,12 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
 
     cancel() {
       print("cancel");
-      _currentStep > 0 ? setState(() => _currentStep -= 1) : null;
+      //_currentStep > 0 ? setState(() => _currentStep -= 1) : null;
+
+      if (_currentStep < 0)
+        setState(() {
+          _currentStep -= 1;
+        });
     }
 
     tapped(int step) {

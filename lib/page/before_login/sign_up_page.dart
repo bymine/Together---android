@@ -64,13 +64,21 @@ class _SignUpPageState extends State<SignUpPage> {
         if (signupStep1.currentState!.validate()) {
           print("이메일 플레그: " + emailFlag);
           print("이메일 인증 상태: " + emailCode.value);
-          _currentStep < 2 ? setState(() => _currentStep += 1) : null;
+          //_currentStep < 2 ? setState(() => _currentStep += 1) :null ;
+          if (_currentStep < 2)
+            setState(() {
+              _currentStep += 1;
+            });
         }
       } else if (_currentStep == 1) {
         if (signupStep2.currentState!.validate()) {
           print("휴대폰 플레그: " + phoneFlag);
           print("이메일 인증 상태: " + phoneCode.value);
-          _currentStep < 2 ? setState(() => _currentStep += 1) : null;
+          // _currentStep < 2 ? setState(() => _currentStep += 1) : null;
+          if (_currentStep < 2)
+            setState(() {
+              _currentStep += 1;
+            });
         }
       } else if (_currentStep == 2) {
         if (signupStep3.currentState!.validate()) {
@@ -110,7 +118,12 @@ class _SignUpPageState extends State<SignUpPage> {
 
     cancel() {
       print("cancel");
-      _currentStep > 0 ? setState(() => _currentStep -= 1) : null;
+      // _currentStep > 0 ? setState(() => _currentStep -= 1) : null;
+
+      if (_currentStep > 0)
+        setState(() {
+          _currentStep -= 1;
+        });
     }
 
     tapped(int step) {

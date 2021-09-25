@@ -50,6 +50,42 @@ String toTime(DateTime dateTime) {
   return '$time';
 }
 
+String toDateTimeISO(String iso) {
+  DateTime dateTime = DateTime.parse(iso);
+  final date = DateFormat('yyyy년 M월 d일').format(dateTime);
+  final time = DateFormat('HH:mm').format(dateTime);
+
+  return '$date $time';
+}
+
+String toDateISO(String iso) {
+  DateTime dateTime = DateTime.parse(iso);
+  final date = DateFormat('yyyy년 M월 d일').format(dateTime);
+
+  return '$date';
+}
+
+String toDateDaysISO(String iso) {
+  DateTime dateTime = DateTime.parse(iso);
+  final date = DateFormat('yyyy년 M월 d일 E요일', 'ko-KR').format(dateTime);
+
+  return '$date';
+}
+
+String toTimeISO(String iso) {
+  DateTime dateTime = DateTime.parse(iso);
+  final time = DateFormat.Hm().format(dateTime);
+
+  return '$time';
+}
+
+String toAMPMTimeISO(String iso) {
+  DateTime dateTime = DateTime.parse(iso);
+  final time = DateFormat("a h시m분", "ko-KR").format(dateTime);
+
+  return '$time';
+}
+
 String projectEnumFormat(String value) {
   switch (value) {
     case "상":
@@ -88,6 +124,13 @@ DateTime getDateTime(int hash) {
   int year = (hash % 1000000) % 10000;
 
   return DateTime(year, month, day);
+}
+
+int chekcSameTimeChat(String iso) {
+  DateTime dateTime = DateTime.parse(iso);
+
+  int hash = getHashCode(dateTime);
+  return hash + dateTime.hour * 100 + dateTime.minute;
 }
 
 String licenseToString(String license1, String license2, String license3) {

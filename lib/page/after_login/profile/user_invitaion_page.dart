@@ -8,6 +8,7 @@ import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
 
+// ignore: must_be_immutable
 class UserInviationPage extends StatefulWidget {
   List<Invitaion> invitaion;
   UserInviationPage({required this.invitaion});

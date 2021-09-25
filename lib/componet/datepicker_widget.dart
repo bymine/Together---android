@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:together_android/utils.dart';
 
+// ignore: must_be_immutable
 class DatePickerWidget extends StatefulWidget {
   DateTime selectedDate;
 

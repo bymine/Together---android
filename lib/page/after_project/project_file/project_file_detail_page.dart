@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_project_model/project_file_detail_model.dart';
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_project/project_file/file_reservation_page.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
@@ -35,6 +41,9 @@ class _FileDetailPageState extends State<FileDetailPage> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+    var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
+    var projectIdx =
+        Provider.of<LiveProject>(context, listen: false).projectIdx;
     var fileIdx = Provider.of<SimpleFile>(context, listen: false).fileIdx;
     print(fileIdx);
     return Scaffold(
@@ -74,13 +83,15 @@ class _FileDetailPageState extends State<FileDetailPage> {
                           children: [
                             GestureDetector(
                               onTap: () async {
-                                var fileIdx = Provider.of<SimpleFile>(context,
-                                        listen: false)
-                                    .fileIdx;
+                                final ext = await getExternalStorageDirectory();
 
                                 var bytes = await togetherGetAPI(
                                     "/file/detail/download/read", "/$fileIdx");
                                 print(bytes);
+
+                                //파일 쓰기
+                                File("${ext!.path}/${widget.fileName}")
+                                    .writeAsBytes(bytes);
                               },
                               child: Container(
                                   padding: EdgeInsets.all(8),
@@ -127,16 +138,33 @@ class _FileDetailPageState extends State<FileDetailPage> {
                                       size: 32,
                                     ))
                                 : Container(),
-                            Container(
-                                padding: EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.blue.withOpacity(0.4)),
-                                child: Icon(
-                                  Icons.delete,
-                                  color: Colors.blue,
-                                  size: 32,
-                                )),
+                            GestureDetector(
+                              onTap: () async {
+                                var code = await togetherPostAPI(
+                                    "/file/detail/deleteFile",
+                                    jsonEncode({
+                                      'user_idx': userIdx,
+                                      'project_idx': projectIdx,
+                                      'file_idx': fileIdx
+                                    }));
+                                print(code.toString());
+                                if (code.toString() == "Leader") {
+                                  Navigator.of(context).pop();
+                                } else if (code == "Member") {
+                                  setState(() {});
+                                }
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.blue.withOpacity(0.4)),
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.blue,
+                                    size: 32,
+                                  )),
+                            ),
                           ],
                         ),
                       ),

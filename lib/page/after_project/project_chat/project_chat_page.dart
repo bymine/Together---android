@@ -24,11 +24,6 @@ StompClient stompClient = StompClient(
         destination: '/return/message/$chatRoom',
         callback: (frame) {
           print('ddd');
-          var result = ChatMessage.fromJson(json.decode(frame.body!));
-          //addMessage.add(result);
-
-          //print(addMessage.length);
-          // print("frame: " + frame.toString());
         },
       );
     },
@@ -80,13 +75,17 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
     String userName = Provider.of<SignInModel>(context).userName;
     String userPhoto = Provider.of<SignInModel>(context).userPhoto;
     int projectIdx = Provider.of<LiveProject>(context).projectIdx;
+    String projectName = Provider.of<LiveProject>(context).projectName;
+
     print(stompClient.connected);
     return Scaffold(
       backgroundColor: Colors.green[50],
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('프로젝트$projectIdx 채팅방'),
+        title: Text(
+          projectName + " 채팅방",
+          maxLines: 1,
+        ),
       ),
       body: Container(
         child: Column(
@@ -105,31 +104,81 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
                         chatList = [];
                         var list = snapshot.data as List<ChatMessage>;
                         for (var item in list) {
-                          chatList.add(item);
+                          chatList.insert(0, item);
                         }
                         for (var item in addMessage) {
                           chatList.insert(0, item);
                         }
 
-                        print(chatList.length);
-                        print("StreamBuilder 실행");
-                        return ListView.builder(
-                          // physics: NeverScrollableScrollPhysics(),
-                          controller: _scrollController,
-                          shrinkWrap: true,
-                          reverse: true,
-                          itemCount: chatList.length,
-                          itemBuilder: (context, index) {
-                            ChatMessage streamChat = chatList[index];
-                            return buildChatMessage(
-                                a: streamChat, userIdx: userIdx);
-                          },
-                        );
+                        if (chatList.length != 0) {
+                          return ListView.builder(
+                            // physics: NeverScrollableScrollPhysics(),
+                            controller: _scrollController,
+                            shrinkWrap: true,
+                            reverse: true,
+                            itemCount: chatList.length,
+                            itemBuilder: (context, index) {
+                              int count = index;
+                              ChatMessage streamChat = chatList[count];
+
+                              if (count == chatList.length - 1) {
+                                return Column(
+                                  children: [
+                                    buildTimeline(
+                                        date: streamChat.sendDateTime),
+                                    buildChatMessage(
+                                        a: streamChat,
+                                        userIdx: userIdx,
+                                        samePeople: count == 0
+                                            ? 0
+                                            : chatList[count - 1].userIdx,
+                                        sameTimeChat: count == 0
+                                            ? "recently"
+                                            : chatList[count - 1].sendDateTime)
+                                  ],
+                                );
+                              } else if (getHashCode(DateTime.parse(
+                                      streamChat.sendDateTime)) ==
+                                  getHashCode(DateTime.parse(
+                                      chatList[count + 1].sendDateTime))) {
+                                return buildChatMessage(
+                                    a: streamChat,
+                                    userIdx: userIdx,
+                                    samePeople: count == 0
+                                        ? 0
+                                        : chatList[count - 1].userIdx,
+                                    sameTimeChat: count == 0
+                                        ? "recently"
+                                        : chatList[count - 1].sendDateTime);
+                              } else {
+                                return Column(
+                                  children: [
+                                    buildTimeline(
+                                        date: streamChat.sendDateTime),
+                                    buildChatMessage(
+                                        a: streamChat,
+                                        userIdx: userIdx,
+                                        samePeople: count == 0
+                                            ? 0
+                                            : chatList[count - 1].userIdx,
+                                        sameTimeChat: count == 0
+                                            ? "recently"
+                                            : chatList[count - 1].sendDateTime)
+                                  ],
+                                );
+                              }
+                            },
+                          );
+                        } else {
+                          return Center(
+                            child: Text("대화 내역이 없습니다.."),
+                          );
+                        }
                       } else if (snapshot.hasError) {
                         return Text('${snapshot.error}');
                       }
                       return Center(
-                        child: Text("대화 내역이 없습니다.."),
+                        child: CircularProgressIndicator(),
                       );
                     }),
               ),
@@ -161,8 +210,6 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
           .toList();
       _streamController.add(a);
     }
-
-    //_streamController.add();
   }
 
   Widget buildSendMessage(
@@ -201,25 +248,6 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
                       // 'chat_message_body': _textEditingController.text
                     }));
 
-                // stompClient.subscribe(
-                //   destination: '/return/message/$chatRoom',
-                //   callback: (frame) {
-                //     print('새로운 메세지');
-                //     var result = ChatMessage.fromJson(json.decode(frame.body!));
-                //     addMessage.add(result);
-                //     setState(() {});
-                //     //print(addMessage.length);
-                //     // print("frame: " + frame.toString());
-                //   },
-                // );
-                var result;
-
-                // stompClient.subscribe(
-                //   destination: '/return/message/$projectIdx',
-                //   callback: (frame) {
-                //     print('subscribe 실행');
-                //     result = ChatMessage.fromJson(json.decode(frame.body!));
-
                 setState(() {
                   print("setState 실행");
                   addMessage.add(ChatMessage(
@@ -231,68 +259,142 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
                 });
 
                 _textEditingController.clear();
-                // Timer(Duration(milliseconds: 100),
-                //     () => _scrollController.position.maxScrollExtent);
               },
             )
           ],
         ),
       );
 
-  Widget buildChatMessage({required ChatMessage a, required int userIdx}) =>
-      Container(
-        padding: EdgeInsets.symmetric(vertical: 10),
+  Widget buildTimeline({required String date}) => Container(
+        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: a.userIdx != userIdx
-              ? MainAxisAlignment.start
-              : MainAxisAlignment.end,
           children: [
-            if (a.userIdx != userIdx)
-              Column(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        border: Border.all(width: 5, color: Colors.grey),
-                        image: DecorationImage(
-                            fit: BoxFit.fill,
-                            image: NetworkImage(
-                                "http://101.101.216.93:8080/images/" +
-                                    a.userPhoto))),
-                  ),
-                  Text(a.userName)
-                ],
-              ),
-            Flexible(
-              child: Container(
-                padding:
-                    EdgeInsets.only(left: 14, right: 14, top: 10, bottom: 10),
-                child: Align(
-                  alignment: a.userIdx == userIdx
-                      ? Alignment.topRight
-                      : Alignment.topLeft,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: a.userIdx == userIdx
-                          ? Colors.yellow[300]
-                          : Colors.white,
-                    ),
-                    padding: EdgeInsets.all(16),
-                    child: Text(a.messageBody),
-                  ),
-                ),
-              ),
+            Expanded(
+              child: Divider(thickness: 2, color: Colors.grey),
             ),
-            Container(
-                width: 40,
-                height: 20,
-                child: Text(toTime(DateTime.parse(a.sendDateTime)))),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text(toDateDaysISO(date)),
+            ),
+            Expanded(
+              child: Divider(thickness: 2, color: Colors.grey),
+            ),
           ],
+        ),
+      );
+
+  Widget buildChatMessage(
+          {required ChatMessage a,
+          required int userIdx,
+          required int samePeople,
+          required String sameTimeChat}) =>
+      Container(
+        // decoration: BoxDecoration(border: Border.all(width: 1)),
+        // padding: (sameTimeChat == "recently" || samePeople != a.userIdx)
+        //     ? EdgeInsets.all(30)
+        //     : (chekcSameTimeChat(a.sendDateTime) !=
+        //             chekcSameTimeChat(sameTimeChat))
+        //         ? EdgeInsets.all(30)
+        //         : EdgeInsets.all(0),
+        child: ListTile(
+          leading: a.userIdx != userIdx
+              ? Wrap(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          //border: Border.all(width: 2, color: Colors.grey),
+                          image: DecorationImage(
+                              fit: BoxFit.fill,
+                              image: NetworkImage(
+                                  "http://101.101.216.93:8080/images/" +
+                                      a.userPhoto))),
+                    )
+                  ],
+                )
+              : null,
+          title: Column(
+            crossAxisAlignment: a.userIdx != userIdx
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.end,
+            children: a.userIdx != userIdx
+                ? [
+                    Text(a.userName),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: Container(
+                            margin: EdgeInsets.only(right: 8, top: 4),
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(20),
+                                bottomLeft: Radius.circular(16),
+                                bottomRight: Radius.circular(20),
+                              ),
+                              color: Colors.grey[300],
+                            ),
+                            child: Text(
+                              a.messageBody,
+                            ),
+                          ),
+                        ),
+                        (sameTimeChat == "recently" || samePeople != a.userIdx)
+                            ? Text(toAMPMTimeISO(a.sendDateTime),
+                                textAlign: TextAlign.end,
+                                style: TextStyle(fontSize: 12))
+                            : (chekcSameTimeChat(a.sendDateTime) !=
+                                    chekcSameTimeChat(sameTimeChat))
+                                ? Text(toAMPMTimeISO(a.sendDateTime),
+                                    textAlign: TextAlign.end,
+                                    style: TextStyle(fontSize: 12))
+                                : Container(),
+                      ],
+                    ),
+                  ]
+                : [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        (sameTimeChat == "recently" || samePeople != a.userIdx)
+                            ? Text(toAMPMTimeISO(a.sendDateTime),
+                                textAlign: TextAlign.end,
+                                style: TextStyle(fontSize: 12))
+                            : (chekcSameTimeChat(a.sendDateTime) !=
+                                    chekcSameTimeChat(sameTimeChat))
+                                ? Text(toAMPMTimeISO(a.sendDateTime),
+                                    textAlign: TextAlign.end,
+                                    style: TextStyle(fontSize: 12))
+                                : Container(),
+                        Flexible(
+                          child: Container(
+                            margin: EdgeInsets.only(
+                              left: 8,
+                              top: 4,
+                            ),
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                bottomLeft: Radius.circular(20),
+                                bottomRight: Radius.circular(16),
+                              ),
+                              color: Colors.yellow[300],
+                            ),
+                            child: Text(
+                              a.messageBody,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+          ),
         ),
       );
 }

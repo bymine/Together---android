@@ -7,8 +7,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:timelines/timelines.dart';
 import 'package:together_android/componet/bottom_sheet_top_bar.dart';
 import 'package:together_android/componet/textfield_widget.dart';
-import 'package:together_android/constant.dart';
-import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
@@ -73,7 +71,6 @@ class _FileReservationState extends State<FileReservation> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Colors.green[50],
