@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -21,24 +22,26 @@ class FileDetailPage extends StatefulWidget {
 }
 
 class _FileDetailPageState extends State<FileDetailPage> {
-  late Future future;
+  //late Future future;
+
+  StreamController _streamController = StreamController.broadcast();
 
   @override
   void initState() {
     super.initState();
-    future = fetchFileDetail();
   }
 
   Future fetchFileDetail() async {
     var fileIdx = Provider.of<SimpleFile>(context, listen: false).fileIdx;
 
     var list = togetherGetAPI("/file/detail", "/$fileIdx");
-
     return list;
   }
 
   @override
   Widget build(BuildContext context) {
+    fetchFileDetail().then((value) => _streamController.add(value));
+
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
@@ -51,11 +54,12 @@ class _FileDetailPageState extends State<FileDetailPage> {
         title: Text("파일 세부 사항"),
       ),
       body: SingleChildScrollView(
-        child: FutureBuilder(
-            future: future,
+        child: StreamBuilder(
+            stream: _streamController.stream,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 var detialFile = snapshot.data as DetailFile;
+
                 return Container(
                   padding: EdgeInsets.symmetric(
                       vertical: height * 0.05, horizontal: width * 0.05),
@@ -76,96 +80,75 @@ class _FileDetailPageState extends State<FileDetailPage> {
                                     Offset(0, 3), // changes position of shadow
                               ),
                             ]),
-                        child: Row(
-                          mainAxisAlignment: detialFile.fileType == "All"
-                              ? MainAxisAlignment.spaceBetween
-                              : MainAxisAlignment.spaceEvenly,
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                final ext = await getExternalStorageDirectory();
-
-                                var bytes = await togetherGetAPI(
-                                    "/file/detail/download/read", "/$fileIdx");
-                                print(bytes);
-
-                                //파일 쓰기
-                                File("${ext!.path}/${widget.fileName}")
-                                    .writeAsBytes(bytes);
-                              },
-                              child: Container(
-                                  padding: EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      color: Colors.orange.withOpacity(0.4)),
-                                  child: Icon(
-                                    Icons.download,
-                                    color: Colors.orange,
-                                    size: 32,
-                                  )),
-                            ),
-                            detialFile.fileType == "All"
-                                ? GestureDetector(
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  FileReservation()));
-                                    },
-                                    child: Container(
-                                        padding: EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            color:
-                                                Colors.purple.withOpacity(0.4)),
-                                        child: Icon(
-                                          Icons.event,
-                                          color: Colors.purple,
-                                          size: 32,
-                                        )),
-                                  )
-                                : Container(),
-                            detialFile.fileType == "All"
-                                ? Container(
-                                    padding: EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        color: Colors.pink.withOpacity(0.4)),
-                                    child: Icon(
-                                      Icons.upload_file,
+                        child: Container(
+                          width: double.infinity,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              detialFile.fileType == "All" &&
+                                      detialFile.currentNextFlag == 1 &&
+                                      detialFile.reserveIdx == userIdx
+                                  ? fileButton(
+                                      icon: Icons.upload_file,
                                       color: Colors.pink,
-                                      size: 32,
-                                    ))
-                                : Container(),
-                            GestureDetector(
-                              onTap: () async {
-                                var code = await togetherPostAPI(
-                                    "/file/detail/deleteFile",
-                                    jsonEncode({
-                                      'user_idx': userIdx,
-                                      'project_idx': projectIdx,
-                                      'file_idx': fileIdx
-                                    }));
-                                print(code.toString());
-                                if (code.toString() == "Leader") {
-                                  Navigator.of(context).pop();
-                                } else if (code == "Member") {
-                                  setState(() {});
-                                }
-                              },
-                              child: Container(
-                                  padding: EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      color: Colors.blue.withOpacity(0.4)),
-                                  child: Icon(
-                                    Icons.delete,
-                                    color: Colors.blue,
-                                    size: 32,
-                                  )),
-                            ),
-                          ],
+                                      onTap: () {})
+                                  : Container(),
+                              fileButton(
+                                  icon: Icons.download,
+                                  color: Colors.orange,
+                                  onTap: () async {
+                                    final ext =
+                                        await getExternalStorageDirectory();
+
+                                    var bytes = await togetherGetAPI(
+                                        "/file/detail/download/read",
+                                        "/$fileIdx");
+                                    print(bytes);
+
+                                    //파일 쓰기
+                                    File("${ext!.path}/${widget.fileName}")
+                                        .writeAsBytes(bytes);
+                                  }),
+                              detialFile.fileType == "All"
+                                  ? fileButton(
+                                      icon: Icons.event,
+                                      color: Colors.purple,
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    FileReservation()));
+                                      })
+                                  : Container(),
+                              fileButton(
+                                  icon: Icons.delete,
+                                  color: Colors.blue,
+                                  onTap: () async {
+                                    var code = await togetherPostAPI(
+                                        "/file/detail/deleteFile",
+                                        jsonEncode({
+                                          'user_idx': userIdx,
+                                          'project_idx': projectIdx,
+                                          'file_idx': fileIdx
+                                        }));
+                                    print(code.toString());
+                                    if (code.toString() == "Leader") {
+                                      Navigator.of(context).pop();
+                                    } else if (code.toString() == "Member") {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            '팀장이 최종 삭제하여야합니다.',
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        ),
+                                      );
+                                      setState(() {});
+                                    }
+                                  }),
+                            ],
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -236,31 +219,31 @@ class _FileDetailPageState extends State<FileDetailPage> {
                                         Icons.schedule_outlined,
                                         detialFile.reserveName ==
                                                 "예약된 수정자가 없습니다"
+                                            ? "예약된 시작 시간이 없습니다."
+                                            : detialFile.currentNextFlag == 0
+                                                ? "다음 예약된 수정 시간"
+                                                : "현재 예약된 수정 시간",
+                                        detialFile.reserveName ==
+                                                "예약된 수정자가 없습니다"
                                             ? ""
                                             : (toDateTime(DateTime.parse(
                                                     detialFile.reserveStart)) +
                                                 "  ~  " +
                                                 toTime(DateTime.parse(
                                                     detialFile.reserveEnd))),
-                                        detialFile.reserveName ==
-                                                "예약된 수정자가 없습니다"
-                                            ? "예약된 시작 시간이 없습니다."
-                                            : detialFile.currentNextFlag == 0
-                                                ? "다음 예약된 수정 시간"
-                                                : "현재 예약된 수정 시간",
                                       ),
                                       buildProfileEditForm(
                                         Icons.person,
-                                        detialFile.reserveName ==
-                                                "예약된 수정자가 없습니다"
-                                            ? ""
-                                            : detialFile.reserveName,
                                         detialFile.reserveName ==
                                                 "예약된 수정자가 없습니다"
                                             ? "예약된 수정자가 없습니다"
                                             : detialFile.currentNextFlag == 0
                                                 ? "다음 수정자"
                                                 : "현재 수정자",
+                                        detialFile.reserveName ==
+                                                "예약된 수정자가 없습니다"
+                                            ? ""
+                                            : detialFile.reserveName,
                                       )
                                     ],
                                   )
@@ -275,13 +258,32 @@ class _FileDetailPageState extends State<FileDetailPage> {
                 print(snapshot.error);
               }
 
-              return CircularProgressIndicator();
+              return Center(child: CircularProgressIndicator());
             }),
       ),
     );
   }
 
-  Widget buildProfileEditForm(IconData data, String title, String subtitle) =>
+  fileButton(
+      {required IconData icon,
+      required Color color,
+      required Function()? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: color.withOpacity(0.4)),
+          child: Icon(
+            icon,
+            color: color,
+            size: 32,
+          )),
+    );
+  }
+
+  buildProfileEditForm(IconData data, String title, String subtitle) =>
       Container(
         child: Card(
           child: ListTile(
@@ -297,4 +299,40 @@ class _FileDetailPageState extends State<FileDetailPage> {
           ),
         ),
       );
+
+  // GestureDetector(
+  //                             onTap: () async {
+  //                               var code = await togetherPostAPI(
+  //                                   "/file/detail/deleteFile",
+  //                                   jsonEncode({
+  //                                     'user_idx': userIdx,
+  //                                     'project_idx': projectIdx,
+  //                                     'file_idx': fileIdx
+  //                                   }));
+  //                               print(code.toString());
+  //                               if (code.toString() == "Leader") {
+  //                                 Navigator.of(context).pop();
+  //                               } else if (code.toString() == "Member") {
+  //                                 ScaffoldMessenger.of(context).showSnackBar(
+  //                                   const SnackBar(
+  //                                     content: Text(
+  //                                       '팀장이 최종 삭제하여야합니다.',
+  //                                       style: TextStyle(fontSize: 16),
+  //                                     ),
+  //                                   ),
+  //                                 );
+  //                                 setState(() {});
+  //                               }
+  //                             },
+  //                             child: Container(
+  //                                 padding: EdgeInsets.all(8),
+  //                                 decoration: BoxDecoration(
+  //                                     borderRadius: BorderRadius.circular(8),
+  //                                     color: Colors.blue.withOpacity(0.4)),
+  //                                 child: Icon(
+  //                                   Icons.delete,
+  //                                   color: Colors.blue,
+  //                                   size: 32,
+  //                                 )),
+  //                           ),
 }

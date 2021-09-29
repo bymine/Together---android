@@ -14,8 +14,8 @@ import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/model/after_login_model/user_profile_model.dart';
 import 'package:together_android/page/after_project/project_file/file_reservation_page.dart';
 
-String serverUrl = "http://101.101.216.93:8080";
-//String serverUrl = "http://10.0.2.2:8080";
+//String serverUrl = "http://101.101.216.93:8080";
+String serverUrl = "http://10.0.2.2:8080";
 
 Future togetherGetAPI(String service, String parameter) async {
   final response = await http.get(Uri.parse(serverUrl + service + parameter));
@@ -153,7 +153,7 @@ Future togetherPostAPI(String service, String body) async {
       return response.body;
 
     case "/file/detail/reserveFile":
-      return response.statusCode;
+      return response.body;
 
     case "/file/detail/deleteFile":
       print(response.body);

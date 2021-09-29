@@ -57,6 +57,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
           title: 'Together',
+          debugShowCheckedModeBanner: false,
           theme: ThemeData(
               appBarTheme: AppBarTheme(color: titleColor),
               elevatedButtonTheme: ElevatedButtonThemeData(
