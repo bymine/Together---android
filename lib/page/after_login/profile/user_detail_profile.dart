@@ -134,10 +134,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
           child: IconButton(
               onPressed: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
-                prefs.setString('email', "");
-                prefs.setString('pw', "");
-                prefs.setInt('idx', 0);
-
+                prefs.remove('idx');
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => SignInPage()));
               },

@@ -17,7 +17,7 @@ Future<void> main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   var idx = prefs.getInt('idx');
   print(idx);
-  idx == 0
+  idx != null
       ? runApp(MyApp(
           skip: false,
         ))
@@ -60,10 +60,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
               appBarTheme: AppBarTheme(color: titleColor),
-              elevatedButtonTheme: ElevatedButtonThemeData(
-                  style: ButtonStyle(
-                      //backgroundColor: Color(0xff82C290),
-                      ))),
+              backgroundColor: Colors.white),
           localizationsDelegates: [
             GlobalMaterialLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,

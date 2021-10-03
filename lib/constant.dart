@@ -1,13 +1,50 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-TextStyle appBarStyle = TextStyle(
-  color: Colors.black,
-);
-
-TextStyle sheetHeaderStyle = TextStyle(fontWeight: FontWeight.bold);
+import 'package:google_fonts/google_fonts.dart';
 
 Color titleColor = Colors.green.withOpacity(0.5);
+const Color bluishClr = Color(0xFF4e5ae8);
+const Color yellowClr = Color(0xFFFFB746);
+const Color pinkClr = Color(0xFFff4667);
+
+// appBar title style
+TextStyle get appBarTitleStlye {
+  return GoogleFonts.lato(
+      textStyle: TextStyle(
+          fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white));
+}
+
+// Elevated button style
+ButtonStyle get elevatedStyle {
+  return ElevatedButton.styleFrom(
+    primary: titleColor,
+  );
+}
+
+// textinput style
+TextStyle get headingStyle {
+  return GoogleFonts.lato(
+      textStyle: TextStyle(
+          fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black));
+}
+
+TextStyle get editSubHeadingStyle {
+  return GoogleFonts.lato(
+      textStyle: TextStyle(
+          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey));
+}
+
+TextStyle get editTitleStyle {
+  return GoogleFonts.lato(
+      textStyle: TextStyle(
+          fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black));
+}
+
+TextStyle get editSubTitleStyle {
+  return GoogleFonts.lato(
+      textStyle: TextStyle(
+          fontSize: 14, fontWeight: FontWeight.w400, color: Colors.grey[600]));
+}
 
 class GradientColors {
   final List<Color> colors;

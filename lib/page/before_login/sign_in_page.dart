@@ -20,13 +20,13 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
-  TextEditingController signInEmail = TextEditingController();
-  TextEditingController signInPassword = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController pwController = TextEditingController();
 
   final signInFromKey = GlobalKey<FormState>();
 
-  bool clickEye = true;
-  bool autoLogin = false;
+  bool isHidePw = true;
+  bool isAutoLogin = false;
 
   @override
   Widget build(BuildContext context) {
@@ -95,207 +95,218 @@ class _SignInPageState extends State<SignInPage> {
             child: Container(
               margin: EdgeInsets.symmetric(
                   vertical: height * 0.084, horizontal: width * 0.064),
-              // padding: EdgeInsets.symmetric(
-              //     vertical: height * 0.02, horizontal: width * 0.03),
-              // decoration: BoxDecoration(
-              //   border: Border.all(width: 1, color: Colors.red),
-              // ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Center(
-                    child: Text(
-                      "Together",
-                      style: appBarStyle.copyWith(fontSize: width * 0.12),
-                    ),
-                  ),
+                  Text("Together",
+                      style: appBarTitleStlye.copyWith(
+                          fontSize: 48, color: Colors.black)),
                   SizedBox(
                     height: height * 0.1,
                   ),
-                  TextFormField(
-                    controller: signInEmail,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                        filled: true,
-                        fillColor: Color(0xFFF7F8F9),
-                        hintText: "E-mail",
-                        prefixIcon: Icon(
-                          Icons.email,
-                        )),
-                    validator: (value) {
-                      if (value!.isEmpty) return "E-mail을 입력하세요";
-                    },
-                  ),
+                  _signInField(
+                      hint: "E-mail",
+                      icon: Icons.email,
+                      type: TextInputType.emailAddress,
+                      controller: emailController,
+                      validator: (value) {
+                        if (value!.isEmpty) return "E-mail을 입력하세요";
+                      }),
                   SizedBox(
                     height: height * 0.02,
                   ),
-                  TextFormField(
-                    controller: signInPassword,
-                    obscureText: clickEye,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      filled: true,
-                      fillColor: Color(0xffF7F8F9),
-                      hintText: "Password",
-                      prefixIcon: Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.visibility),
-                        onPressed: () {
-                          setState(() {
-                            clickEye = !clickEye;
-                          });
-                        },
-                      ),
-                    ),
+                  _signInField(
+                    hint: "Password",
+                    icon: Icons.lock,
+                    controller: pwController,
                     validator: (value) {
-                      if (value!.isEmpty) return "Password을 입력하세요";
+                      if (value!.isEmpty) return "PassWord를 입력하세요";
                     },
+                    bool: isHidePw,
+                    widget: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isHidePw = !isHidePw;
+                        });
+                      },
+                      icon: Icon(Icons.visibility),
+                    ),
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Checkbox(
-                          value: autoLogin,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              autoLogin = value!;
-                            });
-                          },
-                        ),
-                      ),
-                      Text("Auto Login")
-                    ],
-                  ),
+                  _autoLoginBox(),
                   SizedBox(
                     height: height * 0.1,
                   ),
-                  Container(
-                    width: width,
-                    height: height * 0.08,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        primary: titleColor,
-                      ),
-                      onPressed: () async {
-                        if (signInFromKey.currentState!.validate()) {
-                          var signInModel = await togetherPostAPI(
-                              '/user/login',
-                              jsonEncode({
-                                "user_email": signInEmail.text,
-                                "user_pw": signInPassword.text
-                              })) as SignInModel;
-                          if (signInModel.signInCode == "success") {
-                            Provider.of<SignInModel>(context, listen: false)
-                                .setSignInSuccess(signInModel);
-
-                            if (autoLogin) {
-                              SharedPreferences prefs =
-                                  await SharedPreferences.getInstance();
-                              prefs.setString('email', signInEmail.text);
-                              prefs.setString('pw', signInPassword.text);
-                              prefs.setInt('idx', signInModel.userIdx);
-                            }
-
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) => MainPage()));
-                          } else {
-                            showAlertDialog(
-                                context,
-                                Container(
-                                  child: Text(
-                                    "로그인 실패",
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.all(width * 0.04),
-                                  child: Text(
-                                    signInModel.signInCode == "wrong_pw"
-                                        ? "비밀번호가 올바르지 않습니다"
-                                        : "이메일이 올바르지 않습니다",
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                []);
-                          }
-                        }
-                      },
-                      child: Text(
-                        '로그인',
-                        style: TextStyle(fontSize: width * 0.064),
-                      ),
-                    ),
-                  ),
+                  _singInButton(width, height, context),
                   SizedBox(
-                    height: height * 0.14,
+                    height: height * 0.1,
                   ),
-                  Container(
-                    width: width,
-                    child: Wrap(
-                      direction: Axis.horizontal,
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => SearchAccountPage(
-                                        type: "email",
-                                      )));
-                            },
-                            child: Text(
-                              "이메일 찾기",
-                              style: TextStyle(color: Colors.black),
-                            )),
-                        Container(
-                          height: 30,
-                          child: VerticalDivider(
-                            width: 3,
-                            thickness: 1,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => SearchAccountPage(
-                                        type: "pw",
-                                      )));
-                            },
-                            child: Text(
-                              "비밀번호 찾기",
-                              style: TextStyle(color: Colors.black),
-                            )),
-                        Container(
-                          height: 30,
-                          child: VerticalDivider(
-                            width: 3,
-                            thickness: 1,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => SignUpPage()));
-                            },
-                            child: Text(
-                              "회원 가입",
-                              style: TextStyle(color: Colors.black),
-                            ))
-                      ],
-                    ),
-                  )
+                  _supportFunction(width, context)
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  TextFormField _signInField(
+      {required String hint,
+      required IconData icon,
+      required TextEditingController controller,
+      required String? Function(String?)? validator,
+      TextInputType? type,
+      bool? bool,
+      Widget? widget}) {
+    return TextFormField(
+        autofocus: false,
+        controller: controller,
+        obscureText: bool ?? false,
+        keyboardType: type,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+          filled: true,
+          fillColor: Color(0xffF7F8F9),
+          hintText: hint,
+          prefixIcon: Icon(icon),
+          suffixIcon: widget,
+        ),
+        validator: validator);
+  }
+
+  _signInFunction(double width) async {
+    if (signInFromKey.currentState!.validate()) {
+      var signInModel = await togetherPostAPI(
+          '/user/login',
+          jsonEncode({
+            "user_email": emailController.text,
+            "user_pw": pwController.text
+          })) as SignInModel;
+      if (signInModel.signInCode == "success") {
+        Provider.of<SignInModel>(context, listen: false)
+            .setSignInSuccess(signInModel);
+
+        if (isAutoLogin) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setInt('idx', signInModel.userIdx);
+        }
+
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => MainPage()));
+      } else {
+        showAlertDialog(
+            context,
+            Container(
+              child: Text(
+                "로그인 실패",
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(width * 0.04),
+              child: Text(
+                signInModel.signInCode == "wrong_pw"
+                    ? "비밀번호가 올바르지 않습니다"
+                    : "이메일이 올바르지 않습니다",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            []);
+      }
+    }
+  }
+
+  _singInButton(double width, double height, BuildContext context) {
+    return Container(
+      width: width,
+      height: height * 0.08,
+      child: ElevatedButton(
+        style: elevatedStyle,
+        onPressed: () async {
+          _signInFunction(width);
+        },
+        child: Text(
+          '로그인',
+          style: TextStyle(fontSize: width * 0.064),
+        ),
+      ),
+    );
+  }
+
+  _autoLoginBox() {
+    return Row(
+      children: [
+        Container(
+          child: Checkbox(
+            value: isAutoLogin,
+            onChanged: (bool? value) {
+              setState(() {
+                isAutoLogin = value!;
+              });
+            },
+          ),
+        ),
+        Text("Auto Login")
+      ],
+    );
+  }
+
+  _supportFunction(double width, BuildContext context) {
+    return Container(
+      width: width,
+      child: Wrap(
+        direction: Axis.horizontal,
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => SearchAccountPage(
+                          type: "email",
+                        )));
+              },
+              child: Text(
+                "이메일 찾기",
+                style: TextStyle(color: Colors.black),
+              )),
+          Container(
+            height: 30,
+            child: VerticalDivider(
+              width: 3,
+              thickness: 1,
+              color: Colors.grey,
+            ),
+          ),
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => SearchAccountPage(
+                          type: "pw",
+                        )));
+              },
+              child: Text(
+                "비밀번호 찾기",
+                style: TextStyle(color: Colors.black),
+              )),
+          Container(
+            height: 30,
+            child: VerticalDivider(
+              width: 3,
+              thickness: 1,
+              color: Colors.grey,
+            ),
+          ),
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => SignUpPage()));
+              },
+              child: Text(
+                "회원 가입",
+                style: TextStyle(color: Colors.black),
+              ))
+        ],
       ),
     );
   }

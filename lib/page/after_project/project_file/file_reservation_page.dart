@@ -1,12 +1,8 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'package:date_picker_timeline/date_picker_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:table_calendar/table_calendar.dart';
-import 'package:timelines/timelines.dart';
 import 'package:together_android/componet/bottom_sheet_top_bar.dart';
 import 'package:together_android/componet/textfield_widget.dart';
 import 'package:together_android/constant.dart';
