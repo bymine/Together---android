@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/after_login_model/hobby_model.dart';
 import 'package:together_android/model/after_login_model/invitaion_model.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
@@ -32,11 +33,18 @@ Future togetherGetAPI(String service, String parameter) async {
     case "/user/validationNickname": // verify nickname
       return response.body;
 
+    case "/user/mypage":
+      return jsonDecode(utf8.decode(response.bodyBytes));
+
     case "/main": // fetch live projects list
-      List returnData = jsonDecode(utf8.decode(response.bodyBytes))
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
           .map<LiveProject>((json) => LiveProject.fromJson(json))
           .toList();
-      return returnData;
+      if (returnData.toString() == "[]") {
+        return;
+      } else {
+        return returnData;
+      }
 
     case "/user/getUserSchedules":
       List returnData = jsonDecode(utf8.decode(response.bodyBytes))
@@ -80,6 +88,27 @@ Future togetherGetAPI(String service, String parameter) async {
 
     case "/project/getTagList":
       var parsedData = json.decode(utf8.decode(response.bodyBytes));
+      return parsedData;
+
+    case "/member/search/cards":
+      print(response.statusCode);
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<MemberResume>((json) => MemberResume.fromJson(json))
+          .toList();
+      return returnData;
+
+    case "/member/search/main":
+      if (response.body == "")
+        return;
+      else {
+        var parsedData =
+            MemberResume.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+        return parsedData;
+      }
+
+    case "/member/search/register":
+      var parsedData =
+          MemberResume.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
       return parsedData;
 
     case "/file/main":
@@ -158,6 +187,20 @@ Future togetherPostAPI(String service, String body) async {
     case "/file/detail/deleteFile":
       print(response.body);
       return response.body;
+
+    default:
+  }
+}
+
+Future togetherPostSpecialAPI(String service, String body, String idx) async {
+  final response = await http.post(Uri.parse(serverUrl + service + idx),
+      headers: {'Content-Type': "application/json"}, body: body);
+  switch (service) {
+    case "/member/search/do":
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<MemberResume>((json) => MemberResume.fromJson(json))
+          .toList();
+      return returnData;
 
     default:
   }

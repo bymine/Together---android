@@ -17,7 +17,7 @@ Future<void> main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   var idx = prefs.getInt('idx');
   print(idx);
-  idx != null
+  idx == null
       ? runApp(MyApp(
           skip: false,
         ))

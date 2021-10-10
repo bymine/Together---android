@@ -1,15 +1,11 @@
 import 'dart:collection';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:together_android/componet/bottom_sheet_top_bar.dart';
-import 'package:together_android/componet/textfield_widget.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_project_model/project_schedule_model.dart';
-import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/page/after_project/project_schedule/add_project_schedule_page.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
 
@@ -68,6 +64,10 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
               schedules[getDateTime(startCode)] = list;
             }
           });
+
+          _selectedSchedule = _getSchdeuleForDay(DateTime.now());
+          if (_selectedSchedule.length >= 2)
+            _calendarFormat = CalendarFormat.twoWeeks;
         }));
   }
 
@@ -105,13 +105,14 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      //backgroundColor: Colors.green[50],
       appBar: AppBar(
         title: Text("프로젝트 일정"),
       ),
       body: Container(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TableCalendar(
               calendarStyle: CalendarStyle(
@@ -152,13 +153,10 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
                 }
               },
             ),
-            Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Daily Task",
-                  style: TextStyle(
-                      fontSize: width * 0.048, fontWeight: FontWeight.bold),
-                )),
+            Text(
+              "Daily Task",
+              style: headingStyle,
+            ),
             Expanded(
                 child: ListView.builder(
                     itemCount: _selectedSchedule.length,
@@ -215,329 +213,34 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
             startDate = _rangeStart!;
             endDate = _rangeEnd ?? startDate;
           } else {
-            startDate = _selectedDay ?? DateTime.now();
-            endDate = _selectedDay ?? DateTime.now();
+            startDate = _focusedDay;
+            endDate = _focusedDay.add(Duration(hours: 1));
           }
-          showModalBottomSheet(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16))),
-              isScrollControlled: true,
-              context: context,
-              builder: (context) {
-                return SafeArea(
-                  child: SingleChildScrollView(
-                    child: StatefulBuilder(builder: (context, setState) {
-                      return Padding(
-                        padding: MediaQuery.of(context).viewInsets,
-                        child: Container(
-                          child: Column(
-                            children: [
-                              BottomSheetTopBar(
-                                  title: "스케줄 추가",
-                                  onPressed: () async {
-                                    var userIdx = Provider.of<SignInModel>(
-                                            context,
-                                            listen: false)
-                                        .userIdx;
-                                    var projectIdx = Provider.of<LiveProject>(
-                                            context,
-                                            listen: false)
-                                        .projectIdx;
-                                    Schedule schedule = Schedule(
-                                        title: titleController.text,
-                                        content: contentController.text,
-                                        startTime: startDate.toIso8601String(),
-                                        endTime: endDate.toIso8601String(),
-                                        projectIdx: projectIdx,
-                                        writedIdx: userIdx);
 
-                                    await togetherPostAPI(
-                                      "/project/addSchedule",
-                                      jsonEncode(schedule.toJson()),
-                                    );
+          Navigator.of(context)
+              .push(MaterialPageRoute(
+                  builder: (context) => AddProjectSchdeule(
+                        startDate: startDate,
+                        endDate: endDate,
+                      )))
+              .then((value) => setState(() {
+                    if (value != null) {
+                      var schedule = value as Schedule;
+                      int from =
+                          getHashCode(DateTime.parse(schedule.startTime));
+                      int to = getHashCode(DateTime.parse(schedule.endTime));
 
-                                    int from = getHashCode(startDate);
-                                    int to = getHashCode(endDate);
-
-                                    for (from = from;
-                                        from <= to;
-                                        from = from + 1000000) {
-                                      List<Schedule> list =
-                                          schedules[getDateTime(from)] ?? [];
-                                      list.add(schedule);
-                                      schedules[getDateTime(from)] = list;
-                                    }
-
-                                    Navigator.of(context).pop();
-                                  }),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.01,
-                                    horizontal: width * 0.02),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            width: 1, color: Colors.grey))),
-                                child: TextFormFieldWidget(
-                                    header: Text("제목"),
-                                    body: TextFormField(
-                                      controller: titleController,
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8)),
-                                      ),
-                                    ),
-                                    footer: null,
-                                    heightPadding: 0),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.01,
-                                    horizontal: width * 0.02),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            width: 1, color: Colors.grey))),
-                                child: TextFormFieldWidget(
-                                    header: Text("세부 내용"),
-                                    body: TextField(
-                                      controller: contentController,
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8)),
-                                      ),
-                                    ),
-                                    footer: null,
-                                    heightPadding: 0),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.01,
-                                    horizontal: width * 0.02),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            width: 1, color: Colors.grey))),
-                                child: TextFormFieldWidget(
-                                    header: Text(
-                                      "시작 시간",
-                                      style: TextStyle(fontSize: width * 0.04),
-                                    ),
-                                    body: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Container(
-                                          width: width * 0.45,
-                                          padding: EdgeInsets.only(
-                                              left: width * 0.004),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(toDate(startDate)),
-                                              IconButton(
-                                                  onPressed: () async {
-                                                    await showDatePicker(
-                                                      context: context,
-                                                      initialDate:
-                                                          DateTime.now(),
-                                                      firstDate: DateTime(2020),
-                                                      lastDate: DateTime(2025),
-                                                    ).then((value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          startDate = value;
-                                                          if (startDate.isAfter(
-                                                              endDate)) {
-                                                            endDate = DateTime(
-                                                              startDate.year,
-                                                              startDate.month,
-                                                              startDate.day,
-                                                            );
-                                                          }
-                                                        });
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(
-                                                      Icons
-                                                          .arrow_drop_down_outlined,
-                                                      size: 32))
-                                            ],
-                                          ),
-                                        ),
-                                        Container(
-                                          width: width * 0.3,
-                                          padding: EdgeInsets.only(
-                                              left: width * 0.02),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(toTime(startDate)),
-                                              IconButton(
-                                                  onPressed: () async {
-                                                    await showTimePicker(
-                                                            context: context,
-                                                            initialTime: TimeOfDay
-                                                                .fromDateTime(
-                                                                    startDate))
-                                                        .then((value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          startDate = DateTime(
-                                                              startDate.year,
-                                                              startDate.month,
-                                                              startDate.day,
-                                                              value.hour,
-                                                              value.minute);
-                                                        });
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(
-                                                      Icons
-                                                          .arrow_drop_down_outlined,
-                                                      size: 32))
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    footer: null,
-                                    heightPadding: 0),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.01,
-                                    horizontal: width * 0.02),
-                                child: TextFormFieldWidget(
-                                    header: Text(
-                                      "종료 시간",
-                                      style: TextStyle(fontSize: width * 0.04),
-                                    ),
-                                    body: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Container(
-                                          width: width * 0.45,
-                                          padding: EdgeInsets.only(
-                                              left: width * 0.004),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(toDate(endDate)),
-                                              IconButton(
-                                                  onPressed: () async {
-                                                    await showDatePicker(
-                                                      context: context,
-                                                      initialDate: startDate,
-                                                      firstDate: startDate,
-                                                      lastDate: DateTime(2025),
-                                                    ).then((value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          endDate = value;
-                                                        });
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(
-                                                      Icons
-                                                          .arrow_drop_down_outlined,
-                                                      size: 32))
-                                            ],
-                                          ),
-                                        ),
-                                        Container(
-                                          width: width * 0.3,
-                                          padding: EdgeInsets.only(
-                                              left: width * 0.02),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(toTime(endDate)),
-                                              IconButton(
-                                                  onPressed: () async {
-                                                    await showTimePicker(
-                                                            context: context,
-                                                            initialTime: TimeOfDay
-                                                                .fromDateTime(
-                                                                    startDate))
-                                                        .then((value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          endDate = DateTime(
-                                                              endDate.year,
-                                                              endDate.month,
-                                                              endDate.day,
-                                                              value.hour,
-                                                              value.minute);
-                                                          if (startDate
-                                                              .isAfter(endDate))
-                                                            endDate = DateTime(
-                                                                endDate.year,
-                                                                endDate.month,
-                                                                endDate.day,
-                                                                startDate.hour +
-                                                                    1,
-                                                                value.minute);
-                                                        });
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(
-                                                      Icons
-                                                          .arrow_drop_down_outlined,
-                                                      size: 32))
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    footer: null,
-                                    heightPadding: 0),
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                );
-              }).then((value) => setState(() {}));
+                      for (from = from; from <= to; from = from + 1000000) {
+                        print(from);
+                        print(to);
+                        List<Schedule> list =
+                            schedules[getDateTime(from)] ?? [];
+                        list.add(schedule);
+                        schedules[getDateTime(from)] = list;
+                      }
+                      _selectedSchedule = _getSchdeuleForDay(startDate);
+                    }
+                  }));
         },
         child: Icon(
           Icons.post_add,

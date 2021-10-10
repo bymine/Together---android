@@ -53,8 +53,10 @@ class _EmptyDataDisplayState extends State<EmptyDataDisplay> {
                   minimumSize: Size(width * 0.6, height * 0.1),
                   primary: Colors.green.withOpacity(0.5)),
               onPressed: () {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => MakeProjectBody()));
+                Navigator.of(context)
+                    .push(MaterialPageRoute(
+                        builder: (context) => MakeProjectBody()))
+                    .then((value) => setState(() {}));
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,

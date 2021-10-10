@@ -126,25 +126,30 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(title: Text("마이 페이지"), actions: [
-        Container(
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.blue.withOpacity(0.4)),
-          child: IconButton(
-              onPressed: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                prefs.remove('idx');
-                Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => SignInPage()));
-              },
-              icon: Icon(
-                Icons.power_settings_new,
-                color: Colors.blue,
-                size: 32,
-              )),
-        ),
-      ]),
+      appBar: AppBar(
+          title: Text(
+            "My Profile",
+          ),
+          actions: [
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.blue.withOpacity(0.4)),
+              child: IconButton(
+                  onPressed: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.remove('idx');
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => SignInPage()));
+                  },
+                  icon: Icon(
+                    Icons.power_settings_new,
+                    color: Colors.blue,
+                    size: 32,
+                  )),
+            ),
+          ]),
       body: SingleChildScrollView(
         child: FutureBuilder(
             future: _fetchData(),

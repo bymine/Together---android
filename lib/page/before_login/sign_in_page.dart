@@ -99,7 +99,7 @@ class _SignInPageState extends State<SignInPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text("Together",
-                      style: appBarTitleStlye.copyWith(
+                      style: headingStyle.copyWith(
                           fontSize: 48, color: Colors.black)),
                   SizedBox(
                     height: height * 0.1,

@@ -7,12 +7,12 @@ const Color bluishClr = Color(0xFF4e5ae8);
 const Color yellowClr = Color(0xFFFFB746);
 const Color pinkClr = Color(0xFFff4667);
 
-// appBar title style
-TextStyle get appBarTitleStlye {
-  return GoogleFonts.lato(
-      textStyle: TextStyle(
-          fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white));
-}
+// // appBar title style
+// TextStyle get appBarTitleStlye {
+//   return GoogleFonts.lato(
+//       textStyle: TextStyle(
+//           fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white));
+// }
 
 // Elevated button style
 ButtonStyle get elevatedStyle {

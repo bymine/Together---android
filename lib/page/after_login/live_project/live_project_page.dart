@@ -22,7 +22,7 @@ class LiveProjectBody extends StatefulWidget {
 class _LiveProjectBodyState extends State<LiveProjectBody> {
   late Future future;
   ValueNotifier<bool> showFloating = ValueNotifier<bool>(false);
-
+  var _changed;
   @override
   void initState() {
     super.initState();
@@ -34,6 +34,13 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
     var idx = prefs.getInt('idx');
 
     if (idx != null) {
+      var userInfo =
+          togetherGetAPI("/user/mypage", "?user_idx=$idx").then((value) {
+        Provider.of<SignInModel>(context, listen: false).userName =
+            value['user_name'];
+        Provider.of<SignInModel>(context, listen: false).userPhoto =
+            value['user_profile_photo'].toString().split('/images/').last;
+      });
       Provider.of<SignInModel>(context, listen: false).userIdx = idx;
       return togetherGetAPI('/main', '?user_idx=$idx');
     } else {
@@ -44,14 +51,20 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
 
   @override
   Widget build(BuildContext context) {
+    var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+    if (_changed == true) {
+      print("updated");
+      future = togetherGetAPI('/main', '?user_idx=$userIdx');
+      _changed = false;
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: titleColor,
         title: Text(
           "My Projects",
-          style: appBarTitleStlye,
         ),
       ),
       body: FutureBuilder(
@@ -59,70 +72,114 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasData) {
             var data = snapshot.data as List;
-            if (data.isEmpty) {
-              showFloating.value = false;
-              return EmptyDataDisplay();
-            } else {
-              showFloating.value = true;
-              snapshot.data as List<LiveProject>;
-              return Stack(
-                children: [
-                  Container(
-                    child: ListView.builder(
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (context, index) {
-                          LiveProject project = snapshot.data[index];
-                          var gradientColor = GradientTemplate
-                              .gradientTemplate[index % 5].colors;
-                          return GestureDetector(
-                            onTap: () {
-                              chatRoom = project.projectIdx;
-                              Provider.of<LiveProject>(context, listen: false)
-                                  .enterProject(project);
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => ProjectMainPage()));
-                            },
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: gradientColor,
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
+            showFloating.value = true;
+            snapshot.data as List<LiveProject>;
+            return Stack(
+              children: [
+                Container(
+                  child: ListView.builder(
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) {
+                        LiveProject project = snapshot.data[index];
+                        var gradientColor =
+                            GradientTemplate.gradientTemplate[index % 5].colors;
+                        return GestureDetector(
+                          onTap: () {
+                            chatRoom = project.projectIdx;
+                            Provider.of<LiveProject>(context, listen: false)
+                                .enterProject(project);
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => ProjectMainPage()));
+                          },
+                          child: Container(
+                              decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: gradientColor,
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          gradientColor.last.withOpacity(0.5),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                      offset: Offset(4, 4),
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            gradientColor.last.withOpacity(0.5),
-                                        blurRadius: 8,
-                                        spreadRadius: 2,
-                                        offset: Offset(4, 4),
-                                      ),
-                                    ],
-                                    borderRadius: BorderRadius.circular(24)),
-                                margin: EdgeInsets.all(10),
-                                child: Column(
-                                  children: [
-                                    projectIntro(width, project),
-                                    SizedBox(
-                                      height: height * 0.01,
-                                    ),
-                                    projectMember(project),
-                                    SizedBox(
-                                      height: height * 0.01,
-                                    ),
-                                    projectData(project),
-                                    SizedBox(
-                                      height: height * 0.02,
-                                    )
                                   ],
-                                )),
-                          );
-                        }),
-                  ),
-                  makeProjectButton(width, context)
-                ],
-              );
-            }
+                                  borderRadius: BorderRadius.circular(24)),
+                              margin: EdgeInsets.all(10),
+                              child: Column(
+                                children: [
+                                  projectIntro(width, project),
+                                  SizedBox(
+                                    height: height * 0.01,
+                                  ),
+                                  projectMember(project),
+                                  SizedBox(
+                                    height: height * 0.01,
+                                  ),
+                                  projectData(project),
+                                  SizedBox(
+                                    height: height * 0.02,
+                                  )
+                                ],
+                              )),
+                        );
+                      }),
+                ),
+                makeProjectButton(width, context, userIdx)
+              ],
+            );
+          }
+          if (snapshot.hasData == false &&
+              snapshot.connectionState == ConnectionState.done) {
+            showFloating.value = false;
+            return Column(
+              children: [
+                Container(
+                  width: width,
+                  height: height * 0.5,
+                  child: Image.asset('assets/empty.png'),
+                ),
+                Text(
+                  "진행 중인 프로젝트가 없습니다.",
+                  style: TextStyle(
+                      fontSize: width * 0.048, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "새로운 프로젝트를 생성 하세요",
+                  style: TextStyle(
+                      fontSize: width * 0.042, color: Colors.grey.shade500),
+                ),
+                SizedBox(
+                  height: height * 0.08,
+                ),
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        minimumSize: Size(width * 0.6, height * 0.1),
+                        primary: Colors.green.withOpacity(0.5)),
+                    onPressed: () {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(
+                              builder: (context) => MakeProjectBody()))
+                          .then((value) => setState(() {
+                                if (value != null) {
+                                  _changed = value;
+                                }
+                              }));
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add),
+                        Text("프로젝트 생성하기"),
+                      ],
+                    ))
+              ],
+            );
           } else if (snapshot.hasError) {
             print("error");
             return Text("$snapshot.error");
@@ -244,7 +301,7 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
     );
   }
 
-  makeProjectButton(double width, BuildContext context) {
+  makeProjectButton(double width, BuildContext context, int userIdx) {
     return Padding(
       padding: EdgeInsets.only(bottom: width * 0.03, right: width * 0.03),
       child: Visibility(
@@ -257,7 +314,11 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
                 Navigator.of(context)
                     .push(MaterialPageRoute(
                         builder: (context) => MakeProjectBody()))
-                    .then((value) => setState(() {}));
+                    .then((value) => setState(() {
+                          if (value != null) {
+                            _changed = value;
+                          }
+                        }));
               },
               child: Icon(
                 Icons.post_add,
