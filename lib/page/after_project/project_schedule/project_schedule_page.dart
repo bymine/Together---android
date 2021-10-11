@@ -170,7 +170,10 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
                         child: ListTile(
                           leading: Container(
                             width: width * 0.15,
-                            color: Colors.red[50],
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: NetworkImage(
+                                        _selectedSchedule[index].photo))),
                           ),
                           title: Text(_selectedSchedule[index].title),
                           subtitle: Column(

@@ -6,15 +6,18 @@ class Schedule {
   String content;
   String startTime;
   String endTime;
+  String photo;
 
-  Schedule(
-      {required this.writedIdx,
-      required this.projectIdx,
-      this.scheduleIdx = 0,
-      required this.title,
-      required this.content,
-      required this.startTime,
-      required this.endTime});
+  Schedule({
+    required this.writedIdx,
+    required this.projectIdx,
+    this.scheduleIdx = 0,
+    required this.title,
+    required this.content,
+    required this.startTime,
+    required this.endTime,
+    required this.photo,
+  });
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -47,6 +50,7 @@ class Schedule {
         content: json['schedule_content'],
         startTime: json['schedule_start_datetime'],
         endTime: json['schedule_end_datetime'],
-        writedIdx: json['writer_idx']);
+        writedIdx: json['writer_idx'],
+        photo: json['writer_profile_photo']);
   }
 }

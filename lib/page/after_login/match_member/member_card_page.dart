@@ -90,7 +90,7 @@ class _MyMemberCardState extends State<MyMemberCard> {
                 ),
                 MyInputField(
                   title: "My Info",
-                  hint: MyInfoString(widget.resume ?? newResume),
+                  hint: myInfoString(widget.resume ?? newResume),
                   maxLine: 7,
                   suffixIcon: Text(""),
                 ),
@@ -112,7 +112,7 @@ class _MyMemberCardState extends State<MyMemberCard> {
         ));
   }
 
-  String MyInfoString(MemberResume? resume) {
+  String myInfoString(MemberResume? resume) {
     String license;
     String hobby;
     if (resume != null) {
@@ -133,7 +133,7 @@ class _MyMemberCardState extends State<MyMemberCard> {
           "MBTI: ${resume.mbti}\n" +
           "Address: ${resume.mainAddr}\n"
               "license: $license\n" +
-          "hobby: ${hobby}\n";
+          "hobby: $hobby\n";
     } else
       return "";
   }

@@ -247,11 +247,10 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                         Text("Add Proejct Tag", style: headingStyle),
                         MyInputField(
                           title: "Select Category",
-                          hint: "",
+                          hint: selectedCategory,
                           suffixIcon: DropdownButton(
                             dropdownColor: Colors.blueGrey,
                             underline: Container(),
-                            isExpanded: true,
                             value: selectedCategory,
                             items: category.map((value) {
                               return DropdownMenuItem(
@@ -262,7 +261,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                     ),
                                     child: Text(value,
                                         style: editSubTitleStyle.copyWith(
-                                            color: Colors.black)),
+                                            color: Colors.white)),
                                   ));
                             }).toList(),
                             onChanged: (value) {
@@ -288,11 +287,10 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                         ),
                         MyInputField(
                           title: "Select Tag",
-                          hint: "",
+                          hint: selectedTag,
                           suffixIcon: DropdownButton(
                             dropdownColor: Colors.blueGrey,
                             underline: Container(),
-                            isExpanded: true,
                             value: selectedTag,
                             items: selectedCategory != "기타"
                                 ? containTag.map((value) {
@@ -304,7 +302,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                           child: Text(
                                             value,
                                             style: editSubTitleStyle.copyWith(
-                                                color: Colors.black),
+                                                color: Colors.white),
                                           ),
                                         ));
                                   }).toList()
@@ -315,6 +313,8 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
                                             value,
+                                            style: editSubTitleStyle.copyWith(
+                                                color: Colors.white),
                                           ),
                                         ));
                                   }).toList(),

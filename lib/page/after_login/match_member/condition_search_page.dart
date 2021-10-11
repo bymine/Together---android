@@ -1,11 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/hobby_model.dart';
-import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
 
 class ConditionSearchPage extends StatefulWidget {
@@ -102,9 +100,6 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                           postTagIdx.add(mappingTag[element].toString());
                         });
                         print(postTagIdx);
-                        var userIdx =
-                            Provider.of<SignInModel>(context, listen: false)
-                                .userIdx;
 
                         Navigator.of(context).pop(jsonEncode({
                           "min_age": _currentRangeValues.start.toInt(),
@@ -190,6 +185,9 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
 
     selectedTag = containTag[0];
     return showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setState) {
@@ -225,11 +223,10 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                       ),
                       MyInputField(
                         title: "Select Category",
-                        hint: "",
+                        hint: selectedCategory,
                         suffixIcon: DropdownButton(
                           dropdownColor: Colors.blueGrey,
                           underline: Container(),
-                          isExpanded: true,
                           value: selectedCategory,
                           items: categoryName.map((value) {
                             return DropdownMenuItem(
@@ -240,7 +237,7 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                                   ),
                                   child: Text(value,
                                       style: editSubTitleStyle.copyWith(
-                                          color: Colors.black)),
+                                          color: Colors.white)),
                                 ));
                           }).toList(),
                           onChanged: (value) {
@@ -259,11 +256,10 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                       ),
                       MyInputField(
                         title: "Select Tag",
-                        hint: "",
+                        hint: selectedTag,
                         suffixIcon: DropdownButton(
                           dropdownColor: Colors.blueGrey,
                           underline: Container(),
-                          isExpanded: true,
                           value: selectedTag,
                           items: containTag.map((value) {
                             return DropdownMenuItem(
@@ -274,7 +270,7 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                                   ),
                                   child: Text(value,
                                       style: editSubTitleStyle.copyWith(
-                                          color: Colors.black)),
+                                          color: Colors.white)),
                                 ));
                           }).toList(),
                           onChanged: (value) {

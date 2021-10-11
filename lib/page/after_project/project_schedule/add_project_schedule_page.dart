@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
@@ -127,7 +126,10 @@ class _AddProjectSchdeuleState extends State<AddProjectSchdeule> {
                             startTime: widget.startDate.toIso8601String(),
                             endTime: widget.endDate.toIso8601String(),
                             projectIdx: projectIdx,
-                            writedIdx: userIdx);
+                            writedIdx: userIdx,
+                            photo:
+                                Provider.of<SignInModel>(context, listen: false)
+                                    .userPhoto);
 
                         await togetherPostAPI(
                           "/project/addSchedule",

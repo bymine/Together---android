@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/model/mappingProject_model.dart';
+import 'package:together_android/page/after_login/live_project/live_project_page.dart';
 import 'package:together_android/page/after_login/match_member/member_card_page.dart';
 import 'package:together_android/page/after_login/match_member/member_search_page.dart';
 import 'package:together_android/service/api.dart';
@@ -37,7 +39,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
     double height = MediaQuery.of(context).size.height;
     String name = Provider.of<SignInModel>(context, listen: false).userName;
     String photo = Provider.of<SignInModel>(context, listen: false).userPhoto;
-
+    // print(Provider.of<MappingProject>(context, listen: false).map);
     if (isChanged) {
       future = fetchMemberMainData();
       print("updated main page");
@@ -343,20 +345,9 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      leading: GestureDetector(
-        onTap: () {
-          Navigator.of(context).pop();
-        },
-        child: Icon(
-          Icons.arrow_back_ios,
-          size: 20,
-          color: Colors.black,
-        ),
-      ),
       actions: [
         CircleAvatar(
-          backgroundImage:
-              NetworkImage("http://101.101.216.93:8080/images/" + photo),
+          backgroundImage: NetworkImage(photo),
         ),
         SizedBox(
           width: 20,

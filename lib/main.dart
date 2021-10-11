@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/model/mappingProject_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/before_login/sign_in_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -31,7 +33,6 @@ class MyApp extends StatelessWidget {
   MyApp({required this.skip});
   @override
   Widget build(BuildContext context) {
-    //print(skip);
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -53,9 +54,10 @@ class MyApp extends StatelessWidget {
                 fileName: "",
                 fileExt: "",
                 fileType: "",
-                fileFlag: ""))
+                fileFlag: "")),
+        ChangeNotifierProvider(create: (_) => MappingProject(map: Map()))
       ],
-      child: MaterialApp(
+      child: GetMaterialApp(
           title: 'Together',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(

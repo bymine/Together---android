@@ -10,15 +10,16 @@ class LiveProject extends ChangeNotifier {
   String endDate;
   List<String> photoes;
 
-  LiveProject(
-      {required this.projectIdx,
-      required this.memberCount,
-      required this.files,
-      required this.projectName,
-      required this.projectExp,
-      required this.startDate,
-      required this.endDate,
-      required this.photoes});
+  LiveProject({
+    required this.projectIdx,
+    required this.memberCount,
+    required this.files,
+    required this.projectName,
+    required this.projectExp,
+    required this.startDate,
+    required this.endDate,
+    required this.photoes,
+  });
 
   factory LiveProject.fromJson(Map<String, dynamic> json) {
     List<String> photoes = [];

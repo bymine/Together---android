@@ -3,11 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/componet/circle_avator_widget.dart';
-import 'package:together_android/componet/empty_data_display.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/main.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/model/mappingProject_model.dart';
 import 'package:together_android/page/after_login/make_project/make_project_page.dart';
 import 'package:together_android/page/after_project/project_main_page.dart';
 import 'package:together_android/service/api.dart';
@@ -22,9 +22,16 @@ class LiveProjectBody extends StatefulWidget {
 class _LiveProjectBodyState extends State<LiveProjectBody> {
   late Future future;
   ValueNotifier<bool> showFloating = ValueNotifier<bool>(false);
+  Map<String, int> map = Map<String, int>();
+
   var _changed;
+
+  var isAlreadyMap = false;
+
   @override
   void initState() {
+    Provider.of<MappingProject>(context, listen: false).map = map;
+
     super.initState();
     future = getDeviceUserIdx();
   }
@@ -34,12 +41,11 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
     var idx = prefs.getInt('idx');
 
     if (idx != null) {
-      var userInfo =
-          togetherGetAPI("/user/mypage", "?user_idx=$idx").then((value) {
+      togetherGetAPI("/user/mypage", "?user_idx=$idx").then((value) {
         Provider.of<SignInModel>(context, listen: false).userName =
             value['user_name'];
         Provider.of<SignInModel>(context, listen: false).userPhoto =
-            value['user_profile_photo'].toString().split('/images/').last;
+            value['user_profile_photo'];
       });
       Provider.of<SignInModel>(context, listen: false).userIdx = idx;
       return togetherGetAPI('/main', '?user_idx=$idx');
@@ -58,6 +64,7 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
       print("updated");
       future = togetherGetAPI('/main', '?user_idx=$userIdx');
       _changed = false;
+      isAlreadyMap = false;
     }
 
     return Scaffold(
@@ -71,9 +78,10 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
         future: future,
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasData) {
-            var data = snapshot.data as List;
+            var data = snapshot.data as List<LiveProject>;
             showFloating.value = true;
             snapshot.data as List<LiveProject>;
+
             return Stack(
               children: [
                 Container(
@@ -81,6 +89,19 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
                       itemCount: snapshot.data.length,
                       itemBuilder: (context, index) {
                         LiveProject project = snapshot.data[index];
+
+                        if (isAlreadyMap == false) {
+                          for (int i = 0; i < snapshot.data.length; i++) {
+                            LiveProject mapProject = snapshot.data[i];
+
+                            Provider.of<MappingProject>(context, listen: false)
+                                    .map[mapProject.projectName] =
+                                mapProject.projectIdx;
+                          }
+                          print("project mapping !!");
+                          isAlreadyMap = true;
+                        }
+
                         var gradientColor =
                             GradientTemplate.gradientTemplate[index % 5].colors;
                         return GestureDetector(

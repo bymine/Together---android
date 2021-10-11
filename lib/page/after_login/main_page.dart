@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/page/after_login/live_project/live_project_page.dart';

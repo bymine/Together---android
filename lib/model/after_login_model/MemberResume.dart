@@ -1,4 +1,5 @@
 class MemberResume {
+  int idx;
   String name;
   String nickName;
   int age;
@@ -13,6 +14,7 @@ class MemberResume {
   String photo;
 
   MemberResume({
+    required this.idx,
     required this.name,
     required this.nickName,
     required this.age,
@@ -29,6 +31,7 @@ class MemberResume {
 
   factory MemberResume.fromJson(Map<String, dynamic> json) {
     return MemberResume(
+      idx: json['user_idx'],
       name: json['user_name'],
       nickName: json['user_nickname'],
       age: json['age'],

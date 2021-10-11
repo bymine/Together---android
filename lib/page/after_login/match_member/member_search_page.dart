@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/model/mappingProject_model.dart';
 import 'package:together_android/page/after_login/match_member/condition_search_page.dart';
 import 'package:together_android/service/api.dart';
 
@@ -14,6 +19,8 @@ class MemberSearchPage extends StatefulWidget {
 }
 
 class _MemberSearchPageState extends State<MemberSearchPage> {
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late Future future;
   TextEditingController searchController = TextEditingController();
 
@@ -22,6 +29,9 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
 
   bool isCondition = false;
   String conditionDetail = "";
+
+  String _selectProject = "";
+
   @override
   void initState() {
     future = fetchCardList();
@@ -40,7 +50,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
-
+    var map = Provider.of<MappingProject>(context, listen: false).map;
     String photo = Provider.of<SignInModel>(context, listen: false).userPhoto;
     if (isCondition == true) {
       future = togetherPostSpecialAPI(
@@ -77,7 +87,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                                     isInput ? cards[index] : containCard[index];
 
                                 detailCardBottomsheet(
-                                    context, width, height, detailCard);
+                                    context, width, height, detailCard, map);
                               },
                               child: Container(
                                 margin: EdgeInsets.only(top: 12),
@@ -192,163 +202,295 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
   }
 
   detailCardBottomsheet(BuildContext context, double width, double height,
-      MemberResume detailCard) {
+      MemberResume detailCard, Map<String, int> map) {
+    if (map.isNotEmpty) _selectProject = map.keys.first;
+
+    print(_selectProject);
     return showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
+        isScrollControlled: true,
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setState) {
-            return Container(
-              padding: EdgeInsets.only(
-                  left: width * 0.08,
-                  right: width * 0.08,
-                  top: height * 0.02,
-                  bottom: height * 0.02),
-              child: Wrap(
-                children: [
-                  Container(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Align(
-                          alignment: Alignment.center,
-                          child: CircleAvatar(
-                            radius: 30,
-                            backgroundImage: NetworkImage(detailCard.photo),
+            return SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.only(
+                    left: width * 0.08,
+                    right: width * 0.08,
+                    top: height * 0.02,
+                    bottom: height * 0.02),
+                child: Wrap(
+                  children: [
+                    Container(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: CircleAvatar(
+                              radius: 30,
+                              backgroundImage: NetworkImage(detailCard.photo),
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          detailCard.name,
-                          style: headingStyle,
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.psychology,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              detailCard.mbti,
-                              style: editTitleStyle.copyWith(
-                                  color: Colors.grey, fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.face,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              detailCard.age.toString() + "살",
-                              style: editTitleStyle.copyWith(
-                                  color: Colors.grey, fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.place,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              detailCard.mainAddr + "경기도 화성시 봉담읍",
-                              style: editTitleStyle.copyWith(
-                                  color: Colors.grey, fontSize: 14),
-                              maxLines: 1,
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.book,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              detailCard.licens.toString(),
-                              style: editTitleStyle.copyWith(
-                                  color: Colors.grey, fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.tag,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              detailCard.hobbys.toString(),
-                              style: editTitleStyle.copyWith(
-                                  color: Colors.grey, fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        Text(
-                          "Introduce",
-                          style: headingStyle,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16.0),
-                          child: Text(
-                            detailCard.comment ?? "no comment",
-                            style: editSubTitleStyle,
+                          MyInputField(
+                            title: "Select Project",
+                            hint: _selectProject.isEmpty
+                                ? "First Create a Project!!"
+                                : _selectProject,
+                            suffixIcon: _selectProject == ""
+                                ? SizedBox(
+                                    width: 1,
+                                  )
+                                : DropdownButton(
+                                    dropdownColor: Colors.blueGrey,
+                                    value: _selectProject,
+                                    underline: Container(),
+                                    items: Provider.of<MappingProject>(context,
+                                            listen: false)
+                                        .map
+                                        .keys
+                                        .toList()
+                                        .map((value) {
+                                      return DropdownMenuItem(
+                                          value: value,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(value,
+                                                style:
+                                                    editSubTitleStyle.copyWith(
+                                                        color: Colors.white)),
+                                          ));
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectProject = value.toString();
+                                      });
+                                    },
+                                  ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        Text(
-                          "Experience",
-                          style: headingStyle,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16.0),
-                          child: Text(detailCard.resume ?? "no comment",
-                              style: editSubTitleStyle),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: elevatedStyle,
-                          child: Text("Project Invitaion"),
-                        ),
-                      ],
-                    ),
-                  )
-                ],
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            "Profile",
+                            style: editTitleStyle,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.person,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.name,
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.psychology,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.mbti,
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.face,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.age.toString() + "살",
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.place,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.mainAddr + "경기도 화성시 봉담읍",
+                                      style: editSubTitleStyle,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.book,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.licens.isEmpty
+                                          ? "no comment"
+                                          : detailCard.licens
+                                              .toString()
+                                              .substring(1,
+                                                  detailCard.licens.length - 1),
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.tag,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.hobbys.isEmpty
+                                          ? "no comment"
+                                          : detailCard.hobbys
+                                              .toString()
+                                              .substring(1,
+                                                  detailCard.hobbys.length - 1),
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(
+                            "Introduce",
+                            style: editTitleStyle,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16.0),
+                            child: Text(
+                              detailCard.comment ?? "no comment",
+                              style: editSubTitleStyle,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(
+                            "Experience",
+                            style: editTitleStyle,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16.0),
+                            child: Text(detailCard.resume ?? "no comment",
+                                style: editSubTitleStyle),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Center(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                var code = await togetherPostAPI(
+                                    "/member/search/invite",
+                                    jsonEncode({
+                                      "user_idx": Provider.of<SignInModel>(
+                                              context,
+                                              listen: false)
+                                          .userIdx,
+                                      "member_idx": detailCard.idx,
+                                      "project_idx": map[_selectProject]
+                                    }));
+                                print(code.toString());
+                                Navigator.of(context).pop();
+
+                                inviteSnackbar(code.toString());
+                              },
+                              style: elevatedStyle,
+                              child: Text("Project Invitaion"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             );
           });
         });
   }
+
+  inviteSnackbar(code) {
+    // String body = snackBarMessage(code);
+
+    return Get.snackbar(
+      code == "success" ? "Success Invite" : 'Failed Invite',
+      code,
+      icon: code == "success"
+          ? Icon(
+              Icons.check_circle,
+              color: Colors.greenAccent,
+            )
+          : Icon(
+              Icons.warning,
+              color: Colors.redAccent,
+            ),
+      duration: Duration(seconds: 4),
+      animationDuration: Duration(milliseconds: 800),
+      snackPosition: SnackPosition.TOP,
+    );
+  }
+
+  // String snackBarMessage(String code) {
+  //   switch (code) {
+  //     case "already_in":
+  //       return "Already in project member";
+  //     case "already_send":
+  //       return "Already sent invitaion";
+  //     case "not_leader":
+  //       return "Only leaders can invite";
+  //     case "self_invite":
+  //       return "Can't invite yourself";
+  //     case "error":
+  //       return "An error occurs";
+  //     case "success":
+  //       return "Invitaion success";
+  //     default:
+  //   }
+  // }
 
   Row _seachBar(List<MemberResume> cards) {
     return Row(
@@ -412,8 +554,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
       ),
       actions: [
         CircleAvatar(
-          backgroundImage:
-              NetworkImage("http://101.101.216.93:8080/images/" + photo),
+          backgroundImage: NetworkImage(photo),
         ),
         SizedBox(
           width: 20,

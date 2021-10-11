@@ -188,6 +188,10 @@ Future togetherPostAPI(String service, String body) async {
       print(response.body);
       return response.body;
 
+    case "/member/search/invite":
+      print(response.body);
+      return response.body;
+
     default:
   }
 }
