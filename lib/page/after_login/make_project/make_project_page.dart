@@ -5,6 +5,7 @@ import 'package:group_button/group_button.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:search_page/search_page.dart';
+import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/user_profile_model.dart';
@@ -192,30 +193,28 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
 
   createProjectButton(double width, double height, BuildContext context) {
     return Container(
-      width: width,
-      height: height * 0.08,
-      child: ElevatedButton(
-          onPressed: () async {
-            var code = await togetherPostAPI(
-                "/project/createProject",
-                jsonEncode({
-                  "user_idx":
-                      Provider.of<SignInModel>(context, listen: false).userIdx,
-                  "project_name": titleController.text,
-                  "project_exp": expController.text,
-                  "start_date": _selectedStart.toIso8601String(),
-                  "end_date": _selectedEnd.toIso8601String(),
-                  "professionality": projectEnumFormat(projectLevel),
-                  "project_type": projectEnumFormat(projectType),
-                  "tag_num": projectTag.length,
-                  "tag_name": projectCategory,
-                  "detail_name": projectTag
-                }));
-            if (code.toString() == "success") Navigator.of(context).pop(true);
-          },
-          style: elevatedStyle,
-          child: Text("Create Project")),
-    );
+        width: width,
+        height: height * 0.08,
+        child: MyButton(
+            label: "Create Project",
+            onTap: () async {
+              var code = await togetherPostAPI(
+                  "/project/createProject",
+                  jsonEncode({
+                    "user_idx": Provider.of<SignInModel>(context, listen: false)
+                        .userIdx,
+                    "project_name": titleController.text,
+                    "project_exp": expController.text,
+                    "start_date": _selectedStart.toIso8601String(),
+                    "end_date": _selectedEnd.toIso8601String(),
+                    "professionality": projectEnumFormat(projectLevel),
+                    "project_type": projectEnumFormat(projectType),
+                    "tag_num": projectTag.length,
+                    "tag_name": projectCategory,
+                    "detail_name": projectTag
+                  }));
+              if (code.toString() == "success") Navigator.of(context).pop(true);
+            }));
   }
 
   showTagBottomSheet(BuildContext context, double width, double height) {
@@ -342,30 +341,25 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                         SizedBox(
                           height: 20,
                         ),
-                        Container(
-                            width: width,
-                            child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    primary: titleColor),
-                                onPressed: () {
-                                  setState(() {
-                                    if (selectedCategory == "기타" &&
-                                        selectedTag == "기타") {
-                                      projectTag.add(tagController.text);
-                                      projectCategory
-                                          .add(categoryController.text);
-                                    } else if (selectedCategory != "기타" &&
-                                        selectedTag == "기타") {
-                                      projectTag.add(tagController.text);
-                                      projectCategory.add(selectedCategory);
-                                    } else {
-                                      projectCategory.add(selectedCategory);
-                                      projectTag.add(selectedTag);
-                                    }
-                                  });
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text("+ Add Tag")))
+                        MyButton(
+                            label: "+ Add Tag",
+                            onTap: () {
+                              setState(() {
+                                if (selectedCategory == "기타" &&
+                                    selectedTag == "기타") {
+                                  projectTag.add(tagController.text);
+                                  projectCategory.add(categoryController.text);
+                                } else if (selectedCategory != "기타" &&
+                                    selectedTag == "기타") {
+                                  projectTag.add(tagController.text);
+                                  projectCategory.add(selectedCategory);
+                                } else {
+                                  projectCategory.add(selectedCategory);
+                                  projectTag.add(selectedTag);
+                                }
+                              });
+                              Navigator.of(context).pop();
+                            })
                       ],
                     ),
                   ],

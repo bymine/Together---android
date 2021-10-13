@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
@@ -10,6 +11,7 @@ import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/model/mappingProject_model.dart';
 import 'package:together_android/page/after_login/match_member/condition_search_page.dart';
 import 'package:together_android/service/api.dart';
+import 'package:together_android/utils.dart';
 
 class MemberSearchPage extends StatefulWidget {
   const MemberSearchPage({Key? key}) : super(key: key);
@@ -19,8 +21,6 @@ class MemberSearchPage extends StatefulWidget {
 }
 
 class _MemberSearchPageState extends State<MemberSearchPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   late Future future;
   TextEditingController searchController = TextEditingController();
 
@@ -56,7 +56,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
       future = togetherPostSpecialAPI(
           "/member/search/do", conditionDetail, "/$userIdx");
       print("updated");
-      isCondition = false;
+      //isCondition = false;
     }
     return Scaffold(
       appBar: _appBar(context, photo),
@@ -73,6 +73,28 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                   return Column(
                     children: [
                       _seachBar(cards),
+                      Visibility(
+                        visible: isCondition,
+                        child: Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  isCondition = false;
+                                });
+                                future = fetchCardList();
+                              },
+                              style: TextButton.styleFrom(
+                                  // minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  padding: EdgeInsets.zero),
+                              child: Text(
+                                "See All",
+                                style: editTitleStyle,
+                              ),
+                            )),
+                      ),
                       ListView.builder(
                           physics: NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
@@ -119,7 +141,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                                             Icon(
                                               Icons.psychology,
                                               size: 20,
-                                              color: Colors.black,
+                                              color: darkBlue,
                                             ),
                                             SizedBox(
                                               width: 5,
@@ -137,13 +159,17 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                                             Icon(
                                               Icons.place,
                                               size: 20,
-                                              color: Colors.black,
+                                              color: darkBlue,
                                             ),
                                             SizedBox(
                                               width: 5,
                                             ),
                                             Text(
-                                              card.mainAddr + "경기도 화성시 봉담읍",
+                                              addressToString(
+                                                  false,
+                                                  card.mainAddr,
+                                                  card.referenceAddr,
+                                                  card.detailAddr),
                                               style: editTitleStyle.copyWith(
                                                   color: Colors.white,
                                                   fontSize: 14),
@@ -165,7 +191,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                                         Icon(
                                           Icons.rate_review,
                                           size: 20,
-                                          color: Colors.black,
+                                          color: darkBlue,
                                         ),
                                         SizedBox(
                                           width: 5,
@@ -205,7 +231,6 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
       MemberResume detailCard, Map<String, int> map) {
     if (map.isNotEmpty) _selectProject = map.keys.first;
 
-    print(_selectProject);
     return showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
@@ -340,7 +365,8 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                                       width: 5,
                                     ),
                                     Text(
-                                      detailCard.mainAddr + "경기도 화성시 봉담읍",
+                                      detailCard.mainAddr +
+                                          "경기도 화성시 봉담읍", // 수정 필요
                                       style: editSubTitleStyle,
                                       maxLines: 1,
                                     ),
@@ -421,27 +447,25 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                             height: 16,
                           ),
                           Center(
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                var code = await togetherPostAPI(
-                                    "/member/search/invite",
-                                    jsonEncode({
-                                      "user_idx": Provider.of<SignInModel>(
-                                              context,
-                                              listen: false)
-                                          .userIdx,
-                                      "member_idx": detailCard.idx,
-                                      "project_idx": map[_selectProject]
-                                    }));
-                                print(code.toString());
-                                Navigator.of(context).pop();
+                            child: MyButton(
+                                label: "Invite",
+                                onTap: () async {
+                                  Navigator.of(context).pop();
 
-                                inviteSnackbar(code.toString());
-                              },
-                              style: elevatedStyle,
-                              child: Text("Project Invitaion"),
-                            ),
-                          ),
+                                  var code = await togetherPostAPI(
+                                      "/member/search/invite",
+                                      jsonEncode({
+                                        "user_idx": Provider.of<SignInModel>(
+                                                context,
+                                                listen: false)
+                                            .userIdx,
+                                        "member_idx": detailCard.idx,
+                                        "project_idx": map[_selectProject]
+                                      }));
+
+                                  inviteSnackbar(code.toString());
+                                }),
+                          )
                         ],
                       ),
                     )
@@ -458,7 +482,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
 
     return Get.snackbar(
       code == "success" ? "Success Invite" : 'Failed Invite',
-      code,
+      snackBarMessage(code.toString()),
       icon: code == "success"
           ? Icon(
               Icons.check_circle,
@@ -474,23 +498,24 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
     );
   }
 
-  // String snackBarMessage(String code) {
-  //   switch (code) {
-  //     case "already_in":
-  //       return "Already in project member";
-  //     case "already_send":
-  //       return "Already sent invitaion";
-  //     case "not_leader":
-  //       return "Only leaders can invite";
-  //     case "self_invite":
-  //       return "Can't invite yourself";
-  //     case "error":
-  //       return "An error occurs";
-  //     case "success":
-  //       return "Invitaion success";
-  //     default:
-  //   }
-  // }
+  String snackBarMessage(String code) {
+    switch (code) {
+      case "already_in":
+        return "Already in project member";
+      case "already_sent":
+        return "Already sent invitaion";
+      case "not_leader":
+        return "Only leaders can invite";
+      case "self_invite":
+        return "Can't invite yourself";
+      case "error":
+        return "An error occurs";
+      case "success":
+        return "Invitaion success";
+      default:
+        return "";
+    }
+  }
 
   Row _seachBar(List<MemberResume> cards) {
     return Row(

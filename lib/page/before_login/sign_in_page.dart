@@ -189,6 +189,8 @@ class _SignInPageState extends State<SignInPage> {
         if (isAutoLogin) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setInt('idx', signInModel.userIdx);
+          prefs.setString('photo', signInModel.userPhoto);
+          prefs.setString('name', signInModel.userName);
         }
 
         Navigator.of(context).pushReplacement(

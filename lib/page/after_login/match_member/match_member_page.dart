@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
-import 'package:together_android/model/mappingProject_model.dart';
-import 'package:together_android/page/after_login/live_project/live_project_page.dart';
+import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/after_login/match_member/member_card_page.dart';
 import 'package:together_android/page/after_login/match_member/member_search_page.dart';
 import 'package:together_android/service/api.dart';
+import 'package:together_android/utils.dart';
 
 class MatchMemberBody extends StatefulWidget {
   const MatchMemberBody({Key? key}) : super(key: key);
@@ -37,7 +37,6 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    String name = Provider.of<SignInModel>(context, listen: false).userName;
     String photo = Provider.of<SignInModel>(context, listen: false).userPhoto;
     // print(Provider.of<MappingProject>(context, listen: false).map);
     if (isChanged) {
@@ -84,7 +83,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
           children: [
             Text(
               "Search Member",
-              style: editSubHeadingStyle,
+              style: subHeadingStyle,
             ),
             SizedBox(
               height: 5,
@@ -156,7 +155,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
           children: [
             Text(
               "Search Member",
-              style: editSubHeadingStyle,
+              style: subHeadingStyle,
             ),
             SizedBox(
               height: 5,
@@ -281,7 +280,8 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                     width: 5,
                   ),
                   Text(
-                    resume.mainAddr + "경기도 화성시 봉담읍",
+                    addressToString(false, resume.mainAddr,
+                        resume.referenceAddr, resume.detailAddr),
                     style: editTitleStyle.copyWith(
                         color: Colors.white, fontSize: 14),
                     maxLines: 1,
@@ -345,6 +345,13 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
+      leading: IconButton(
+        onPressed: () {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => MainPage()));
+        },
+        icon: Icon(Icons.home_outlined, color: Colors.grey),
+      ),
       actions: [
         CircleAvatar(
           backgroundImage: NetworkImage(photo),

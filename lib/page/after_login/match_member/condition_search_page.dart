@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:juso/juso.dart';
+import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/hobby_model.dart';
+import 'package:together_android/page/after_login/profile/user_address_page.dart';
 import 'package:together_android/service/api.dart';
 
 class ConditionSearchPage extends StatefulWidget {
@@ -31,6 +34,8 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
   Map mappingTag = Map<String, String>();
   String selectedCategory = "게임";
   String selectedTag = "롤";
+  String selectedAddress = "";
+  Juso? conditionJuso;
 
   @override
   void initState() {
@@ -86,7 +91,10 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.only(
-              left: width * 0.08, right: width * 0.08, bottom: height * 0.02),
+              left: width * 0.08,
+              right: width * 0.08,
+              bottom: height * 0.02,
+              top: height * 0.02),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -94,8 +102,9 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("Detail Search", style: headingStyle),
-                  ElevatedButton(
-                      onPressed: () async {
+                  MyButton(
+                      label: "Apply",
+                      onTap: () async {
                         myTag.forEach((element) {
                           postTagIdx.add(mappingTag[element].toString());
                         });
@@ -110,9 +119,7 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                           "detail_addr": "",
                           "hobby_small_idx": postTagIdx,
                         }));
-                      },
-                      style: elevatedStyle,
-                      child: Text("Apply"))
+                      })
                 ],
               ),
               SizedBox(
@@ -161,9 +168,23 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
               ),
               MyInputField(
                 title: "Address",
-                hint: "",
+                hint: selectedAddress,
                 suffixIcon: IconButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final juso = await Navigator.push<Juso?>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const JusoScreen(),
+                      ),
+                    );
+
+                    if (juso != null) {
+                      setState(() {
+                        conditionJuso = juso;
+                        selectedAddress = conditionJuso!.address;
+                      });
+                    }
+                  },
                   icon: Icon(
                     Icons.location_on,
                     color: Colors.grey,
@@ -206,19 +227,18 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Add Tag",
+                            "Select Hobby",
                             style: headingStyle,
                           ),
-                          ElevatedButton(
-                              onPressed: () {
+                          MyButton(
+                              label: "+ Add",
+                              onTap: () {
                                 setState(() {
                                   if (myTag.contains(selectedTag) == false)
                                     myTag.add(selectedTag);
                                 });
                                 Navigator.of(context).pop();
-                              },
-                              style: elevatedStyle,
-                              child: Text("+ Add"))
+                              }),
                         ],
                       ),
                       MyInputField(

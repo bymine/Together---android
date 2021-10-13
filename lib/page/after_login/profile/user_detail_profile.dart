@@ -7,16 +7,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_countdown_timer/countdown.dart';
 import 'package:flutter_countdown_timer/countdown_controller.dart';
+import 'package:get/get.dart' as GET;
 import 'package:image_picker/image_picker.dart';
+import 'package:juso/juso.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/componet/bottom_sheet_top_bar.dart';
-import 'package:together_android/componet/textfield_widget.dart';
+import 'package:together_android/componet/input_field.dart';
+import 'package:together_android/componet/listTile.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/hobby_model.dart';
 import 'package:together_android/model/after_login_model/invitaion_model.dart';
 import 'package:together_android/model/after_login_model/my_profile_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/page/after_login/live_project/live_project_page.dart';
+import 'package:together_android/page/after_login/main_page.dart';
+import 'package:together_android/page/after_login/profile/user_address_page.dart';
 import 'package:together_android/page/after_login/profile/user_invitaion_page.dart';
 import 'package:together_android/page/after_login/profile/user_schedule_page.dart';
 import 'package:together_android/page/before_login/sign_in_page.dart';
@@ -32,7 +38,6 @@ class UserDetailProfilePage extends StatefulWidget {
 
 class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
   final AsyncMemoizer _memoizer = AsyncMemoizer();
-  // TextEditingController ee = TextEditingController();
   TextEditingController nickNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController emailAuthController = TextEditingController();
@@ -41,6 +46,10 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
   TextEditingController license1Controller = TextEditingController();
   TextEditingController license2Controller = TextEditingController();
   TextEditingController license3Controller = TextEditingController();
+  TextEditingController categoryController = TextEditingController();
+  TextEditingController tagController = TextEditingController();
+
+  Juso? myJuso;
 
   final nickNameFormkey = GlobalKey<FormState>();
   final phoneFormKey = GlobalKey<FormState>();
@@ -49,7 +58,6 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
 
   String emailFlag = "";
   String phoneFlag = "";
-  String nickNameFlag = "";
 
   String licenseString = "";
 
@@ -67,8 +75,23 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
   List<Invitaion> invitaions = [];
   List<FetchHobby> hobbyList = [];
 
-  String selectedCategory = "운동";
-  String selectedTag = "축구";
+  List<String> tagName = [];
+  List<String> categoryName = [];
+  List<String> categoryIdx = [];
+  List<String> tagIdx = [];
+  List<String> containTag = [];
+
+  List<String> myTag = [];
+  List<String> postTagIdx = [];
+  Map mappingIdx = Map<String, String>();
+  Map mappingName = Map<String, String>();
+  Map mappingTag = Map<String, String>();
+
+  Map mappingCategory = Map<String, String>();
+  String selectedCategory = "게임";
+  String selectedTag = "롤";
+
+  String selectedMBTI = "";
 
   _fetchData() {
     return this._memoizer.runOnce(() async {
@@ -111,6 +134,50 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
     _fetchInvitaion().then((value) => setState(() {
           invitaions = value;
         }));
+
+    Future<List<FetchHobby>> future = fetchHobbyData();
+
+    future.then((value) {
+      value.forEach((element) {
+        if (categoryName.contains(element.hobbyName.keys.first) == false) {
+          categoryName.add(element.hobbyName.keys.first.toString());
+          categoryIdx.add(element.hobbyIdx.keys.first);
+        }
+        if (tagName.contains(element.hobbyName.values.first) == false) {
+          tagName.add(element.hobbyName.values.first.toString());
+          tagIdx.add(element.hobbyIdx.values.first);
+        }
+
+        element.hobbyIdx.forEach((key, value) {
+          mappingIdx[value] = key;
+        });
+
+        element.hobbyName.forEach((key, value) {
+          mappingName[value] = key;
+        });
+      });
+
+      if (categoryName.contains('기타') == false) {
+        categoryName.insert(categoryName.length, '기타');
+        categoryIdx.insert(categoryIdx.length, '0');
+      }
+
+      categoryIdx.forEach((element) {
+        int i = categoryIdx.indexOf(element);
+        mappingCategory[categoryName[i]] = element;
+      });
+
+      tagIdx.forEach((element) {
+        int i = tagIdx.indexOf(element);
+        mappingTag[tagName[i]] = element;
+      });
+      selectedCategory = categoryName[0];
+      selectedTag = tagName[0];
+    });
+  }
+
+  Future<List<FetchHobby>> fetchHobbyData() async {
+    return await togetherGetAPI("/user/edit_hobby", "");
   }
 
   Future<List<Invitaion>> _fetchInvitaion() async {
@@ -126,30 +193,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(
-          title: Text(
-            "My Profile",
-          ),
-          actions: [
-            Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue.withOpacity(0.4)),
-              child: IconButton(
-                  onPressed: () async {
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    prefs.remove('idx');
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => SignInPage()));
-                  },
-                  icon: Icon(
-                    Icons.power_settings_new,
-                    color: Colors.blue,
-                    size: 32,
-                  )),
-            ),
-          ]),
+      appBar: _appBar(context, Icons.logout),
       body: SingleChildScrollView(
         child: FutureBuilder(
             future: _fetchData(),
@@ -162,240 +206,266 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                   var profile = snapshot.data as MyProfileDetail;
 
                   return Container(
-                    padding: EdgeInsets.symmetric(
-                        vertical: height * 0.05, horizontal: width * 0.05),
                     child: Column(
                       children: [
                         Container(
-                          padding: EdgeInsets.symmetric(
-                              vertical: width * 0.05, horizontal: width * 0.05),
                           decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  spreadRadius: 5,
-                                  blurRadius: 7,
-                                  offset: Offset(
-                                      0, 3), // changes position of shadow
-                                ),
-                              ]),
-                          width: width,
-                          height: height * 0.4,
-                          child: pickedFile == null
-                              ? Container(
-                                  margin: EdgeInsets.only(right: width * 0.02),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                        width: 3, color: Colors.grey),
-                                    shape: BoxShape.rectangle,
-                                    image: DecorationImage(
-                                        fit: BoxFit.fill,
-                                        image: NetworkImage(profile.userPhoto)),
-                                  ),
-                                )
-                              : Container(
-                                  margin: EdgeInsets.only(right: width * 0.02),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                        width: 3, color: Colors.grey),
-                                    shape: BoxShape.rectangle,
-                                    image: DecorationImage(
-                                        fit: BoxFit.fill,
-                                        image: FileImage(_image)),
-                                  ),
-                                ),
-                        ),
-                        SizedBox(
-                          height: height * 0.03,
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              vertical: width * 0.05, horizontal: width * 0.05),
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  spreadRadius: 5,
-                                  blurRadius: 7,
-                                  offset: Offset(
-                                      0, 3), // changes position of shadow
-                                ),
-                              ]),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(20),
+                                  bottomRight: Radius.circular(20)),
+                              color: Color(0xffD0EBFF)),
+                          padding: EdgeInsets.only(
+                              left: width * 0.08,
+                              right: width * 0.08,
+                              bottom: height * 0.02),
+                          child: Column(
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.pink.withOpacity(0.4)),
-                                child: IconButton(
-                                    onPressed: changePhoto,
-                                    icon: Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.pink,
-                                      size: 32,
-                                    )),
+                              profileHeader(profile),
+                              SizedBox(
+                                height: height * 0.04,
                               ),
-                              Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.orange.withOpacity(0.4)),
-                                child: IconButton(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  PrivateSchedulePage()));
-                                    },
-                                    icon: Icon(
-                                      Icons.today,
-                                      color: Colors.orange,
-                                      size: 32,
-                                    )),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  iconButton(
+                                      width, 'Photo', Icons.camera_alt_outlined,
+                                      () {
+                                    changePhoto();
+                                  }),
+                                  iconButton(width, 'Calendar',
+                                      Icons.calendar_today_outlined, () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                PrivateSchedulePage()));
+                                  }),
+                                  iconButton(width, 'Message',
+                                      Icons.mail_outline_outlined, () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (context) =>
+                                                UserInviationPage(
+                                                    invitaion: invitaions)))
+                                        .then((value) {
+                                      if (value != null) {
+                                        setState(() {
+                                          invitaions = value as List<Invitaion>;
+                                          print(invitaions.length);
+                                        });
+                                      }
+                                    });
+                                  })
+                                ],
                               ),
-                              Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.red.withOpacity(0.4)),
-                                child: IconButton(
-                                    onPressed: () {
-                                      Navigator.of(context)
-                                          .push(MaterialPageRoute(
-                                              builder: (context) =>
-                                                  UserInviationPage(
-                                                      invitaion: invitaions)))
-                                          .then((value) {
-                                        if (value != null) {
-                                          setState(() {
-                                            invitaions =
-                                                value as List<Invitaion>;
-                                            print(invitaions.length);
-                                          });
-                                        }
-                                      });
-                                    },
-                                    icon: Icon(
-                                      invitaions.length == 0
-                                          ? Icons.local_post_office_outlined
-                                          : Icons.mark_email_unread_outlined,
-                                      color: Colors.red,
-                                      size: 32,
-                                    )),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.blue.withOpacity(0.4)),
-                                child: IconButton(
-                                    onPressed: () async {
-                                      SharedPreferences prefs =
-                                          await SharedPreferences.getInstance();
-                                      prefs.setString('email', "");
-                                      prefs.setString('pw', "");
-                                      prefs.setInt('idx', 0);
-
-                                      Navigator.of(context).pushReplacement(
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  SignInPage()));
-                                    },
-                                    icon: Icon(
-                                      Icons.power_settings_new,
-                                      color: Colors.blue,
-                                      size: 32,
-                                    )),
+                              SizedBox(
+                                height: height * 0.03,
                               ),
                             ],
                           ),
                         ),
-                        SizedBox(
-                          height: height * 0.03,
-                        ),
                         Container(
-                          padding: EdgeInsets.symmetric(
-                              vertical: width * 0.05, horizontal: width * 0.05),
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  spreadRadius: 5,
-                                  blurRadius: 7,
-                                  offset: Offset(
-                                      0, 3), // changes position of shadow
-                                ),
-                              ]),
+                          padding: EdgeInsets.only(
+                              left: width * 0.04,
+                              right: width * 0.04,
+                              top: height * 0.04),
                           child: Column(
                             children: [
-                              Container(
-                                child: Card(
-                                  child: ListTile(
-                                    leading: Icon(Icons.person),
-                                    title: Text(
-                                      "이름",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    subtitle: Text(
-                                      profile.userName,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
+                              MyListTile(
+                                leading: CircleAvatar(
+                                    child: Icon(Icons.face_outlined,
+                                        color: Colors.white),
+                                    backgroundColor: Colors.red[300]),
+                                title: Text('NickName'),
+                                subTitle: Text(profile.userNickName),
+                                trailing: IconButton(
+                                    onPressed: () async {
+                                      nickNameController.text =
+                                          profile.userNickName;
+                                      await nickNameSheet(
+                                          width, height, context, profile);
+                                    },
+                                    icon: Icon(Icons.chevron_right_outlined)),
                               ),
-                              buildProfileEditForm(Icons.face_outlined,
-                                  profile.userNickName, "닉네임", () {
-                                nickNameController.text = profile.userNickName;
-                                nickNameFlag = "not check";
-                                showNickNameSheet(profile);
-                              }),
-                              buildProfileEditForm(
-                                  Icons.email, profile.userEmail, "이메일", () {
-                                emailController.text = profile.userEmail;
-                                emailAuthController.text = "";
-                                emailFlag = "";
-                                emailAuthFlag.value = "";
-                                showEmailSheet(profile);
-                              }),
-                              buildProfileEditForm(
-                                  Icons.phone, profile.userPhone, "휴대전화", () {
-                                phoneController.text =
-                                    toPhoneString(profile.userPhone);
-                                phoneAuthController.text = "";
-                                emailFlag = "";
-                                emailAuthFlag.value = "";
-                                showPhoneSheet(profile);
-                              }),
-                              buildProfileEditForm(Icons.calendar_today,
-                                  profile.userBirth, "생년월일", () {
-                                showBirthSheet(profile);
-                              }),
-                              buildProfileEditForm(
-                                  Icons.book,
+                              MyListTile(
+                                leading: CircleAvatar(
+                                    backgroundColor: Colors.orange[300],
+                                    child: Icon(Icons.email_outlined,
+                                        color: Colors.white)),
+                                title: Text('Email'),
+                                subTitle: Text(profile.userEmail),
+                                trailing: IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.chevron_right_outlined)),
+                              ),
+                              MyListTile(
+                                leading: CircleAvatar(
+                                    backgroundColor: Colors.blue[300],
+                                    child: Icon(Icons.phone_outlined,
+                                        color: Colors.white)),
+                                title: Text('Phone'),
+                                subTitle: Text(profile.userPhone),
+                                trailing: IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.chevron_right_outlined)),
+                              ),
+                              MyListTile(
+                                leading: CircleAvatar(
+                                    backgroundColor: Colors.brown[300],
+                                    child: Icon(Icons.psychology_outlined,
+                                        color: Colors.white)),
+                                title: Text('MBTI'),
+                                subTitle: Text(profile.userMbti),
+                                trailing: IconButton(
+                                    onPressed: () {
+                                      mbtiSheet(profile, width, height);
+                                    },
+                                    icon: Icon(Icons.chevron_right_outlined)),
+                              ),
+                              MyListTile(
+                                leading: CircleAvatar(
+                                    backgroundColor: Colors.green[300],
+                                    child: Icon(Icons.celebration_outlined,
+                                        color: Colors.white)),
+                                title: Text('Birth'),
+                                subTitle: Text(profile.userBirth),
+                                trailing: IconButton(
+                                    onPressed: () {
+                                      birthSheet(
+                                          width, height, context, profile);
+                                    },
+                                    icon: Icon(Icons.chevron_right_outlined)),
+                              ),
+                              MyListTile(
+                                leading: CircleAvatar(
+                                    backgroundColor: Colors.grey[300],
+                                    child: Icon(Icons.location_city_outlined,
+                                        color: Colors.white)),
+                                title: Text('Address'),
+                                subTitle: Text(addressToString(
+                                    true,
+                                    profile.mainAddr,
+                                    profile.referenceAddr,
+                                    profile.detailAddr)),
+                                trailing: IconButton(
+                                    onPressed: () async {
+                                      var userIdx = Provider.of<SignInModel>(
+                                              context,
+                                              listen: false)
+                                          .userIdx;
+
+                                      final juso = await Navigator.push<Juso?>(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const JusoScreen()),
+                                      );
+                                      if (juso != null) {
+                                        setState(() {
+                                          myJuso = juso;
+                                          jusoToFormat(myJuso!, profile);
+                                        });
+                                        await togetherPostSpecialAPI(
+                                            "/user/edit_address",
+                                            jsonEncode({
+                                              "main_addr": profile.mainAddr,
+                                              "reference_addr":
+                                                  profile.referenceAddr,
+                                              "detail_addr": profile.detailAddr,
+                                              "post_num": profile.postNum
+                                            }),
+                                            "/$userIdx");
+                                      }
+                                    },
+                                    icon: Icon(Icons.chevron_right_outlined)),
+                              ),
+                              MyListTile(
+                                leading: CircleAvatar(
+                                    backgroundColor: Colors.purple[300],
+                                    child: Icon(Icons.book_outlined,
+                                        color: Colors.white)),
+                                title: Text('Certification'),
+                                subTitle: Text(
                                   licenseToString(profile.license1,
                                       profile.license2, profile.license3),
-                                  "자격증", () {
-                                license1Controller.text = profile.license1;
-                                license2Controller.text = profile.license2;
-                                license3Controller.text = profile.license3;
-                                showLicenseSheet(profile);
-                              }),
-                              buildProfileEditForm(
-                                  Icons.psychology, profile.userMbti, "MBTI",
-                                  () {
-                                showMbtiSheet(profile);
-                              }),
-                              buildProfileEditForm(Icons.location_city,
-                                  profile.postNum, "주소", () {}),
-                              buildHobbyForm(profile: profile),
+                                ),
+                                trailing: IconButton(
+                                    onPressed: () {
+                                      license1Controller.text =
+                                          profile.license1;
+                                      license2Controller.text =
+                                          profile.license2;
+                                      license3Controller.text =
+                                          profile.license3;
+                                      licenseSheet(profile);
+                                    },
+                                    icon: Icon(Icons.chevron_right_outlined)),
+                              ),
+                              MyListTile(
+                                leading: CircleAvatar(
+                                    backgroundColor: Colors.red[300],
+                                    child:
+                                        Icon(Icons.tag, color: Colors.white)),
+                                title: Text(
+                                    'Hobby (${profile.userHobby.length}/4)'),
+                                subTitle: Container(
+                                  child: Wrap(
+                                    spacing: 0.5,
+                                    children: profile.userHobby.map((hobby) {
+                                      return Chip(
+                                        label: Text(hobby),
+                                        labelStyle: TextStyle(fontSize: 16),
+                                        backgroundColor: titleColor,
+                                        deleteIconColor: Colors.red[300],
+                                        onDeleted: () async {
+                                          int userHobby =
+                                              profile.userHobby.indexOf(hobby);
+                                          int userHobbyIdx =
+                                              profile.userHobbyIdx[userHobby];
+
+                                          await togetherGetAPI(
+                                              "/user/delete_hobby",
+                                              "?user_hobby_idxes=$userHobbyIdx");
+                                          setState(() {
+                                            profile.userHobby.remove(hobby);
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                    onPressed: () async {
+                                      containTag = [];
+                                      mappingName.keys.forEach((element) {
+                                        if (mappingName[element] ==
+                                            selectedCategory)
+                                          containTag.add(element);
+                                      });
+                                      containTag.insert(
+                                          containTag.length, '기타');
+
+                                      selectedTag = containTag[0];
+                                      if (profile.userHobby.length >= 4) {
+                                        GET.Get.snackbar(
+                                          "Add Hobby Failed",
+                                          "You can register up to 4",
+                                          margin: EdgeInsets.only(bottom: 50),
+                                          icon: Icon(
+                                            Icons.warning,
+                                            color: Colors.red,
+                                          ),
+                                          snackPosition:
+                                              GET.SnackPosition.BOTTOM,
+                                        );
+                                      } else {
+                                        tagSheet(
+                                                context, width, height, profile)
+                                            .then((value) => setState(() {}));
+                                      }
+                                    },
+                                    icon: Icon(Icons.chevron_right_outlined)),
+                              )
                             ],
                           ),
                         )
@@ -408,214 +478,288 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
     );
   }
 
-  Widget buildHobbyForm({required MyProfileDetail profile}) => Container(
-        child: Card(
-          child: ListTile(
-              leading: Icon(Icons.star),
-              title: Text(
-                "관심사",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Container(
-                child: Wrap(
-                  spacing: 0.5,
-                  children: profile.userHobby.map((hobby) {
-                    return Chip(
-                      label: Text(hobby),
-                      labelStyle: TextStyle(fontSize: 16),
-                      backgroundColor: titleColor,
-                      deleteIconColor: Colors.red[300],
-                      onDeleted: () async {
-                        int userHobby = profile.userHobby.indexOf(hobby);
-                        int userHobbyIdx = profile.userHobbyIdx[userHobby];
+  jusoToFormat(Juso juso, MyProfileDetail profile) {
+    profile.mainAddr = mainAdressFormat(juso.sido);
 
-                        await togetherGetAPI("/user/delete_hobby",
-                            "?user_hobby_idxes=$userHobbyIdx");
-                        setState(() {
-                          profile.userHobby.remove(hobby);
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-              ),
-              trailing: TextButton(
-                  onPressed: () async {
-                    await togetherGetAPI("/user/edit_hobby", "").then((value) {
-                      setState(() {
-                        value as List<FetchHobby>;
-                        hobbyList = value;
-                      });
-                    });
+    profile.referenceAddr = juso.sigungu;
+    profile.detailAddr = juso.address.split(juso.sigungu).last;
+    profile.postNum = juso.zonecode;
 
-                    List<String> fetchCategoryName = [];
-                    List<String> fetchTagName = [];
-                    List<String> fetchCategoryIdx = [];
-                    List<String> fetchTagIdx = [];
+    print("detail_addr: " + juso.sido);
+    print("reference_addr: " + juso.sigungu);
+    print("main_addr: " + juso.address.split(juso.sigungu).last);
+  }
 
-                    Map mappingIdx = Map<String, String>();
-                    Map mappingName = Map<String, String>();
-
-                    hobbyList.forEach((element) {
-                      if (fetchCategoryName
-                              .contains(element.hobbyName.keys.first) ==
-                          false) {
-                        fetchCategoryName.add(element.hobbyName.keys.first);
-                        fetchCategoryIdx.add(element.hobbyIdx.keys.first);
-                      }
-                      if (fetchTagName
-                              .contains(element.hobbyName.values.first) ==
-                          false) {
-                        fetchTagName.add(element.hobbyName.values.first);
-                        fetchTagIdx.add(element.hobbyIdx.values.first);
-                      }
-
-                      element.hobbyIdx.forEach((key, value) {
-                        mappingIdx[value] = key;
-                      });
-
-                      element.hobbyName.forEach((key, value) {
-                        mappingName[value] = key;
-                      });
-                    });
-
-                    if (fetchCategoryName.contains("기타") == false) {
-                      fetchCategoryIdx.insert(fetchCategoryIdx.length, "0");
-                      fetchCategoryName.insert(fetchCategoryName.length, "기타");
-                    }
-
-                    Map mappingCategory = Map<String, String>();
-                    Map mappingTag = Map<String, String>();
-
-                    fetchCategoryIdx.forEach((element) {
-                      var index = fetchCategoryIdx.indexOf(element);
-
-                      mappingCategory[fetchCategoryIdx[index]] =
-                          fetchCategoryName[index];
-                    });
-
-                    fetchTagIdx.forEach((element) {
-                      var index = fetchTagIdx.indexOf(element);
-
-                      mappingTag[fetchTagIdx[index]] = fetchTagName[index];
-                    });
-
-                    print(mappingCategory);
-                    print(mappingTag);
-
-                    selectedCategory = fetchCategoryName[0];
-
-                    if (profile.userHobby.length >= 4) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("관심사는 최대 4개까지 설정할수 있습니다.")));
-                    } else {
-                      showModalBottomSheet(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(16),
-                                  topRight: Radius.circular(16))),
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (context) {
-                            double width = MediaQuery.of(context).size.width;
-
-                            return SingleChildScrollView(
-                              child:
-                                  StatefulBuilder(builder: (context, setState) {
-                                return Padding(
-                                  padding: MediaQuery.of(context).viewInsets,
-                                  child: Container(
-                                    child: Column(
-                                      children: [
-                                        BottomSheetTopBar(
-                                            title: "관심사 변경",
-                                            onPressed: () async {
-                                              // var userIdx =
-                                              //     Provider.of<SignInModel>(
-                                              //             context,
-                                              //             listen: false)
-                                              //         .userIdx;
-
-                                              //Navigator.of(context).pop();
-                                            }),
-                                        Container(
-                                          padding: EdgeInsets.all(width * 0.02),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceEvenly,
-                                            children: [
-                                              Column(
-                                                children: [
-                                                  Text("카테고리 선택",
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize:
-                                                              width * 0.048)),
-                                                  DropdownButton(
-                                                    value: selectedTag,
-                                                    items: fetchCategoryName
-                                                        .map((value) {
-                                                      print(value);
-                                                      return DropdownMenuItem(
-                                                          // value: value,
-                                                          child: Text(value));
-                                                    }).toList(),
-                                                  )
-                                                ],
-                                              ),
-                                              Column(
-                                                children: [
-                                                  Text("태그 선택",
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize:
-                                                              width * 0.048)),
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }),
-                            );
-                          });
-                    }
-                  },
-                  child: Text("Edit"))),
-        ),
-      );
-
-  void showNickNameSheet(MyProfileDetail profile) {
-    showModalBottomSheet(
+  tagSheet(BuildContext context, double width, double height,
+      MyProfileDetail profile) {
+    return showModalBottomSheet(
+        isScrollControlled: true,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(16), topRight: Radius.circular(16))),
         context: context,
-        isScrollControlled: true,
         builder: (context) {
-          double width = MediaQuery.of(context).size.width;
-          return SingleChildScrollView(
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return Padding(
-                  padding: MediaQuery.of(context).viewInsets,
-                  child: Form(
-                    key: nickNameFormkey,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: width * 0.02,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+          return StatefulBuilder(builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Padding(
+                padding: MediaQuery.of(context).viewInsets,
+                child: Container(
+                  padding: EdgeInsets.only(
+                      left: width * 0.08,
+                      right: width * 0.08,
+                      top: height * 0.02,
+                      bottom: height * 0.02),
+                  child: Wrap(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          BottomSheetTopBar(
-                              title: "닉네임 변경",
-                              onPressed: () async {
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Add Hobby",
+                                style: headingStyle,
+                              ),
+                              ElevatedButton(
+                                  onPressed: () async {
+                                    var bigIdx;
+                                    var smallIdx;
+                                    var bigName;
+                                    var smallName;
+                                    var userIdx = Provider.of<SignInModel>(
+                                            context,
+                                            listen: false)
+                                        .userIdx;
+
+                                    if (selectedCategory == "기타") {
+                                      if (selectedTag == "기타") {
+                                        bigIdx = -1;
+                                        smallIdx = -1;
+                                        bigName = categoryController.text;
+                                        smallName = tagController.text;
+                                      }
+                                    } else {
+                                      if (selectedTag == "기타") {
+                                        bigIdx =
+                                            mappingCategory[selectedCategory];
+                                        bigName = selectedCategory;
+                                        smallIdx = -1;
+                                        smallName = tagController.text;
+                                      } else {
+                                        bigIdx =
+                                            mappingCategory[selectedCategory];
+                                        bigName = selectedCategory;
+                                        smallIdx = mappingTag[selectedTag];
+                                        smallName = selectedTag;
+                                      }
+                                    }
+
+                                    print(bigIdx);
+                                    print(bigName);
+                                    print(smallIdx);
+                                    print(smallName);
+                                    await togetherPostAPI(
+                                        "/user/add_hobby",
+                                        jsonEncode({
+                                          "user_idx": userIdx,
+                                          "big_idx": bigIdx,
+                                          "small_idx": smallIdx,
+                                          "big_name": bigName,
+                                          "small_name": smallName
+                                        }));
+                                    setState(() {
+                                      if (profile.userHobby
+                                              .contains(selectedTag) ==
+                                          false)
+                                        profile.userHobby.add(selectedTag);
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                  style: elevatedStyle,
+                                  child: Text("+ Add"))
+                            ],
+                          ),
+                          MyInputField(
+                            title: "Select Category",
+                            hint: selectedCategory,
+                            suffixIcon: DropdownButton(
+                              dropdownColor: Colors.blueGrey,
+                              underline: Container(),
+                              value: selectedCategory,
+                              items: categoryName.map((value) {
+                                return DropdownMenuItem(
+                                    value: value,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 14,
+                                      ),
+                                      child: Text(value,
+                                          style: editSubTitleStyle.copyWith(
+                                              color: Colors.white)),
+                                    ));
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCategory = value.toString();
+                                  containTag = [];
+                                  mappingName.keys.forEach((element) {
+                                    if (mappingName[element] ==
+                                        selectedCategory)
+                                      containTag.add(element);
+                                  });
+                                  containTag.add('기타');
+                                  selectedTag = containTag[0];
+
+                                  print(selectedTag);
+                                });
+                              },
+                            ),
+                          ),
+                          MyInputField(
+                            title: "Select Tag",
+                            hint: selectedTag,
+                            suffixIcon: DropdownButton(
+                              dropdownColor: Colors.blueGrey,
+                              underline: Container(),
+                              value: selectedTag,
+                              items: containTag.map((value) {
+                                return DropdownMenuItem(
+                                    value: value,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 14,
+                                      ),
+                                      child: Text(value,
+                                          style: editSubTitleStyle.copyWith(
+                                              color: Colors.white)),
+                                    ));
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedTag = value.toString();
+                                });
+                              },
+                            ),
+                          ),
+                          Visibility(
+                              visible: selectedCategory == "기타",
+                              child: MyInputField(
+                                controller: categoryController,
+                                title: "Category",
+                                hint: "Input Category",
+                              )),
+                          Visibility(
+                              visible: selectedCategory == "기타" ||
+                                  selectedTag == "기타",
+                              child: MyInputField(
+                                controller: tagController,
+                                title: "Tag",
+                                hint: "Input Tag",
+                              )),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          });
+        });
+  }
+
+  birthSheet(double width, double height, BuildContext context,
+      MyProfileDetail profile) {
+    String year = profile.userBirth.split('-').first;
+    String month = profile.userBirth.split('-').last.split('-').first;
+    String day = profile.userBirth.split('-').last.split('-').last;
+
+    DateTime initalDate =
+        DateTime(int.parse(year), int.parse(month), int.parse(day));
+    GET.Get.bottomSheet(Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+      ),
+      child: Wrap(
+        children: [
+          BottomSheetTopBar(
+              title: "생일 변경",
+              onPressed: () async {
+                var userIdx =
+                    Provider.of<SignInModel>(context, listen: false).userIdx;
+
+                await togetherPostAPI(
+                  "/user/edit_detail_profile",
+                  jsonEncode(
+                    {
+                      "user_idx": userIdx,
+                      "flag": 'birth',
+                      "value": initalDate.toIso8601String().substring(0, 10)
+                    },
+                  ),
+                );
+                setState(() {
+                  profile.userBirth =
+                      initalDate.toIso8601String().substring(0, 10);
+                });
+                Navigator.of(context).pop();
+              }),
+          Container(
+            height: 300,
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.date,
+              initialDateTime: initalDate,
+              onDateTimeChanged: (DateTime value) {
+                initalDate = value;
+              },
+            ),
+          ),
+        ],
+      ),
+    ));
+  }
+
+  nickNameSheet(double width, double height, BuildContext context,
+      MyProfileDetail profile) async {
+    var nickNameFlag = "not yet";
+    GET.Get.bottomSheet(Wrap(
+      children: [
+        Form(
+          key: nickNameFormkey,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.only(
+                      left: width * 0.04,
+                      right: width * 0.04,
+                      bottom: height * 0.04),
+                  child: MyInputField(
+                    title: "Nickname",
+                    hint: "Input Nickname",
+                    controller: nickNameController,
+                    titleButton: ElevatedButton(
+                        onPressed: () async {
+                          if (nickNameFormkey.currentState!.validate()) {
+                            await togetherGetAPI("/user/validationNickname",
+                                    "?user_nickname=${nickNameController.text}")
+                                .then((value) async {
+                              if (value != null)
+                                setState(() {
+                                  print(nickNameFlag);
+                                  nickNameFlag = value.toString();
+                                  print(nickNameFlag);
+                                  setState(() {});
+                                });
+
+                              if (nickNameFlag == "permit") {
                                 var userIdx = Provider.of<SignInModel>(context,
                                         listen: false)
                                     .userIdx;
@@ -634,321 +778,126 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                       nickNameController.text;
                                 });
                                 Navigator.of(context).pop();
-                              }),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: width * 0.04,
-                            ),
-                            // decoration: BoxDecoration(
-                            //     border: Border(
-                            //         bottom: BorderSide(
-                            //             width: 1, color: Colors.grey))),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Container(
-                                  width: width * 0.6,
-                                  child: TextFormField(
-                                    controller: nickNameController,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        nickNameFlag = "not check";
-                                      });
-                                    },
-                                    validator: (value) {
-                                      if (value!.isEmpty)
-                                        return "사용할 닉네임을 입력해 주세요.";
-                                      if (value == profile.userNickName)
-                                        return "현재 내가 사용중인 닉네임으로\n변경할 수 없습니다.";
-                                      if (nickNameFlag == "duplication")
-                                        return "사용중인 닉네임 입니다.\n닉네임을 다시 입력하세요";
-                                      if (nickNameFlag == "length_error")
-                                        return "닉네임은 2 ~ 10자리로 입력하세여";
-                                      if (nickNameFlag == "not_nickname")
-                                        return "닉네임 형식을 다시 확인해 주세요.";
-                                      if (nickNameFlag == "not check")
-                                        return null;
-                                    },
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                  ),
-                                ),
-                                ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                        primary: titleColor),
-                                    onPressed: () async {
-                                      if (nickNameFormkey.currentState!
-                                          .validate()) {
-                                        var code = await togetherGetAPI(
-                                            "/user/validationNickname",
-                                            "?user_nickname=${nickNameController.text}");
-                                        print(code);
-                                        setState(() {
-                                          nickNameFlag = code.toString();
-                                        });
-                                      }
-                                    },
-                                    child: Text("중복확인"))
-                              ],
-                            ),
-                          ),
-                          AnimatedOpacity(
-                            duration: const Duration(milliseconds: 500),
-                            opacity: nickNameFlag == "permit" ? 1.0 : 0.0,
-                            child: Text("사용할수 있는 닉네임 입니다.",
-                                textAlign: TextAlign.start,
-                                style: TextStyle(color: Colors.blueAccent)),
-                          )
-                        ],
-                      ),
-                    ),
+                              }
+                            });
+                          }
+                        },
+                        style: elevatedStyle,
+                        child: Text(
+                          "변경 하기",
+                        )),
+                    onChanged: (value) {
+                      setState(() {
+                        nickNameFlag = "not yet";
+                      });
+                    },
+                    validator: (value) {
+                      if (value!.isEmpty) return "사용할 닉네임을 입력해 주세요.";
+                      if (value == profile.userNickName)
+                        return "현재 내가 사용중인 닉네임으로 변경할 수 없습니다.";
+                      else if (nickNameFlag == "duplication")
+                        return "사용중인 닉네임 입니다. 닉네임을 다시 입력하세요";
+                      else if (nickNameFlag == "length_error")
+                        return "닉네임은 2 ~ 10자리로 입력하세여";
+                      else if (nickNameFlag == "not_nickname")
+                        return "닉네임 형식을 다시 확인해 주세요.";
+                      else if (nickNameFlag == "not check") return null;
+                    },
                   ),
-                );
-              },
+                ),
+              ],
             ),
-          );
-        }).then((value) => setState(() {
-          nickNameController.clear();
-        }));
+          ),
+        )
+      ],
+    ));
   }
 
-  void showEmailSheet(MyProfileDetail profile) {
-    showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
-        context: context,
-        isScrollControlled: true,
-        builder: (context) {
-          double width = MediaQuery.of(context).size.width;
-          return SingleChildScrollView(
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return Padding(
-                  padding: MediaQuery.of(context).viewInsets,
-                  child: Container(
-                    padding: EdgeInsets.only(top: width * 0.02),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        BottomSheetTopBar(
-                            title: "이메일 변경",
-                            onPressed: () async {
-                              if (emailFormKey.currentState!.validate() &&
-                                  emailFlag == "permit" &&
-                                  emailAuthFlag.value == "permit") {
-                                var userIdx = Provider.of<SignInModel>(context,
-                                        listen: false)
-                                    .userIdx;
-
-                                await togetherPostAPI(
-                                  "/user/editEmailPhone",
-                                  jsonEncode(
-                                    {
-                                      "user_idx": userIdx,
-                                      "value": emailController.text,
-                                      "type": "E",
-                                      "code": "true"
-                                    },
-                                  ),
-                                );
-                                setState(() {
-                                  profile.userEmail = emailController.text;
-                                });
-                                Navigator.of(context).pop();
-                              }
-                            }),
-                        Form(
-                          key: emailFormKey,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: width * 0.04,
-                                horizontal: width * 0.02),
-                            decoration: BoxDecoration(
-                                border: Border(
-                                    bottom: BorderSide(
-                                        width: 1, color: Colors.grey))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: width * 0.6,
-                                  child: TextFormField(
-                                    controller: emailController,
-                                    decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16)),
-                                        hintText: "이메일",
-                                        prefixIcon: Icon(Icons.email_outlined)),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        emailFlag = "not check";
-                                        emailAuthFlag.value = "not yet auth";
-                                      });
-                                    },
-                                    validator: (value) {
-                                      if (value!.isEmpty)
-                                        return "사용할 이메일을 입력해 주세요.";
-                                      if (value == profile.userEmail)
-                                        return "현재 내가 사용중인 Email로는\n변경할 수 없습니다.";
-                                      if (emailFlag == "duplication")
-                                        return "사용중인 이메일 입니다.\n이메일을 다시 입력하세요";
-                                      if (emailFlag == "not_email")
-                                        return "이메일 형식을 다시 확인해 주세요.";
-                                      if (emailFlag == "not check") return null;
-                                    },
-                                    autovalidateMode:
-                                        AutovalidateMode.onUserInteraction,
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      primary: titleColor),
-                                  onPressed: () async {
-                                    if (emailFormKey.currentState!.validate()) {
-                                      var userIdx = Provider.of<SignInModel>(
-                                              context,
-                                              listen: false)
-                                          .userIdx;
-
-                                      if (codeController.isRunning)
-                                        codeController.stop();
-                                      emailFlag = "";
-                                      emailAuthController.clear();
-                                      emailAuthFlag.value = "not yet";
-
-                                      var code = await togetherPostAPI(
-                                        "/user/validationEditEmail",
-                                        jsonEncode(
-                                          {
-                                            "user_idx": userIdx,
-                                            "user_email": emailController.text,
-                                          },
-                                        ),
-                                      );
-                                      print(code);
-                                      setState(() {
-                                        emailFlag = code.toString();
-                                      });
-                                      if (emailFlag == "permit") {
-                                        print("카운트 시작");
-                                        codeController = CountdownController(
-                                            duration: Duration(seconds: 90),
-                                            onEnd: () {
-                                              emailAuthFlag.value = "time over";
-                                            });
-                                        codeController.start();
-                                      }
-                                    }
-                                  },
-                                  child: Text(emailFlag != "permit"
-                                      ? "인증번호 요청"
-                                      : emailAuthFlag.value == "permit"
-                                          ? "인증완료"
-                                          : "재발송"),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        ValueListenableBuilder(
-                          builder:
-                              (BuildContext context, value, Widget? child) {
-                            return Visibility(
-                              visible: emailFlag == "permit" &&
-                                  emailAuthFlag.value != "permit",
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.04,
-                                    horizontal: width * 0.02),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: width * 0.6,
-                                      child: TextFormField(
-                                        controller: emailAuthController,
-                                        decoration: InputDecoration(
-                                            border: OutlineInputBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16)),
-                                            hintText: "인증번호",
-                                            prefixIcon: Icon(Icons.vpn_key)),
-                                        onChanged: (value) {
-                                          setState(() {});
-                                        },
-                                        validator: (value) {
-                                          if (value!.isEmpty)
-                                            return "인증번호를 입력하세요";
-                                          if (emailAuthFlag.value == "error")
-                                            return "인증번호가 다시 한번 확인 후 입력해 주세요";
-                                          if (emailAuthFlag.value ==
-                                              "time over")
-                                            return "인증번호 입력 시간이 초과하였습니다.\n다시 시도해 주세요";
-                                        },
-                                        autovalidateMode:
-                                            AutovalidateMode.onUserInteraction,
-                                      ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                                primary: titleColor),
-                                            onPressed: () async {
-                                              codeController.stop();
-
-                                              var code = await togetherGetAPI(
-                                                  "/user/checkDeviceValidation",
-                                                  "?validation_code=${emailAuthController.text}&code_type=E&user_device=${emailController.text}");
-                                              print(code);
-                                              emailAuthFlag.value = code;
-                                              if (emailAuthFlag.value ==
-                                                  "permit") {
-                                                if (codeController.isRunning)
-                                                  codeController.stop();
-                                              } else {
-                                                if (codeController.isRunning ==
-                                                    false)
-                                                  codeController.start();
-                                              }
-                                            },
-                                            child: Text("인증번호 확인")),
-                                        Countdown(
-                                          countdownController: codeController,
-                                          builder: (context, Duration time) {
-                                            print("카운트 다운 빌드 실행");
-                                            return Text(
-                                                durationFormatTime(time));
-                                          },
-                                        )
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                          valueListenable: emailAuthFlag,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+  Row profileHeader(MyProfileDetail profile) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Container(
+            height: 100,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  'My Profile',
+                  style: subHeadingStyle,
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Text(
+                  profile.userName,
+                  style: headingStyle.copyWith(color: darkBlue),
+                ),
+              ],
             ),
-          );
-        }).then((value) => setState(() {
-          if (codeController.isRunning) codeController.stop();
-        }));
+          ),
+        ),
+        pickedFile == null
+            ? Container(
+                child: CircleAvatar(
+                  radius: 55,
+                  backgroundColor: Colors.grey[300],
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: NetworkImage(profile.userPhoto),
+                  ),
+                ),
+              )
+            : Container(
+                child: CircleAvatar(
+                  radius: 55,
+                  backgroundColor: Colors.grey[300],
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: FileImage(_image),
+                  ),
+                ),
+              ),
+      ],
+    );
+  }
+
+  iconButton(double width, String name, IconData icon, Function()? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: width * 0.2,
+        height: width * 0.2,
+        padding: EdgeInsets.all(4),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xffffe0e0e0),
+                spreadRadius: 2,
+                blurRadius: 2,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ]),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: pinkClr,
+              size: 40,
+            ),
+            Text(
+              name,
+              style: editSubTitleStyle,
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   void showPhoneSheet(MyProfileDetail profile) {
@@ -1190,14 +1139,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
         }));
   }
 
-  void showBirthSheet(MyProfileDetail profile) {
-    String year = profile.userBirth.split('-').first;
-    String month = profile.userBirth.split('-').last.split('-').first;
-    String day = profile.userBirth.split('-').last.split('-').last;
-
-    DateTime initalDate =
-        DateTime(int.parse(year), int.parse(month), int.parse(day));
-
+  void licenseSheet(MyProfileDetail profile) {
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
@@ -1206,73 +1148,8 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
         isScrollControlled: true,
         builder: (context) {
           double width = MediaQuery.of(context).size.width;
-          return SingleChildScrollView(
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return Padding(
-                  padding: MediaQuery.of(context).viewInsets,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      vertical: width * 0.02,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        BottomSheetTopBar(
-                            title: "생일 변경",
-                            onPressed: () async {
-                              var userIdx = Provider.of<SignInModel>(context,
-                                      listen: false)
-                                  .userIdx;
+          double height = MediaQuery.of(context).size.height;
 
-                              await togetherPostAPI(
-                                "/user/edit_detail_profile",
-                                jsonEncode(
-                                  {
-                                    "user_idx": userIdx,
-                                    "flag": 'birth',
-                                    "value": initalDate
-                                        .toIso8601String()
-                                        .substring(0, 10)
-                                  },
-                                ),
-                              );
-                              setState(() {
-                                profile.userBirth = initalDate
-                                    .toIso8601String()
-                                    .substring(0, 10);
-                              });
-                              Navigator.of(context).pop();
-                            }),
-                        Container(
-                          height: 300,
-                          child: CupertinoDatePicker(
-                            mode: CupertinoDatePickerMode.date,
-                            initialDateTime: initalDate,
-                            onDateTimeChanged: (DateTime value) {
-                              initalDate = value;
-                            },
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        }).then((value) => setState(() {}));
-  }
-
-  void showLicenseSheet(MyProfileDetail profile) {
-    showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
-        context: context,
-        isScrollControlled: true,
-        builder: (context) {
-          double width = MediaQuery.of(context).size.width;
           return SingleChildScrollView(
             child: StatefulBuilder(
               builder: (context, setState) {
@@ -1314,57 +1191,32 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                               Navigator.of(context).pop();
                             }),
                         Container(
-                          margin: EdgeInsets.symmetric(
-                              vertical: width * 0.01, horizontal: width * 0.04),
-                          child: TextFormFieldWidget(
-                              header: Text("자격증 1"),
-                              body: Container(
-                                width: width * 0.8,
-                                child: TextFormField(
-                                  controller: license1Controller,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
+                          padding: EdgeInsets.only(
+                              left: width * 0.04,
+                              right: width * 0.04,
+                              bottom: height * 0.04),
+                          child: Column(
+                            children: [
+                              MyInputField(
+                                maxLine: 1,
+                                title: "Certification1",
+                                hint: "Input Certification",
+                                controller: license1Controller,
                               ),
-                              footer: null,
-                              heightPadding: 0),
-                        ),
-                        Divider(color: Colors.grey),
-                        Container(
-                          margin: EdgeInsets.symmetric(
-                              vertical: width * 0.01, horizontal: width * 0.04),
-                          child: TextFormFieldWidget(
-                              header: Text("자격증 2"),
-                              body: Container(
-                                width: width * 0.8,
-                                child: TextFormField(
-                                  controller: license2Controller,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
+                              MyInputField(
+                                maxLine: 1,
+                                title: "Certification2",
+                                hint: "Input Certification",
+                                controller: license2Controller,
                               ),
-                              footer: null,
-                              heightPadding: 0),
-                        ),
-                        Divider(color: Colors.grey),
-                        Container(
-                          margin: EdgeInsets.symmetric(
-                              vertical: width * 0.01, horizontal: width * 0.04),
-                          child: TextFormFieldWidget(
-                              header: Text("자격증 3"),
-                              body: Container(
-                                width: width * 0.8,
-                                child: TextFormField(
-                                  controller: license3Controller,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
+                              MyInputField(
+                                maxLine: 1,
+                                title: "certification3",
+                                hint: "Input Certification",
+                                controller: license3Controller,
                               ),
-                              footer: null,
-                              heightPadding: 0),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -1376,24 +1228,20 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
         }).then((value) => setState(() {}));
   }
 
-  void showMbtiSheet(MyProfileDetail profile) {
+  void mbtiSheet(MyProfileDetail profile, double width, double height) {
+    selectedMBTI = profile.userMbti;
+
     showModalBottomSheet(
+        context: context,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(16), topRight: Radius.circular(16))),
-        context: context,
-        isScrollControlled: true,
         builder: (context) {
-          double width = MediaQuery.of(context).size.width;
-          return SingleChildScrollView(
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: width * 0.02,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+          return StatefulBuilder(builder: (context, setState) {
+            return Container(
+              child: Wrap(
+                children: [
+                  Column(
                     children: [
                       BottomSheetTopBar(
                           title: "MBTI 변경",
@@ -1416,79 +1264,74 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                             setState(() {});
                             Navigator.of(context).pop();
                           }),
-                      GridView.count(
-                          shrinkWrap: true,
-                          crossAxisCount: 4,
-                          children: mbtiList.map((mbti) {
-                            int index = mbtiList.indexOf(mbti);
-
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  profile.userMbti = mbti;
-                                });
-                              },
-                              child: Container(
-                                child: Card(
-                                  color: profile.userMbti == mbti
-                                      ? titleColor
-                                      : Colors.grey[100],
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        mbti,
-                                        style: TextStyle(
-                                            fontWeight: profile.userMbti == mbti
-                                                ? FontWeight.bold
-                                                : FontWeight.normal),
-                                      ),
-                                      Text(
-                                        mbtiType[index],
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                            fontWeight: profile.userMbti == mbti
-                                                ? FontWeight.bold
-                                                : FontWeight.normal),
-                                      ),
-                                      Text(
-                                        mbtiType2[index],
-                                        style: TextStyle(
-                                            fontWeight: profile.userMbti == mbti
-                                                ? FontWeight.bold
-                                                : FontWeight.normal),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList())
+                      Container(
+                        padding: EdgeInsets.only(
+                            left: width * 0.08,
+                            right: width * 0.08,
+                            top: height * 0.02,
+                            bottom: height * 0.02),
+                        child: MyInputField(
+                          title: "MBTI",
+                          hint: profile.userMbti,
+                          suffixIcon: DropdownButton(
+                            dropdownColor: Colors.blueGrey,
+                            underline: Container(),
+                            value: profile.userMbti,
+                            items: mbtiList.map((value) {
+                              return DropdownMenuItem(
+                                  value: value,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(value,
+                                        style: editSubTitleStyle.copyWith(
+                                            color: Colors.white)),
+                                  ));
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                profile.userMbti = value.toString();
+                              });
+                            },
+                          ),
+                        ),
+                      )
                     ],
                   ),
-                );
-              },
-            ),
-          );
+                ],
+              ),
+            );
+          });
         }).then((value) => setState(() {}));
   }
 
-  Widget buildProfileEditForm(
-          IconData data, String title, String name, VoidCallback onPressed) =>
-      Container(
-        child: Card(
-          child: ListTile(
-            leading: Icon(data),
-            title: Text(
-              name,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(
-              title,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            trailing: TextButton(onPressed: onPressed, child: Text("Edit")),
-          ),
+  logOutFunction() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('idx');
+    prefs.remove('name');
+    prefs.remove('photo');
+    Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (context) => SignInPage()));
+  }
+
+  _appBar(BuildContext context, IconData icon) {
+    return AppBar(
+      backgroundColor: Color(0xffD0EBFF),
+      elevation: 0,
+      leading: IconButton(
+        onPressed: () {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => MainPage()));
+        },
+        icon: Icon(Icons.home_outlined, color: Colors.grey),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {
+            logOutFunction();
+          },
+          icon: Icon(icon, color: Colors.grey),
         ),
-      );
+      ],
+    );
+  }
 }

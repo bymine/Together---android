@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
+import 'package:together_android/utils.dart';
 
 class MyMemberCard extends StatefulWidget {
   final MemberResume? resume;
@@ -54,7 +56,10 @@ class _MyMemberCardState extends State<MyMemberCard> {
         body: SingleChildScrollView(
           child: Container(
             padding: EdgeInsets.only(
-                left: width * 0.08, right: width * 0.08, bottom: height * 0.02),
+                left: width * 0.08,
+                right: width * 0.08,
+                bottom: height * 0.02,
+                top: height * 0.02),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -62,13 +67,14 @@ class _MyMemberCardState extends State<MyMemberCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      widget.resume == null
-                          ? "Add Resume Card"
-                          : "My Resume Card",
+                      widget.resume == null ? "Add Card" : "My Card",
                       style: headingStyle,
                     ),
-                    ElevatedButton(
-                        onPressed: () async {
+                    MyButton(
+                        label: widget.resume == null
+                            ? "+ Add Card"
+                            : "Update Card",
+                        onTap: () async {
                           var userIdx =
                               Provider.of<SignInModel>(context, listen: false)
                                   .userIdx;
@@ -81,11 +87,7 @@ class _MyMemberCardState extends State<MyMemberCard> {
                               }),
                               "/$userIdx");
                           Navigator.of(context).pop(true);
-                        },
-                        style: elevatedStyle,
-                        child: Text(widget.resume == null
-                            ? "+ Add Card"
-                            : "Update Card"))
+                        })
                   ],
                 ),
                 MyInputField(
@@ -115,27 +117,30 @@ class _MyMemberCardState extends State<MyMemberCard> {
   String myInfoString(MemberResume? resume) {
     String license;
     String hobby;
-    if (resume != null) {
-      if (resume.licens.isEmpty)
-        license = "";
-      else
-        license =
-            resume.licens.toString().substring(1, resume.licens.length - 1);
+    String address = addressToString(
+        false, resume!.mainAddr, resume.referenceAddr, resume.detailAddr);
+    if (resume.licens.isEmpty)
+      license = "";
+    else
+      license = resume.licens
+          .toString()
+          .substring(1, resume.licens.toString().length - 1);
 
-      if (resume.hobbys.isEmpty)
-        hobby = "";
-      else
-        hobby = resume.hobbys.toString().substring(1, resume.hobbys.length - 1);
+    if (resume.hobbys.isEmpty)
+      hobby = "";
+    else {
+      hobby = resume.hobbys
+          .toString()
+          .substring(1, resume.hobbys.toString().length - 1);
+    }
 
-      return "Name: ${resume.name}\n" +
-          "NickName: ${resume.nickName}\n" +
-          "Age: ${resume.age}\n" +
-          "MBTI: ${resume.mbti}\n" +
-          "Address: ${resume.mainAddr}\n"
-              "license: $license\n" +
-          "hobby: $hobby\n";
-    } else
-      return "";
+    return "Name: ${resume.name}\n" +
+        "NickName: ${resume.nickName}\n" +
+        "Age: ${resume.age}\n" +
+        "MBTI: ${resume.mbti}\n" +
+        "Address: $address\n"
+            "license: $license\n" +
+        "hobby: $hobby\n";
   }
 
   AppBar _appBar(BuildContext context) {
