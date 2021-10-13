@@ -5,7 +5,10 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_project_model/project_schedule_model.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/after_project/project_schedule/add_project_schedule_page.dart';
+import 'package:together_android/page/after_project/project_schedule/project_schedule_detail_page.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
 
@@ -41,6 +44,7 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
         Provider.of<LiveProject>(context, listen: false).projectIdx;
     var list =
         await togetherGetAPI("/project/main", "?project_idx=$proejctIdx");
+
     return list as List<Schedule>;
   }
 
@@ -103,12 +107,11 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
 
   @override
   Widget build(BuildContext context) {
+    var photo = Provider.of<SignInModel>(context, listen: false).userPhoto;
+
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      //backgroundColor: Colors.green[50],
-      appBar: AppBar(
-        title: Text("프로젝트 일정"),
-      ),
+      appBar: _appBar(context, photo),
       body: Container(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -166,42 +169,54 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
                       int to = getHashCode(
                           DateTime.parse(_selectedSchedule[index].endTime));
 
-                      return Card(
-                        child: ListTile(
-                          leading: Container(
-                            width: width * 0.15,
-                            decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: NetworkImage(
-                                        _selectedSchedule[index].photo))),
-                          ),
-                          title: Text(_selectedSchedule[index].title),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(_selectedSchedule[index].content),
-                              from == to
-                                  ? Text(toDateTime(
-                                        DateTime.parse(
-                                            _selectedSchedule[index].startTime),
-                                      ) +
-                                      " ~ " +
-                                      toTime(DateTime.parse(
-                                          _selectedSchedule[index].endTime)))
-                                  : Text(
-                                      toDateTime(
-                                            DateTime.parse(
-                                                _selectedSchedule[index]
-                                                    .startTime),
-                                          ) +
-                                          " ~ " +
-                                          toDateTime(
-                                            DateTime.parse(
-                                                _selectedSchedule[index]
-                                                    .endTime),
-                                          ),
-                                    ),
-                            ],
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => SchdeuleDetailPage(
+                                    schedule: _selectedSchedule[index],
+                                  )));
+                        },
+                        child: Card(
+                          child: ListTile(
+                            leading: Container(
+                              width: width * 0.15,
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: NetworkImage(
+                                          _selectedSchedule[index].photo))),
+                            ),
+                            title: Text(_selectedSchedule[index].title),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _selectedSchedule[index].content,
+                                  maxLines: 2,
+                                ),
+                                from == to
+                                    ? Text(toDateTime(
+                                          DateTime.parse(
+                                              _selectedSchedule[index]
+                                                  .startTime),
+                                        ) +
+                                        " ~ " +
+                                        toTime(DateTime.parse(
+                                            _selectedSchedule[index].endTime)))
+                                    : Text(
+                                        toDate(
+                                              DateTime.parse(
+                                                  _selectedSchedule[index]
+                                                      .startTime),
+                                            ) +
+                                            " ~ " +
+                                            toDate(
+                                              DateTime.parse(
+                                                  _selectedSchedule[index]
+                                                      .endTime),
+                                            ),
+                                      ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -210,7 +225,7 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: titleColor,
+        backgroundColor: Color(0xffD0EBFF),
         onPressed: () async {
           if (_rangeSelectionMode == RangeSelectionMode.toggledOn) {
             startDate = _rangeStart!;
@@ -251,6 +266,28 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
           color: Colors.purple,
         ),
       ),
+    );
+  }
+
+  _appBar(BuildContext context, String photo) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        onPressed: () {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => MainPage()));
+        },
+        icon: Icon(Icons.home_outlined, color: Colors.grey),
+      ),
+      actions: [
+        CircleAvatar(
+          backgroundImage: NetworkImage(photo),
+        ),
+        SizedBox(
+          width: 20,
+        )
+      ],
     );
   }
 }

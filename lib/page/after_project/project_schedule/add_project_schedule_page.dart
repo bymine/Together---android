@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
@@ -108,37 +109,34 @@ class _AddProjectSchdeuleState extends State<AddProjectSchdeule> {
               SizedBox(
                 height: 20,
               ),
-              Container(
+              MyButton(
+                  label: "+ Add Schedule",
                   width: width,
-                  height: height * 0.08,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(primary: titleColor),
-                      onPressed: () async {
-                        var userIdx =
-                            Provider.of<SignInModel>(context, listen: false)
-                                .userIdx;
-                        var projectIdx =
-                            Provider.of<LiveProject>(context, listen: false)
-                                .projectIdx;
-                        Schedule schedule = Schedule(
-                            title: titleController.text,
-                            content: contentController.text,
-                            startTime: widget.startDate.toIso8601String(),
-                            endTime: widget.endDate.toIso8601String(),
-                            projectIdx: projectIdx,
-                            writedIdx: userIdx,
-                            photo:
-                                Provider.of<SignInModel>(context, listen: false)
-                                    .userPhoto);
+                  height: 50,
+                  onTap: () async {
+                    var userIdx =
+                        Provider.of<SignInModel>(context, listen: false)
+                            .userIdx;
+                    var projectIdx =
+                        Provider.of<LiveProject>(context, listen: false)
+                            .projectIdx;
+                    Schedule schedule = Schedule(
+                        title: titleController.text,
+                        content: contentController.text,
+                        startTime: widget.startDate.toIso8601String(),
+                        endTime: widget.endDate.toIso8601String(),
+                        projectIdx: projectIdx,
+                        writedIdx: userIdx,
+                        photo: Provider.of<SignInModel>(context, listen: false)
+                            .userPhoto);
 
-                        await togetherPostAPI(
-                          "/project/addSchedule",
-                          jsonEncode(schedule.toJson()),
-                        );
+                    await togetherPostAPI(
+                      "/project/addSchedule",
+                      jsonEncode(schedule.toJson()),
+                    );
 
-                        Navigator.of(context).pop(schedule);
-                      },
-                      child: Text("+ Add Schdeule")))
+                    Navigator.of(context).pop(schedule);
+                  })
             ],
           ),
         ),

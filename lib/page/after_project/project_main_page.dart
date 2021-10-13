@@ -3,6 +3,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:together_android/page/after_project/project_chat/project_chat_page.dart';
 import 'package:together_android/page/after_project/project_file/project_file_page.dart';
 import 'package:together_android/page/after_project/project_schedule/project_schedule_page.dart';
+import 'package:together_android/page/after_project/project_setting/project_setting_page.dart';
 
 class ProjectMainPage extends StatefulWidget {
   const ProjectMainPage({Key? key}) : super(key: key);
@@ -18,7 +19,7 @@ class _ProjectMainPageState extends State<ProjectMainPage> {
     ProjectSchedulePage(),
     ProjectFilePage(),
     ProjectChatPage(),
-    ProjectSchedulePage(),
+    ProjectSettingPage(),
   ];
 
   @override

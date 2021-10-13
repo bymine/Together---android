@@ -7,9 +7,11 @@ import 'package:http/http.dart' as http;
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
+import 'package:together_android/constant.dart';
 import 'package:together_android/main.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/utils.dart';
 
 StompClient stompClient = StompClient(
@@ -73,20 +75,17 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
   Widget build(BuildContext context) {
     int userIdx = Provider.of<SignInModel>(context).userIdx;
     String userName = Provider.of<SignInModel>(context).userName;
+    String photo = Provider.of<SignInModel>(context).userPhoto;
+
     String userPhoto = Provider.of<SignInModel>(context).userPhoto;
     int projectIdx = Provider.of<LiveProject>(context).projectIdx;
     String projectName = Provider.of<LiveProject>(context).projectName;
 
     print(stompClient.connected);
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: Color(0xffD0EBFF),
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        title: Text(
-          projectName + " 채팅방",
-          maxLines: 1,
-        ),
-      ),
+      appBar: _appBar(context, projectName + " 채팅방", photo),
       body: Container(
         child: Column(
           children: <Widget>[
@@ -95,7 +94,7 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
               child: Container(
                 padding: EdgeInsets.only(top: 10),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
+                  color: Color(0xffD0EBFF),
                 ),
                 child: StreamBuilder(
                     stream: _streamController.stream,
@@ -397,6 +396,34 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
           ),
         ),
       );
+
+  _appBar(BuildContext context, String title, String photo) {
+    return AppBar(
+      backgroundColor: Color(0xffD0EBFF),
+      elevation: 0,
+      leading: IconButton(
+        onPressed: () {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => MainPage()));
+        },
+        icon: Icon(Icons.home_outlined, color: Colors.grey),
+      ),
+      title: Text(
+        title,
+        maxLines: 1,
+        style: editTitleStyle,
+      ),
+      centerTitle: true,
+      actions: [
+        CircleAvatar(
+          backgroundImage: NetworkImage(photo),
+        ),
+        SizedBox(
+          width: 20,
+        )
+      ],
+    );
+  }
 }
 
 class ChatMessage {

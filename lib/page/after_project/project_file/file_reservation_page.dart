@@ -20,6 +20,7 @@ class FileReservation extends StatefulWidget {
 
 class _FileReservationState extends State<FileReservation> {
   late Future future;
+  DatePickerController _controller = DatePickerController();
 
   DateTime date = DateTime.now();
 
@@ -109,8 +110,9 @@ class _FileReservationState extends State<FileReservation> {
                   Container(
                     margin: const EdgeInsets.only(top: 20, left: 10),
                     child: DatePicker(
-                      DateTime.now(),
+                      DateTime.now().add(Duration(days: -3)),
                       height: 100,
+                      controller: _controller,
                       width: 60,
                       initialSelectedDate: DateTime.now(),
                       selectionColor: titleColor,

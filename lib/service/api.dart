@@ -90,6 +90,9 @@ Future togetherGetAPI(String service, String parameter) async {
       var parsedData = json.decode(utf8.decode(response.bodyBytes));
       return parsedData;
 
+    case "/project/detailSchedule":
+      return json.decode(utf8.decode(response.bodyBytes));
+
     case "/member/search/cards":
       print(response.statusCode);
       var returnData = jsonDecode(utf8.decode(response.bodyBytes))
