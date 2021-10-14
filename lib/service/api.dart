@@ -118,7 +118,11 @@ Future togetherGetAPI(String service, String parameter) async {
       var returnData = jsonDecode(utf8.decode(response.bodyBytes))
           .map<SimpleFile>((json) => SimpleFile.fromJson(json))
           .toList();
-      return returnData;
+      if (returnData.toString() == "[]") {
+        return;
+      } else {
+        return returnData;
+      }
 
     case "/file/version":
       var returnData = jsonDecode(utf8.decode(response.bodyBytes))

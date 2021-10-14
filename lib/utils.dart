@@ -1,5 +1,46 @@
 import 'package:intl/intl.dart';
 
+String svgIconAsset(String type) {
+  type = type.toLowerCase();
+  switch (type) {
+    case "png":
+      return "assets/svg_icon/png.svg";
+
+    case "jpg":
+      return "assets/svg_icon/jpg.svg";
+
+    case "doc":
+      return "assets/svg_icon/doc.svg";
+
+    case "csv":
+      return "assets/svg_icon/csv.svg";
+
+    case "docx":
+      return "assets/svg_icon/docx.svg";
+
+    case "pptx":
+      return "assets/svg_icon/pptx.svg";
+
+    case "ppt":
+      return "assets/svg_icon/ppt.svg";
+
+    case "txt":
+      return "assets/svg_icon/txt.svg";
+
+    case "xls":
+      return "assets/svg_icon/xls.svg";
+
+    case "xlsx":
+      return "assets/svg_icon/xlsx.svg";
+
+    case "pdf":
+      return "assets/svg_icon/pdf.svg";
+
+    default:
+      return "assets/svg_icon/default.svg";
+  }
+}
+
 String mainAdressFormat(String mainAddr) {
   print(mainAddr);
   switch (mainAddr) {

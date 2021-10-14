@@ -8,6 +8,7 @@ import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/hobby_model.dart';
 import 'package:together_android/page/after_login/profile/user_address_page.dart';
 import 'package:together_android/service/api.dart';
+import 'package:together_android/utils.dart';
 
 class ConditionSearchPage extends StatefulWidget {
   const ConditionSearchPage({Key? key}) : super(key: key);
@@ -114,8 +115,10 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                           "min_age": _currentRangeValues.start.toInt(),
                           "max_age": _currentRangeValues.end.toInt(),
                           "license": _selectedLicense,
-                          "main_addr": "",
-                          "reference_addr": "",
+                          "main_addr": mainAdressFormat(
+                              jusoToFormat(conditionJuso!, "main")),
+                          "reference_addr":
+                              jusoToFormat(conditionJuso!, "refer"),
                           "detail_addr": "",
                           "hobby_small_idx": postTagIdx,
                         }));
@@ -197,6 +200,37 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
       ),
     );
   }
+
+  String jusoToFormat(Juso juso, String type) {
+    switch (type) {
+      case "main":
+        return juso.sido;
+
+      case "refer":
+        return juso.sigungu;
+
+      case "detail":
+        return juso.address.split(juso.sigungu).last;
+
+      case "all":
+        return juso.address;
+
+      default:
+        return "";
+    }
+  }
+
+  // jusoToFormat(Juso juso, MyProfileDetail profile) {
+  //   profile.mainAddr = mainAdressFormat(juso.sido);
+
+  //   profile.referenceAddr = juso.sigungu;
+  //   profile.detailAddr = juso.address.split(juso.sigungu).last;
+  //   profile.postNum = juso.zonecode;
+
+  //   print("detail_addr: " + juso.sido);
+  //   print("reference_addr: " + juso.sigungu);
+  //   print("main_addr: " + juso.address.split(juso.sigungu).last);
+  // }
 
   tagBottomsheet(BuildContext context, double width, double height) {
     containTag = [];
