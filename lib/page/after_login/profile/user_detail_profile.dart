@@ -20,7 +20,6 @@ import 'package:together_android/model/after_login_model/hobby_model.dart';
 import 'package:together_android/model/after_login_model/invitaion_model.dart';
 import 'package:together_android/model/after_login_model/my_profile_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
-import 'package:together_android/page/after_login/live_project/live_project_page.dart';
 import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/after_login/profile/user_address_page.dart';
 import 'package:together_android/page/after_login/profile/user_invitaion_page.dart';

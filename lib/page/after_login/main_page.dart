@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/page/after_login/live_project/live_project_page.dart';
-import 'package:together_android/page/after_login/match_member/match_member_page.dart';
+import 'package:together_android/page/after_login/match_member/match_member_main_page.dart';
 import 'package:together_android/page/after_login/match_project/match_project_page.dart';
 import 'package:together_android/page/after_login/profile/user_detail_profile.dart';
 

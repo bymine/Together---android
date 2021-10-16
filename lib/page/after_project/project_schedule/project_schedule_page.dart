@@ -108,7 +108,7 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
   @override
   Widget build(BuildContext context) {
     var photo = Provider.of<SignInModel>(context, listen: false).userPhoto;
-
+    print(Provider.of<LiveProject>(context, listen: false).projectIdx);
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: _appBar(context, photo),

@@ -37,7 +37,7 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
   String selectedTag = "롤";
   String selectedAddress = "";
   Juso? conditionJuso;
-
+  bool isSave = false;
   @override
   void initState() {
     super.initState();
@@ -101,8 +101,38 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Detail Search", style: headingStyle),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Detail Search", style: headingStyle),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Checkbox(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                value: isSave,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isSave = value!;
+                                  });
+                                }),
+                          ),
+                          Text(
+                            "Get Recommendations",
+                            style: editTitleStyle,
+                          )
+                        ],
+                      )
+                    ],
+                  ),
                   MyButton(
                       label: "Apply",
                       onTap: () async {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:together_android/page/after_project/project_chat/project_chat_page.dart';
-import 'package:together_android/page/after_project/project_file/project_file_page.dart';
+import 'package:together_android/page/after_project/project_chat/chat_page.dart';
+import 'package:together_android/page/after_project/project_file/file_main_page.dart';
 import 'package:together_android/page/after_project/project_schedule/project_schedule_page.dart';
 import 'package:together_android/page/after_project/project_setting/project_setting_page.dart';
 
@@ -61,7 +61,7 @@ class _ProjectMainPageState extends State<ProjectMainPage> {
               text: 'Schedule',
             ),
             GButton(
-              icon: Icons.text_snippet_outlined,
+              icon: Icons.folder_open,
               text: 'File',
             ),
             GButton(

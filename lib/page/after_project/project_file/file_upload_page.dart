@@ -117,48 +117,56 @@ class _FileUploadPageState extends State<FileUploadPage> {
             MyButton(
                 label: "Upload",
                 onTap: () async {
-                  var userIdx =
-                      Provider.of<SignInModel>(context, listen: false).userIdx;
-                  var projectIdx =
-                      Provider.of<LiveProject>(context, listen: false)
-                          .projectIdx;
-                  String fileOriginName = fileName.value.split('.').first;
-                  String fileExtenstion = fileName.value.split('.').last;
-
-                  FormData formdata = FormData.fromMap({
-                    "multipartfile": await MultipartFile.fromFile(
-                      _file!.path,
-                      filename: fileName.value,
-                    ),
-                    "project_idx": projectIdx,
-                    "file_origin_name": fileOriginName,
-                    "file_extension": fileExtenstion,
-                    "file_type": selectedType,
-                    'user_idx': userIdx,
-                  });
-
-                  String url = "http://101.101.216.93:8080/file/uploadNew";
-
                   try {
-                    final response = await dio.post(url,
-                        data: formdata,
-                        options: Options(
-                            headers: {"Content-Type": "multipart/form-data"}));
+                    var userIdx =
+                        Provider.of<SignInModel>(context, listen: false)
+                            .userIdx;
+                    var projectIdx =
+                        Provider.of<LiveProject>(context, listen: false)
+                            .projectIdx;
+                    String fileOriginName = fileName.value.split('.').first;
+                    String fileExtenstion = fileName.value.split('.').last;
 
-                    print(response.statusCode);
-                    print(response.data);
+                    FormData formdata = FormData.fromMap({
+                      "multipartfile": await MultipartFile.fromFile(
+                        _file!.path,
+                        filename: fileName.value,
+                      ),
+                      "project_idx": projectIdx,
+                      "file_origin_name": fileOriginName,
+                      "file_extension": fileExtenstion,
+                      "file_type": selectedType,
+                      'user_idx': userIdx,
+                    });
 
-                    if (response.toString() == "success") {
-                      Navigator.pop(context, true);
-                    } else if (response.toString() == "existed") {
+                    String url = "http://101.101.216.93:8080/file/uploadNew";
+
+                    try {
+                      final response = await dio.post(url,
+                          data: formdata,
+                          options: Options(headers: {
+                            "Content-Type": "multipart/form-data"
+                          }));
+
+                      print(response.statusCode);
+                      print(response.data);
+
+                      if (response.toString() == "success") {
+                        Navigator.pop(context, true);
+                      } else if (response.toString() == "existed") {
+                        GET.Get.snackbar(
+                            "Faild Uplaod File", "This File Already Exists",
+                            icon: Icon(Icons.warning, color: Colors.red),
+                            snackPosition: GET.SnackPosition.BOTTOM);
+                      }
+                    } catch (e) {
                       GET.Get.snackbar(
-                          "Faild Uplaod File", "This File Already Exists",
+                          "Faild Uplaod File", "The Maximum File Size is 10MB",
                           icon: Icon(Icons.warning, color: Colors.red),
                           snackPosition: GET.SnackPosition.BOTTOM);
                     }
                   } catch (e) {
-                    GET.Get.snackbar(
-                        "Faild Uplaod File", "The Maximum File Size is 10MB",
+                    GET.Get.snackbar("Faild Uplaod File", "Select File",
                         icon: Icon(Icons.warning, color: Colors.red),
                         snackPosition: GET.SnackPosition.BOTTOM);
                   }
