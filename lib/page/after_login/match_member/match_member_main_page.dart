@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/componet/button.dart';
+import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/model/mappingProject_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/after_login/match_member/show_my_resume_page.dart';
 import 'package:together_android/page/after_login/match_member/search_resume_page.dart';
@@ -37,8 +43,8 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+    var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
     String photo = Provider.of<SignInModel>(context, listen: false).userPhoto;
-    // print(Provider.of<MappingProject>(context, listen: false).map);
     if (isChanged) {
       future = fetchMemberMainData();
       print("updated main page");
@@ -57,14 +63,24 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                   future: future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      MemberResume resume = snapshot.data as MemberResume;
-                      return _serachMain(resume, width, height);
+                      List<MemberResume> resume =
+                          snapshot.data as List<MemberResume>;
+                      var myCard;
+                      List<MemberResume> recCards = [];
+                      resume.forEach((element) {
+                        if (element.idx == userIdx)
+                          myCard = element;
+                        else
+                          recCards.add(element);
+                      });
+
+                      return _serachMain(myCard, recCards, width, height);
                     } else if (snapshot.hasError) {
                       print("$snapshot.error");
                       return Text("$snapshot.error");
                     } else if (snapshot.hasData == false &&
                         snapshot.connectionState == ConnectionState.done) {
-                      return _serachMain(null, width, height);
+                      return _serachMain(null, null, width, height);
                     }
                     return Center(child: CircularProgressIndicator());
                   })
@@ -75,7 +91,8 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
     );
   }
 
-  _serachMain(MemberResume? resume, double width, double height) {
+  _serachMain(MemberResume? resume, List<MemberResume>? recCards, double width,
+      double height) {
     if (resume != null)
       return Container(
         child: Column(
@@ -143,6 +160,30 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
             SizedBox(
               height: 10,
             ),
+            recCards!.isEmpty
+                ? Center(
+                    child: TextButton(
+                      onPressed: () {
+                        // Navigator.of(context).push(MaterialPageRoute(
+                        //     builder: (context) => ConditionSearchPage()));
+                      },
+                      child: Text(
+                        "Register for conditional search",
+                        style: editSubTitleStyle,
+                      ),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: recCards.map<Widget>((e) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: recResumeCard(height, width, e),
+                        );
+                      }).toList(),
+                    ),
+                  )
           ],
         ),
       );
@@ -228,6 +269,357 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
         ),
       );
     }
+  }
+
+  detailCardBottomsheet(BuildContext context, double width, double height,
+      MemberResume detailCard, Map<String, int> map) {
+    String _selectProject = "";
+
+    if (map.isNotEmpty) _selectProject = map.keys.first;
+
+    return showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
+        isScrollControlled: true,
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.only(
+                    left: width * 0.08,
+                    right: width * 0.08,
+                    top: height * 0.02,
+                    bottom: height * 0.02),
+                child: Wrap(
+                  children: [
+                    Container(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: CircleAvatar(
+                              radius: 30,
+                              backgroundImage: NetworkImage(detailCard.photo),
+                            ),
+                          ),
+                          MyInputField(
+                            title: "Select Project",
+                            hint: _selectProject.isEmpty
+                                ? "First Create a Project!!"
+                                : _selectProject,
+                            suffixIcon: _selectProject == ""
+                                ? SizedBox(
+                                    width: 1,
+                                  )
+                                : DropdownButton(
+                                    dropdownColor: Colors.blueGrey,
+                                    value: _selectProject,
+                                    underline: Container(),
+                                    items: Provider.of<MappingProject>(context,
+                                            listen: false)
+                                        .map
+                                        .keys
+                                        .toList()
+                                        .map((value) {
+                                      return DropdownMenuItem(
+                                          value: value,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(value,
+                                                style:
+                                                    editSubTitleStyle.copyWith(
+                                                        color: Colors.white)),
+                                          ));
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectProject = value.toString();
+                                      });
+                                    },
+                                  ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            "Profile",
+                            style: editTitleStyle,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.person,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.name,
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.psychology,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.mbti,
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.face,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.age.toString() + "살",
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.place,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      addressToString(
+                                          false,
+                                          detailCard.mainAddr,
+                                          detailCard.referenceAddr,
+                                          detailCard.detailAddr), // 수정 필요
+                                      style: editSubTitleStyle,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.book,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.licens.isEmpty
+                                          ? "no comment"
+                                          : detailCard.licens
+                                              .toString()
+                                              .substring(1,
+                                                  detailCard.licens.length - 1),
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.tag,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      detailCard.hobbys.isEmpty
+                                          ? "no comment"
+                                          : detailCard.hobbys
+                                              .toString()
+                                              .substring(1,
+                                                  detailCard.hobbys.length - 1),
+                                      style: editSubTitleStyle,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(
+                            "Introduce",
+                            style: editTitleStyle,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16.0),
+                            child: Text(
+                              detailCard.comment ?? "no comment",
+                              style: editSubTitleStyle,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(
+                            "Experience",
+                            style: editTitleStyle,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16.0),
+                            child: Text(detailCard.resume ?? "no comment",
+                                style: editSubTitleStyle),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Center(
+                            child: MyButton(
+                                label: "Invite",
+                                onTap: () async {
+                                  Navigator.of(context).pop();
+
+                                  var code = await togetherPostAPI(
+                                      "/member/search/invite",
+                                      jsonEncode({
+                                        "user_idx": Provider.of<SignInModel>(
+                                                context,
+                                                listen: false)
+                                            .userIdx,
+                                        "member_idx": detailCard.idx,
+                                        "project_idx": map[_selectProject]
+                                      }));
+
+                                  inviteSnackbar(code.toString());
+                                }),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          });
+        });
+  }
+
+  inviteSnackbar(code) {
+    return Get.snackbar(
+      code == "success" ? "Success Invite" : 'Failed Invite',
+      invitteMessage(code.toString()),
+      icon: code == "success"
+          ? Icon(
+              Icons.check_circle,
+              color: Colors.greenAccent,
+            )
+          : Icon(
+              Icons.warning,
+              color: Colors.redAccent,
+            ),
+      duration: Duration(seconds: 4),
+      animationDuration: Duration(milliseconds: 800),
+      snackPosition: SnackPosition.TOP,
+    );
+  }
+
+  recResumeCard(double height, double width, MemberResume resume) {
+    return GestureDetector(
+      onTap: () {
+        var map = Provider.of<MappingProject>(context, listen: false).map;
+        detailCardBottomsheet(context, width, height, resume, map);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            vertical: height * 0.02, horizontal: width * 0.06),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.blueGrey[400]),
+        width: width * 0.4,
+        height: width * 0.4,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Center(
+              child: CircleAvatar(
+                backgroundImage: NetworkImage(resume.photo),
+              ),
+            ),
+            SizedBox(
+              height: 5,
+            ),
+            Text(
+              resume.name,
+              style: editTitleStyle.copyWith(
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Row(
+              children: [
+                Icon(
+                  Icons.face,
+                  size: 20,
+                  color: Colors.black,
+                ),
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  resume.age.toString() + "살",
+                  style: editTitleStyle.copyWith(
+                      color: Colors.white, fontSize: 14),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 5,
+            ),
+            Row(
+              children: [
+                Icon(
+                  Icons.psychology,
+                  size: 20,
+                  color: Colors.black,
+                ),
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  resume.mbti,
+                  style: editTitleStyle.copyWith(
+                      color: Colors.white, fontSize: 14),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Container myResumeCard(double height, double width, MemberResume resume) {

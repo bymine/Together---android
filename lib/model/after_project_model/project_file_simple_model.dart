@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
 class SimpleFile extends ChangeNotifier {
   int fileIdx;
@@ -6,6 +7,13 @@ class SimpleFile extends ChangeNotifier {
   String fileExt;
   String fileType;
   String fileFlag;
+
+  String link =
+      'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf';
+
+  String? taskId;
+  int? progress = 0;
+  DownloadTaskStatus? status = DownloadTaskStatus.undefined;
 
   SimpleFile(
       {required this.fileIdx,

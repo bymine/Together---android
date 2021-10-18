@@ -31,7 +31,7 @@ class MyInputField extends StatelessWidget {
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    var readOnly = readOnlyBool(title);
+    //var readOnly = readOnlyBool(title);
     return Container(
       margin: EdgeInsets.only(top: 16),
       child: Column(

@@ -7,10 +7,12 @@ import 'package:together_android/model/after_login_model/invitaion_model.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_login_model/my_profile_model.dart';
 import 'package:together_android/model/after_login_model/private_schedule_model.dart';
+import 'package:together_android/model/after_login_model/team_card.dart';
 import 'package:together_android/model/after_project_model/project_file_detail_model.dart';
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
 import 'package:together_android/model/after_project_model/project_file_version_model.dart';
 import 'package:together_android/model/after_project_model/project_schedule_model.dart';
+import 'package:together_android/model/after_project_model/project_setting_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/model/after_login_model/user_profile_model.dart';
 import 'package:together_android/page/after_project/project_file/reservation_main.dart';
@@ -58,6 +60,10 @@ Future togetherGetAPI(String service, String parameter) async {
           .toList();
       return returnData;
 
+    case "/project/getInfo":
+      return ProjectSetting.fromJson(
+          jsonDecode(utf8.decode(response.bodyBytes)));
+
     case "/user/detail_profile":
       return MyProfileDetail.fromJson(
           jsonDecode(utf8.decode(response.bodyBytes)));
@@ -104,9 +110,10 @@ Future togetherGetAPI(String service, String parameter) async {
       if (response.body == "")
         return;
       else {
-        var parsedData =
-            MemberResume.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
-        return parsedData;
+        var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+            .map<MemberResume>((json) => MemberResume.fromJson(json))
+            .toList();
+        return returnData;
       }
 
     case "/member/search/register":
@@ -145,6 +152,11 @@ Future togetherGetAPI(String service, String parameter) async {
       print(response.contentLength);
       print(response.headers);
       return response.bodyBytes;
+
+    case "/teamMatching":
+      var parsedData =
+          ProjectCard.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+      return parsedData;
   }
 }
 

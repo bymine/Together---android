@@ -115,32 +115,37 @@ class _MyMemberCardState extends State<MyMemberCard> {
   }
 
   String myInfoString(MemberResume? resume) {
-    String license;
-    String hobby;
-    String address = addressToString(
-        false, resume!.mainAddr, resume.referenceAddr, resume.detailAddr);
-    if (resume.licens.isEmpty)
-      license = "";
-    else
-      license = resume.licens
-          .toString()
-          .substring(1, resume.licens.toString().length - 1);
-
-    if (resume.hobbys.isEmpty)
-      hobby = "";
+    if (resume == null)
+      return "";
     else {
-      hobby = resume.hobbys
-          .toString()
-          .substring(1, resume.hobbys.toString().length - 1);
-    }
+      String license;
+      String hobby;
+      String address = addressToString(
+          false, resume.mainAddr, resume.referenceAddr, resume.detailAddr);
 
-    return "Name: ${resume.name}\n" +
-        "NickName: ${resume.nickName}\n" +
-        "Age: ${resume.age}\n" +
-        "MBTI: ${resume.mbti}\n" +
-        "Address: $address\n"
-            "license: $license\n" +
-        "hobby: $hobby\n";
+      if (resume.licens.isEmpty)
+        license = "";
+      else
+        license = resume.licens
+            .toString()
+            .substring(1, resume.licens.toString().length - 1);
+
+      if (resume.hobbys.isEmpty)
+        hobby = "";
+      else {
+        hobby = resume.hobbys
+            .toString()
+            .substring(1, resume.hobbys.toString().length - 1);
+      }
+
+      return "Name: ${resume.name}\n" +
+          "NickName: ${resume.nickName}\n" +
+          "Age: ${resume.age}\n" +
+          "MBTI: ${resume.mbti}\n" +
+          "Address: $address\n"
+              "license: $license\n" +
+          "hobby: $hobby\n";
+    }
   }
 
   AppBar _appBar(BuildContext context) {

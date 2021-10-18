@@ -85,7 +85,6 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                                 future = fetchCardList();
                               },
                               style: TextButton.styleFrom(
-                                  // minimumSize: Size.zero,
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                   padding: EdgeInsets.zero),
@@ -365,8 +364,11 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                                       width: 5,
                                     ),
                                     Text(
-                                      detailCard.mainAddr +
-                                          "경기도 화성시 봉담읍", // 수정 필요
+                                      addressToString(
+                                          false,
+                                          detailCard.mainAddr,
+                                          detailCard.referenceAddr,
+                                          detailCard.detailAddr), // 수정 필요
                                       style: editSubTitleStyle,
                                       maxLines: 1,
                                     ),
@@ -555,6 +557,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                         if (value != null) {
                           isCondition = true;
                           conditionDetail = value;
+                          print(conditionDetail);
                         }
                       }));
             },

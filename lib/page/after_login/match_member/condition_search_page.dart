@@ -18,7 +18,11 @@ class ConditionSearchPage extends StatefulWidget {
 }
 
 class _ConditionSearchPageState extends State<ConditionSearchPage> {
-  TextEditingController licenseController = TextEditingController();
+  TextEditingController licenseController1 = TextEditingController();
+  TextEditingController licenseController2 = TextEditingController();
+
+  TextEditingController licenseController3 = TextEditingController();
+
   List<String> _selectedLicense = [];
   RangeValues _currentRangeValues = RangeValues(10, 50);
 
@@ -68,12 +72,6 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
         int i = tagIdx.indexOf(element);
         mappingTag[tagName[i]] = element;
       });
-
-      // print(tagName);
-      // print(tagIdx);
-      // print(mappingIdx);
-      // print(mappingName);
-      print(mappingTag);
       selectedCategory = categoryName[0];
       selectedTag = tagName[0];
     });
@@ -139,18 +137,28 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                         myTag.forEach((element) {
                           postTagIdx.add(mappingTag[element].toString());
                         });
-                        print(postTagIdx);
+
+                        if (licenseController1.text.isNotEmpty)
+                          _selectedLicense.add(licenseController1.text);
+                        if (licenseController2.text.isNotEmpty)
+                          _selectedLicense.add(licenseController2.text);
+                        if (licenseController3.text.isNotEmpty)
+                          _selectedLicense.add(licenseController3.text);
 
                         Navigator.of(context).pop(jsonEncode({
                           "min_age": _currentRangeValues.start.toInt(),
                           "max_age": _currentRangeValues.end.toInt(),
                           "license": _selectedLicense,
-                          "main_addr": mainAdressFormat(
-                              jusoToFormat(conditionJuso!, "main")),
-                          "reference_addr":
-                              jusoToFormat(conditionJuso!, "refer"),
+                          "main_addr": conditionJuso == null
+                              ? ""
+                              : mainAdressFormat(
+                                  jusoToFormat(conditionJuso!, "main")),
+                          "reference_addr": conditionJuso == null
+                              ? ""
+                              : jusoToFormat(conditionJuso!, "refer"),
                           "detail_addr": "",
                           "hobby_small_idx": postTagIdx,
+                          "save": isSave
                         }));
                       })
                 ],
@@ -181,9 +189,20 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                   });
                 },
               ),
-              MyInputField(title: "license1", hint: "Input license1"),
-              MyInputField(title: "license2", hint: "Input license2"),
-              MyInputField(title: "license3", hint: "Input license3"),
+              MyInputField(
+                title: "license1",
+                hint: "Input license1",
+                controller: licenseController1,
+              ),
+              MyInputField(
+                title: "license2",
+                hint: "Input license2",
+                controller: licenseController2,
+              ),
+              MyInputField(
+                  title: "license3",
+                  hint: "Input license3",
+                  controller: licenseController3),
               MyInputField(
                 title: "Hobby (${myTag.length}/3)",
                 hint:

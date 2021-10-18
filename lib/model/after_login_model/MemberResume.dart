@@ -31,7 +31,7 @@ class MemberResume {
 
   factory MemberResume.fromJson(Map<String, dynamic> json) {
     return MemberResume(
-      idx: json['user_idx'],
+      idx: json.keys.contains('user_idx') ? json['user_idx'] : 0,
       name: json['user_name'],
       nickName: json['user_nickname'],
       age: json['age'],

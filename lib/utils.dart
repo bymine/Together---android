@@ -1,5 +1,24 @@
 import 'package:intl/intl.dart';
 
+String invitteMessage(String code) {
+  switch (code) {
+    case "already_in":
+      return "Already in project member";
+    case "already_sent":
+      return "Already sent invitaion";
+    case "not_leader":
+      return "Only leaders can invite";
+    case "self_invite":
+      return "Can't invite yourself";
+    case "error":
+      return "An error occurs";
+    case "success":
+      return "Invitaion success";
+    default:
+      return "";
+  }
+}
+
 String svgIconAsset(String type) {
   type = type.toLowerCase();
   switch (type) {

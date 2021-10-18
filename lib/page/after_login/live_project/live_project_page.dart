@@ -79,7 +79,6 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
         future: future,
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasData) {
-            var data = snapshot.data as List<LiveProject>;
             showFloating.value = true;
             snapshot.data as List<LiveProject>;
 
