@@ -233,8 +233,8 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
   }
 }
 
-List<ProjectCard> myPorjectCard = [
-  ProjectCard(
+List<ProjectResume> myPorjectCard = [
+  ProjectResume(
       projectName: "1",
       projectExp: "sadasd",
       startDate: "d",
@@ -243,7 +243,7 @@ List<ProjectCard> myPorjectCard = [
       projectType: "s",
       memberNum: "2",
       intro: "intro intro intro intro"),
-  ProjectCard(
+  ProjectResume(
       projectName: "1",
       projectExp: "sadasd",
       startDate: "d",
@@ -252,7 +252,7 @@ List<ProjectCard> myPorjectCard = [
       projectType: "s",
       memberNum: "2",
       intro: "intro"),
-  ProjectCard(
+  ProjectResume(
       projectName: "1",
       projectExp: "sadasd",
       startDate: "d",

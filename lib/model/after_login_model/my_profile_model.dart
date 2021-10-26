@@ -58,8 +58,6 @@ class MyProfileDetail {
       } else
         searchIdx.add(element);
     });
-
-    print(hobby);
     return MyProfileDetail(
       userName: json['user_name'],
       userNickName: json['user_nickname'],

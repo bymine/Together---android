@@ -1,14 +1,13 @@
 import 'dart:collection';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:together_android/componet/bottom_sheet_top_bar.dart';
-import 'package:together_android/componet/textfield_widget.dart';
+import 'package:together_android/componet/button.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/private_schedule_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
+import 'package:together_android/page/after_login/profile/add_user_schdeule_page.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
 
@@ -23,7 +22,7 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
   List<Event> _allEvents = [];
   List<Event> _selectedEvents = [];
   List datekeys = [];
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  CalendarFormat _calendarFormat = CalendarFormat.twoWeeks;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOff;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
@@ -43,31 +42,32 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
   @override
   void initState() {
     super.initState();
-    fetchPrivateSchedule().then((value) => setState(() {
-          _allEvents = value;
-          _allEvents.forEach((event) {
-            DateTime start = DateTime.parse(event.startTime);
-            DateTime end = DateTime.parse(event.endTime);
-
-            int startCode = getHashCode(start);
-            int endCode = getHashCode(end);
-
-            for (startCode = startCode;
-                startCode <= endCode;
-                startCode = startCode + 1000000) {
-              List<Event> list = events[getDateTime(startCode)] ?? [];
-              list.add(event);
-              events[getDateTime(startCode)] = list;
-            }
-          });
-        }));
+    fetchPrivateSchedule();
+    _selectedEvents = _getEventsForDay(DateTime.now());
   }
 
-  Future<List<Event>> fetchPrivateSchedule() async {
+  fetchPrivateSchedule() async {
     var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
-    var list =
+    _allEvents =
         await togetherGetAPI("/user/getUserSchedules", "?user_idx=$userIdx");
-    return list as List<Event>;
+    events.clear();
+    setState(() {
+      _allEvents.forEach((schedule) {
+        DateTime start = DateTime.parse(schedule.startTime);
+        DateTime end = DateTime.parse(schedule.endTime);
+
+        int startCode = getHashCode(start);
+        int endCode = getHashCode(end);
+
+        for (startCode = startCode;
+            startCode <= endCode;
+            startCode = startCode + 1000000) {
+          List<Event> list = events[getDateTime(startCode)] ?? [];
+          list.add(schedule);
+          events[getDateTime(startCode)] = list;
+        }
+      });
+    });
   }
 
   List<Event> _getEventsForDay(DateTime day) {
@@ -103,452 +103,259 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
 
   @override
   Widget build(BuildContext context) {
+    var photo = Provider.of<SignInModel>(context, listen: false).userPhoto;
     double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: Colors.green[50],
-      appBar: AppBar(
-        title: Text("일정 관리"),
-      ),
-      body: Container(
-        child: Column(
-          children: [
-            TableCalendar(
-              calendarStyle: CalendarStyle(
-                outsideDaysVisible: true,
-                weekendTextStyle: TextStyle().copyWith(color: Colors.red),
-                holidayTextStyle: TextStyle().copyWith(color: Colors.blue[800]),
-              ),
-              locale: 'ko-KR',
-              firstDay: DateTime(2021),
-              lastDay: DateTime(2023),
-              startingDayOfWeek: StartingDayOfWeek.monday,
-              rangeStartDay: _rangeStart,
-              rangeEndDay: _rangeEnd,
-              rangeSelectionMode: _rangeSelectionMode,
-              onRangeSelected: _onRangeSelected,
-              focusedDay: _focusedDay,
-              calendarFormat: _calendarFormat,
-              onFormatChanged: (format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
-              },
-
-              // onPageChanged: (focusedDay) {
-              //   _focusedDay = focusedDay;
-              // },
-              eventLoader: _getEventsForDay,
-              selectedDayPredicate: (day) {
-                return isSameDay(_selectedDay, day);
-              },
-              onDaySelected: (selectedDay, focusedDay) {
-                if (!isSameDay(_selectedDay, selectedDay)) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                    _rangeStart = null;
-                    _rangeEnd = null;
-                    _rangeSelectionMode = RangeSelectionMode.toggledOff;
-                  });
-
-                  _selectedEvents = _getEventsForDay(selectedDay);
-                }
-              },
-            ),
-            // Text("focused: " + _focusedDay.toString()),
-            // Text("selected: " + _selectedDay.toString()),
-            Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Daily Task",
-                  style: TextStyle(
-                      fontSize: width * 0.048, fontWeight: FontWeight.bold),
-                )),
-            Expanded(
-                child: ListView.builder(
-                    itemCount: _selectedEvents.length,
-                    itemBuilder: (context, index) {
-                      int from = getHashCode(
-                          DateTime.parse(_selectedEvents[index].startTime));
-                      int to = getHashCode(
-                          DateTime.parse(_selectedEvents[index].endTime));
-                      return Card(
-                        child: ListTile(
-                          title: Text(_selectedEvents[index].title),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(_selectedEvents[index].content),
-                              from == to
-                                  ? Text(toDateTime(
-                                        DateTime.parse(
-                                            _selectedEvents[index].startTime),
-                                      ) +
-                                      " ~ " +
-                                      toTime(DateTime.parse(
-                                          _selectedEvents[index].endTime)))
-                                  : Text(
-                                      toDateTime(
-                                            DateTime.parse(
-                                                _selectedEvents[index]
-                                                    .startTime),
-                                          ) +
-                                          " ~ " +
-                                          toDateTime(
-                                            DateTime.parse(
-                                                _selectedEvents[index].endTime),
-                                          ),
-                                    ),
-                            ],
-                          ),
-                          trailing: IconButton(
-                              onPressed: () {}, icon: Icon(Icons.more_vert)),
-                        ),
-                      );
-                    }))
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: titleColor,
-        onPressed: () async {
-          if (_rangeSelectionMode == RangeSelectionMode.toggledOn) {
-            startDate = _rangeStart!;
-            endDate = _rangeEnd ?? startDate;
-          } else {
-            startDate = _selectedDay ?? DateTime.now();
-            endDate = _selectedDay ?? DateTime.now();
-          }
-          showModalBottomSheet(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16))),
-              isScrollControlled: true,
-              context: context,
-              builder: (context) {
-                return SafeArea(
-                  child: SingleChildScrollView(
-                    child: StatefulBuilder(builder: (context, setState) {
-                      return Padding(
-                        padding: MediaQuery.of(context).viewInsets,
-                        child: Container(
-                          child: Column(
-                            children: [
-                              BottomSheetTopBar(
-                                  title: "스케줄 추가",
-                                  onPressed: () async {
-                                    var userIdx = Provider.of<SignInModel>(
-                                            context,
-                                            listen: false)
-                                        .userIdx;
-                                    Event event = Event(
-                                        title: titleController.text,
-                                        content: contentController.text,
-                                        startTime: startDate.toIso8601String(),
-                                        endTime: endDate.toIso8601String());
-                                    await togetherPostAPI(
-                                      "/user/addSchedule",
-                                      jsonEncode(
-                                        {
-                                          "schedule_name": titleController.text,
-                                          "schedule_content":
-                                              contentController.text,
-                                          "schedule_start_datetime":
-                                              startDate.toIso8601String(),
-                                          "schedule_end_datetime":
-                                              endDate.toIso8601String(),
-                                          "writer_idx": userIdx,
-                                        },
-                                      ),
-                                    );
-                                    int from = getHashCode(startDate);
-                                    int to = getHashCode(endDate);
-
-                                    for (from = from;
-                                        from <= to;
-                                        from = from + 1000000) {
-                                      List<Event> list =
-                                          events[getDateTime(from)] ?? [];
-                                      list.add(event);
-                                      events[getDateTime(from)] = list;
-                                    }
-
-                                    Navigator.of(context).pop();
-                                  }),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.01,
-                                    horizontal: width * 0.02),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            width: 1, color: Colors.grey))),
-                                child: TextFormFieldWidget(
-                                    header: Text("제목"),
-                                    body: TextFormField(
-                                      controller: titleController,
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8)),
-                                      ),
-                                    ),
-                                    footer: null,
-                                    heightPadding: 0),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.01,
-                                    horizontal: width * 0.02),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            width: 1, color: Colors.grey))),
-                                child: TextFormFieldWidget(
-                                    header: Text("세부 내용"),
-                                    body: TextField(
-                                      controller: contentController,
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8)),
-                                      ),
-                                    ),
-                                    footer: null,
-                                    heightPadding: 0),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.01,
-                                    horizontal: width * 0.02),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            width: 1, color: Colors.grey))),
-                                child: TextFormFieldWidget(
-                                    header: Text(
-                                      "시작 시간",
-                                      style: TextStyle(fontSize: width * 0.04),
-                                    ),
-                                    body: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Container(
-                                          width: width * 0.45,
-                                          padding: EdgeInsets.only(
-                                              left: width * 0.004),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(toDate(startDate)),
-                                              IconButton(
-                                                  onPressed: () async {
-                                                    await showDatePicker(
-                                                      context: context,
-                                                      initialDate:
-                                                          DateTime.now(),
-                                                      firstDate: DateTime(2020),
-                                                      lastDate: DateTime(2025),
-                                                    ).then((value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          startDate = value;
-                                                          if (startDate.isAfter(
-                                                              endDate)) {
-                                                            endDate = DateTime(
-                                                              startDate.year,
-                                                              startDate.month,
-                                                              startDate.day,
-                                                            );
-                                                          }
-                                                        });
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(
-                                                      Icons
-                                                          .arrow_drop_down_outlined,
-                                                      size: 32))
-                                            ],
-                                          ),
-                                        ),
-                                        Container(
-                                          width: width * 0.3,
-                                          padding: EdgeInsets.only(
-                                              left: width * 0.02),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(toTime(startDate)),
-                                              IconButton(
-                                                  onPressed: () async {
-                                                    await showTimePicker(
-                                                            context: context,
-                                                            initialTime: TimeOfDay
-                                                                .fromDateTime(
-                                                                    startDate))
-                                                        .then((value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          startDate = DateTime(
-                                                              startDate.year,
-                                                              startDate.month,
-                                                              startDate.day,
-                                                              value.hour,
-                                                              value.minute);
-                                                        });
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(
-                                                      Icons
-                                                          .arrow_drop_down_outlined,
-                                                      size: 32))
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    footer: null,
-                                    heightPadding: 0),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: width * 0.01,
-                                    horizontal: width * 0.02),
-                                child: TextFormFieldWidget(
-                                    header: Text(
-                                      "종료 시간",
-                                      style: TextStyle(fontSize: width * 0.04),
-                                    ),
-                                    body: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Container(
-                                          width: width * 0.45,
-                                          padding: EdgeInsets.only(
-                                              left: width * 0.004),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(toDate(endDate)),
-                                              IconButton(
-                                                  onPressed: () async {
-                                                    await showDatePicker(
-                                                      context: context,
-                                                      initialDate: startDate,
-                                                      firstDate: startDate,
-                                                      lastDate: DateTime(2025),
-                                                    ).then((value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          endDate = value;
-                                                        });
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(
-                                                      Icons
-                                                          .arrow_drop_down_outlined,
-                                                      size: 32))
-                                            ],
-                                          ),
-                                        ),
-                                        Container(
-                                          width: width * 0.3,
-                                          padding: EdgeInsets.only(
-                                              left: width * 0.02),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.grey)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(toTime(endDate)),
-                                              IconButton(
-                                                  onPressed: () async {
-                                                    await showTimePicker(
-                                                            context: context,
-                                                            initialTime: TimeOfDay
-                                                                .fromDateTime(
-                                                                    startDate))
-                                                        .then((value) {
-                                                      if (value != null) {
-                                                        setState(() {
-                                                          endDate = DateTime(
-                                                              endDate.year,
-                                                              endDate.month,
-                                                              endDate.day,
-                                                              value.hour,
-                                                              value.minute);
-                                                          if (startDate
-                                                              .isAfter(endDate))
-                                                            endDate = DateTime(
-                                                                endDate.year,
-                                                                endDate.month,
-                                                                endDate.day,
-                                                                startDate.hour +
-                                                                    1,
-                                                                value.minute);
-                                                        });
-                                                      }
-                                                    });
-                                                  },
-                                                  icon: Icon(
-                                                      Icons
-                                                          .arrow_drop_down_outlined,
-                                                      size: 32))
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                    footer: null,
-                                    heightPadding: 0),
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
+      appBar: _appBar(context, photo),
+      body: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.only(
+                left: width * 0.04, right: width * 0.04, bottom: height * 0.02),
+            decoration: BoxDecoration(
+                color: Color(0xffD0EBFF),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    spreadRadius: 5,
+                    blurRadius: 5,
+                    offset: Offset(3, 3), // changes position of shadow
                   ),
-                );
-              }).then((value) => setState(() {}));
+                ]),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          "내 일정",
+                          style: headingStyle,
+                        ),
+                      ],
+                    ),
+                    MyButton(
+                        label: "+ 추가",
+                        onTap: () async {
+                          if (_rangeSelectionMode ==
+                              RangeSelectionMode.toggledOn) {
+                            startDate = _rangeStart!;
+                            endDate = _rangeEnd ?? startDate;
+                          } else {
+                            startDate = _focusedDay;
+                            endDate = _focusedDay.add(Duration(hours: 1));
+                          }
+
+                          Navigator.of(context)
+                              .push(MaterialPageRoute(
+                                  builder: (context) => AddUserSchdeule(
+                                        startDate: startDate,
+                                        endDate: endDate,
+                                      )))
+                              .then((value) => setState(() {
+                                    fetchPrivateSchedule();
+                                  }));
+                        })
+                  ],
+                ),
+                TableCalendar(
+                  calendarStyle: CalendarStyle(
+                    outsideDaysVisible: true,
+                    weekendTextStyle: TextStyle().copyWith(color: Colors.red),
+                    holidayTextStyle:
+                        TextStyle().copyWith(color: Colors.blue[800]),
+                  ),
+                  locale: 'ko-KR',
+                  firstDay: DateTime(2021),
+                  lastDay: DateTime(2023),
+                  startingDayOfWeek: StartingDayOfWeek.monday,
+                  rangeStartDay: _rangeStart,
+                  rangeEndDay: _rangeEnd,
+                  rangeSelectionMode: _rangeSelectionMode,
+                  onRangeSelected: _onRangeSelected,
+                  focusedDay: _focusedDay,
+                  calendarFormat: _calendarFormat,
+                  onFormatChanged: (format) {
+                    setState(() {
+                      _calendarFormat = format;
+                    });
+                  },
+
+                  // onPageChanged: (focusedDay) {
+                  //   _focusedDay = focusedDay;
+                  // },
+                  eventLoader: _getEventsForDay,
+                  selectedDayPredicate: (day) {
+                    return isSameDay(_selectedDay, day);
+                  },
+                  onDaySelected: (selectedDay, focusedDay) {
+                    if (!isSameDay(_selectedDay, selectedDay)) {
+                      setState(() {
+                        _selectedDay = selectedDay;
+                        _focusedDay = focusedDay;
+                        _rangeStart = null;
+                        _rangeEnd = null;
+                        _rangeSelectionMode = RangeSelectionMode.toggledOff;
+                      });
+
+                      _selectedEvents = _getEventsForDay(selectedDay);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Expanded(
+              child: Container(
+            padding: EdgeInsets.only(left: 8, top: 8, right: 8, bottom: 8),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Daily Task",
+                        style: editTitleStyle,
+                      )),
+                  ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: _selectedEvents.length,
+                      itemBuilder: (context, index) {
+                        int from = getHashCode(
+                            DateTime.parse(_selectedEvents[index].startTime));
+                        int to = getHashCode(
+                            DateTime.parse(_selectedEvents[index].endTime));
+                        return Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(photo),
+                            ),
+                            title: Text(
+                              _selectedEvents[index].title,
+                              style: editTitleStyle,
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  _selectedEvents[index].content,
+                                  maxLines: 2,
+                                  style: editSubTitleStyle,
+                                ),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                from == to
+                                    ? Row(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.event,
+                                                  color: Colors.grey, size: 16),
+                                              SizedBox(
+                                                width: 5,
+                                              ),
+                                              Text(
+                                                  schdeuleDateFormat(
+                                                      _selectedEvents[index]
+                                                          .startTime,
+                                                      _selectedEvents[index]
+                                                          .endTime,
+                                                      true),
+                                                  style: editSubTitleStyle)
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            width: 20,
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.schedule,
+                                                  color: Colors.grey, size: 16),
+                                              SizedBox(
+                                                width: 5,
+                                              ),
+                                              Text(
+                                                  schdeuleTimeFormat(
+                                                      _selectedEvents[index]
+                                                          .startTime,
+                                                      _selectedEvents[index]
+                                                          .endTime),
+                                                  style: editSubTitleStyle)
+                                            ],
+                                          ),
+                                        ],
+                                      )
+                                    : Row(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.event,
+                                                  color: Colors.grey, size: 16),
+                                              SizedBox(
+                                                width: 5,
+                                              ),
+                                              Text(
+                                                  schdeuleDateFormat(
+                                                      _selectedEvents[index]
+                                                          .startTime,
+                                                      _selectedEvents[index]
+                                                          .endTime,
+                                                      false),
+                                                  style: editSubTitleStyle)
+                                            ],
+                                          ),
+                                        ],
+                                      )
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                ],
+              ),
+            ),
+          ))
+        ],
+      ),
+    );
+  }
+
+  _appBar(BuildContext context, String photo) {
+    return AppBar(
+      backgroundColor: Color(0xffD0EBFF),
+      elevation: 0,
+      leading: GestureDetector(
+        onTap: () {
+          Navigator.of(context).pop();
         },
         child: Icon(
-          Icons.event_note,
-          size: 32,
-          color: Colors.purple,
+          Icons.arrow_back_ios,
+          size: 20,
+          color: Colors.black,
         ),
       ),
+      actions: [
+        CircleAvatar(
+          backgroundImage: NetworkImage(photo),
+        ),
+        SizedBox(
+          width: 20,
+        )
+      ],
     );
   }
 }

@@ -8,7 +8,7 @@ import 'package:together_android/model/mappingProject_model.dart';
 
 // ignore: must_be_immutable
 class ShowProjectCard extends StatefulWidget {
-  ProjectCard? card;
+  ProjectResume? card;
   Map<String, int> map;
   ShowProjectCard({Key? key, this.card, required this.map}) : super(key: key);
 

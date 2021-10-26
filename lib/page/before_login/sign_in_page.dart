@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/componet/showDialog.dart';
@@ -196,23 +197,30 @@ class _SignInPageState extends State<SignInPage> {
         Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => MainPage()));
       } else {
-        showAlertDialog(
-            context,
-            Container(
-              child: Text(
-                "로그인 실패",
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(width * 0.04),
-              child: Text(
-                signInModel.signInCode == "wrong_pw"
-                    ? "비밀번호가 올바르지 않습니다"
-                    : "이메일이 올바르지 않습니다",
-                textAlign: TextAlign.center,
-              ),
-            ),
-            []);
+        Get.defaultDialog(
+            backgroundColor: Colors.green[100],
+            title: "로그인 실패",
+            middleText: signInModel.signInCode == "wrong_pw"
+                ? "비밀번호가 올바르지 않습니다"
+                : "이메일이 올바르지 않습니다",
+            titleStyle: editTitleStyle);
+        // showAlertDialog(
+        //     context,
+        //     Container(
+        //       child: Text(
+        //         "로그인 실패",
+        //       ),
+        //     ),
+        //     Container(
+        //       padding: EdgeInsets.all(width * 0.04),
+        //       child: Text(
+        //         signInModel.signInCode == "wrong_pw"
+        //             ? "비밀번호가 올바르지 않습니다"
+        //             : "이메일이 올바르지 않습니다",
+        //         textAlign: TextAlign.center,
+        //       ),
+        //     ),
+        //     []);
       }
     }
   }

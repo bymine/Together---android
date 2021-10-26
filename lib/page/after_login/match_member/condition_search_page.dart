@@ -124,7 +124,7 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                                 }),
                           ),
                           Text(
-                            "Get Recommendations",
+                            "Save",
                             style: editTitleStyle,
                           )
                         ],

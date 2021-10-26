@@ -202,6 +202,36 @@ String toAMPMTimeISO(String iso) {
   return '$time';
 }
 
+String schdeuleDateFormat(String start, String end, bool isSameDay) {
+  DateTime startTime = DateTime.parse(start);
+  DateTime endTime = DateTime.parse(end);
+
+  if (isSameDay) {
+    final date = DateFormat(' M/d', 'ko-KR').format(startTime);
+
+    return '$date';
+  } else {
+    final date = DateFormat(' M/d', 'ko-KR').format(startTime);
+    final date2 = DateFormat(' M/d', 'ko-KR').format(endTime);
+
+    return '$date ~ $date2';
+  }
+}
+
+String schdeuleTimeFormat(String start, String end) {
+  DateTime dateTime = DateTime.parse(start);
+  DateTime dateTime2 = DateTime.parse(end);
+
+  final date = DateFormat(
+    'h:mm',
+  ).format(dateTime);
+  final date2 = DateFormat(
+    'h:mm a',
+  ).format(dateTime2);
+
+  return '$date ~ $date2';
+}
+
 String projectEnumFormat(String value) {
   switch (value) {
     case "상":
@@ -224,6 +254,34 @@ String projectEnumFormat(String value) {
 
     case "교내활동":
       return "In";
+
+    default:
+      return "Any";
+  }
+}
+
+String projectEnumFromServer(String value) {
+  switch (value) {
+    case "High":
+      return "상";
+
+    case "Mid":
+      return "중";
+
+    case "Low":
+      return "하";
+
+    case "Any":
+      return "설정 안함";
+
+    case "Study":
+      return "스터디";
+
+    case "Out":
+      return "대외활동";
+
+    case "In":
+      return "교내활동";
 
     default:
       return "Any";

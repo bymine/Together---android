@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
+import 'package:together_android/componet/listTile.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
@@ -90,12 +91,26 @@ class _MyMemberCardState extends State<MyMemberCard> {
                         })
                   ],
                 ),
-                MyInputField(
-                  title: "My Info",
-                  hint: myInfoString(widget.resume ?? newResume),
-                  maxLine: 7,
-                  suffixIcon: Text(""),
+                // MyInputField(
+                //   title: "My Info",
+                //   hint: myInfoString(widget.resume ?? newResume),
+                //   maxLine: 7,
+                //   suffixIcon: Text(""),
+                // ),
+                SizedBox(
+                  height: 15,
                 ),
+                MyListTile(
+                  title: Text(
+                    "내 정보",
+                    style: editTitleStyle,
+                  ),
+                  subTitle: Text(
+                    myInfoString(widget.resume ?? newResume),
+                    style: editSubTitleStyle,
+                  ),
+                ),
+
                 MyInputField(
                   title: "Introduce",
                   hint: "Input Introduce about me",

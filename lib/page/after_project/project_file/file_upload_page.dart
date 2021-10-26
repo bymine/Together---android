@@ -154,21 +154,31 @@ class _FileUploadPageState extends State<FileUploadPage> {
                       if (response.toString() == "success") {
                         Navigator.pop(context, true);
                       } else if (response.toString() == "existed") {
-                        GET.Get.snackbar(
-                            "Faild Uplaod File", "This File Already Exists",
-                            icon: Icon(Icons.warning, color: Colors.red),
-                            snackPosition: GET.SnackPosition.BOTTOM);
+                        GET.Get.snackbar("파일 업로드 실패", "이미 존재하는 파일 입니다",
+                            icon: Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.redAccent,
+                            ));
                       }
                     } catch (e) {
                       GET.Get.snackbar(
-                          "Faild Uplaod File", "The Maximum File Size is 10MB",
-                          icon: Icon(Icons.warning, color: Colors.red),
-                          snackPosition: GET.SnackPosition.BOTTOM);
+                        "파일 업로드 실패",
+                        "업로드 파일은 10MB를 초과할 수 없습니다",
+                        icon: Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.redAccent,
+                        ),
+                      );
                     }
                   } catch (e) {
-                    GET.Get.snackbar("Faild Uplaod File", "Select File",
-                        icon: Icon(Icons.warning, color: Colors.red),
-                        snackPosition: GET.SnackPosition.BOTTOM);
+                    GET.Get.snackbar(
+                      "파일 업로드 실패",
+                      "업로드 할 파일을 선택하세요",
+                      icon: Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.redAccent,
+                      ),
+                    );
                   }
                 })
           ],

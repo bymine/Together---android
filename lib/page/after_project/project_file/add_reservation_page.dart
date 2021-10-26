@@ -125,14 +125,14 @@ class _AddReservationPageState extends State<AddReservationPage> {
                       Navigator.of(context).pop();
                     } else {
                       Get.snackbar(
-                          "Time Already Reserved", "Pleae Re-Write the time",
-                          snackPosition: SnackPosition.TOP,
-                          colorText: Color(0xFFff4667),
-                          icon: Icon(
-                            Icons.warning_amber_rounded,
-                            color: Color(0xFFff4667),
-                          ),
-                          duration: Duration(seconds: 3));
+                        "파일 예약 실패",
+                        "이미 예약된 시간입니다. 다시 예약해주세요",
+                        colorText: Color(0xFFff4667),
+                        icon: Icon(
+                          Icons.warning_amber_rounded,
+                          color: Color(0xFFff4667),
+                        ),
+                      );
                     }
                   })
             ],

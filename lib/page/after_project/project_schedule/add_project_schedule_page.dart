@@ -135,7 +135,7 @@ class _AddProjectSchdeuleState extends State<AddProjectSchdeule> {
                       jsonEncode(schedule.toJson()),
                     );
 
-                    Navigator.of(context).pop(schedule);
+                    Navigator.of(context).pop();
                   })
             ],
           ),

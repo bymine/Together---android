@@ -13,9 +13,11 @@ import 'package:together_android/model/after_project_model/project_file_simple_m
 import 'package:together_android/model/after_project_model/project_file_version_model.dart';
 import 'package:together_android/model/after_project_model/project_schedule_model.dart';
 import 'package:together_android/model/after_project_model/project_setting_model.dart';
+import 'package:together_android/model/after_project_model/show_user_list_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/model/after_login_model/user_profile_model.dart';
 import 'package:together_android/page/after_project/project_file/reservation_main.dart';
+import 'package:together_android/page/after_project/project_setting/edit_project_member_page.dart';
 
 String serverUrl = "http://101.101.216.93:8080";
 //String serverUrl = "http://10.0.2.2:8080";
@@ -64,6 +66,12 @@ Future togetherGetAPI(String service, String parameter) async {
       return ProjectSetting.fromJson(
           jsonDecode(utf8.decode(response.bodyBytes)));
 
+    case "/project/members":
+      List returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<MemberInfo>((json) => MemberInfo.fromJson(json))
+          .toList();
+      return returnData;
+
     case "/user/detail_profile":
       return MyProfileDetail.fromJson(
           jsonDecode(utf8.decode(response.bodyBytes)));
@@ -82,15 +90,21 @@ Future togetherGetAPI(String service, String parameter) async {
 
     case "/project/UserInfo":
       var parsedData = json.decode(utf8.decode(response.bodyBytes));
+      var addressMap = parsedData[0][7];
+      var address;
+      if (addressMap != null) {
+        address = addressMap['main_addr'] + " " + addressMap['reference_addr'];
+      }
+
       return UserProfile(
           nickname: parsedData[0][0],
-          mbti: parsedData[0][1],
+          mbti: parsedData[0][1] == "NULL" ? "설정 안함" : parsedData[0][1],
           age: parsedData[0][2].toString(),
           license1: parsedData[0][3] ?? "",
           license2: parsedData[0][4] ?? "",
           license3: parsedData[0][5] ?? "",
           photo: parsedData[0][6],
-          address: parsedData[0][7] ?? "");
+          address: addressMap == null ? "설정 안함" : address);
 
     case "/project/getTagList":
       var parsedData = json.decode(utf8.decode(response.bodyBytes));
@@ -154,9 +168,14 @@ Future togetherGetAPI(String service, String parameter) async {
       return response.bodyBytes;
 
     case "/teamMatching":
+      print("helli");
       var parsedData =
-          ProjectCard.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+          ProjectResume.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
+      print(parsedData.toString());
       return parsedData;
+
+    default:
+      return response.body;
   }
 }
 
@@ -224,7 +243,23 @@ Future togetherPostSpecialAPI(String service, String body, String idx) async {
           .map<MemberResume>((json) => MemberResume.fromJson(json))
           .toList();
       return returnData;
+    case "/project/modifyInfo":
+      return response.body;
+
+    case "/project/removeMember":
+      return response.body;
+
+    case "/user/getUsers":
+      var data = jsonDecode(utf8.decode(response.bodyBytes));
+      // print(data['result']);
+      if (data['code'] == 'success') {
+        return data['result']
+            .map<UserInfo>((json) => UserInfo.fromJson(json))
+            .toList();
+      } else
+        return null;
 
     default:
+      return response.body;
   }
 }

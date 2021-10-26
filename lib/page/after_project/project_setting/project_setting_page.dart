@@ -1,15 +1,25 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:search_page/search_page.dart';
 import 'package:together_android/componet/button.dart';
+import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/componet/listTile.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
+import 'package:together_android/model/after_login_model/user_profile_model.dart';
 import 'package:together_android/model/after_project_model/project_setting_model.dart';
+import 'package:together_android/model/after_project_model/show_user_list_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
+import 'package:together_android/page/after_login/make_project/show_user_detail_page.dart';
 import 'package:together_android/page/after_project/project_setting/edit_project_info_page.dart';
+import 'package:together_android/page/after_project/project_setting/edit_project_member_page.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
+import 'package:async/async.dart';
 
 class ProjectSettingPage extends StatefulWidget {
   const ProjectSettingPage({Key? key}) : super(key: key);
@@ -20,15 +30,77 @@ class ProjectSettingPage extends StatefulWidget {
 
 class _ProjectSettingPageState extends State<ProjectSettingPage> {
   late Future future;
+  List<String> userList = [];
+  List<UserInfo> userInfoList = [];
+  final AsyncMemoizer _memoizer = AsyncMemoizer();
+  List<String> category = [];
+  List<String> tag = [];
+  List<String> containTag = [];
+  TextEditingController categoryController = TextEditingController();
+  TextEditingController tagController = TextEditingController();
+  Map mappingTag = Map<String, String>();
+  Map mappingIdx = Map<String, String>();
+  String selectedCategory = "";
+  String selectedTag = "";
   fetchSetting() async {
     var projectIdx =
         Provider.of<LiveProject>(context, listen: false).projectIdx;
-    return await togetherGetAPI("/project/getInfo", "/$projectIdx");
+    print("info");
+
+    return togetherGetAPI("/project/getInfo", "/$projectIdx");
+  }
+
+  fetchUserList() async {
+    _memoizer.runOnce(() async {
+      var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
+
+      var projectIdx =
+          Provider.of<LiveProject>(context, listen: false).projectIdx;
+
+      try {
+        userInfoList = await togetherPostSpecialAPI(
+            "/user/getUsers", "", "/$userIdx/$projectIdx");
+        userInfoList.forEach((element) {
+          userList.add(element.userNickname);
+        });
+      } catch (e) {
+        userInfoList = [];
+      }
+    });
+    print("user");
+  }
+
+  void fetchTagList() async {
+    _memoizer.runOnce(() async {
+      List parsedTag = await togetherGetAPI("/project/getTagList", "");
+      parsedTag.forEach((element) {
+        mappingIdx[element['tag_detail_name']] = element['tag_idx'].toString();
+        if (category.contains(element['tag_name']) == false) {
+          category.add(element['tag_name']);
+        }
+        if (tag.contains(element['tag_detail_name']) == false) {
+          tag.add(element['tag_detail_name']);
+          mappingTag[element['tag_detail_name']] = element['tag_name'];
+        }
+      });
+      category.removeAt(0);
+      tag.removeAt(0);
+      if (category.contains("기타") == false) category.add('기타');
+      print(mappingIdx);
+      // print(category);
+      // print(tag);
+      // print(mappingTag);
+      selectedCategory = category.first;
+      selectedTag = tag.first;
+    });
+    print("tag");
   }
 
   @override
   void initState() {
     super.initState();
+    fetchUserList();
+    fetchTagList();
     future = fetchSetting();
   }
 
@@ -37,6 +109,9 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
     var photo = Provider.of<SignInModel>(context, listen: false).userPhoto;
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+    var projectIdx =
+        Provider.of<LiveProject>(context, listen: false).projectIdx;
+    var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
 
     return Scaffold(
       appBar: _appBar(context, photo),
@@ -69,7 +144,7 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Project Setting",
+                                      "프로젝트 설정",
                                       style: subHeadingStyle,
                                     ),
                                     SizedBox(
@@ -81,27 +156,105 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                                     ),
                                   ],
                                 ),
-                                MyButton(label: "수정하기", onTap: () {})
+                                // MyButton(label: "수정하기", onTap: () {})
                               ],
                             ),
                             SizedBox(
                               height: 15,
                             ),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 iconButton(
-                                    width, "Message", Icons.email, () => null),
+                                    width, "메세지", Icons.email, () => null),
                                 iconButton(
                                     width,
-                                    "Edit",
+                                    "편집",
                                     Icons.edit,
-                                    () => Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                EditProjectInfo(
-                                                  setting: setting,
-                                                ))))
+                                    () => Navigator.of(context)
+                                            .push(MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditProjectInfo(
+                                                      setting: setting,
+                                                    )))
+                                            .then((value) {
+                                          setState(() {
+                                            future = fetchSetting();
+                                            print("updated setting");
+                                          });
+                                        })),
+                                iconButton(width, "멤버 초대", Icons.group_add, () {
+                                  if (userInfoList.isEmpty) {
+                                    Get.snackbar("멤버를 초대할 수 없습니다",
+                                        "팀장만이 멤버초대를 할 수 있습니다.",
+                                        icon: Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Colors.redAccent,
+                                        ));
+                                  } else
+                                    showSearch(
+                                        context: context,
+                                        delegate: SearchPage(
+                                            searchStyle: editTitleStyle,
+                                            barTheme: ThemeData(
+                                                appBarTheme: AppBarTheme(
+                                                    elevation: 0,
+                                                    backgroundColor:
+                                                        Color(0xffD0EBFF))),
+                                            showItemsOnEmpty: true,
+                                            builder: (person) {
+                                              var info = userInfoList
+                                                  .firstWhere((element) =>
+                                                      element.userNickname ==
+                                                      person);
+
+                                              return Card(
+                                                elevation: 0,
+                                                child: ListTile(
+                                                  onTap: () async {
+                                                    UserProfile userProfile =
+                                                        await togetherGetAPI(
+                                                            "/project/UserInfo",
+                                                            "/$person");
+                                                    print("clcik");
+                                                    Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                ShowUserDetailPage(
+                                                                  userProfile:
+                                                                      userProfile,
+                                                                  members: setting
+                                                                      .members,
+                                                                  isInsidePjt:
+                                                                      true,
+                                                                  userIdx: info
+                                                                      .userIdx,
+                                                                )));
+                                                  },
+                                                  leading: CircleAvatar(
+                                                    backgroundImage:
+                                                        NetworkImage(
+                                                            info.userPhoto),
+                                                  ),
+                                                  title:
+                                                      Text(person.toString()),
+                                                ),
+                                              );
+                                            },
+                                            filter: (person) {
+                                              List<String> a = [];
+                                              userList.forEach((element) {
+                                                if (element.contains(
+                                                    person.toString()))
+                                                  a.add(element);
+                                              });
+                                              return a;
+                                            },
+                                            failure: Center(
+                                              child: Text('No person found'),
+                                            ),
+                                            items: userList));
+                                })
                               ],
                             )
                           ],
@@ -116,7 +269,7 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                           children: [
                             MyListTile(
                               title: Text(
-                                'Intro',
+                                '설명',
                                 style: editTitleStyle,
                               ),
                               subTitle: Text(
@@ -126,7 +279,7 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                             ),
                             MyListTile(
                               title: Text(
-                                'Start',
+                                '시작날짜',
                                 style: editTitleStyle,
                               ),
                               subTitle: Text(
@@ -136,7 +289,7 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                             ),
                             MyListTile(
                               title: Text(
-                                'End',
+                                '종료날짜',
                                 style: editTitleStyle,
                               ),
                               subTitle: Text(
@@ -146,21 +299,21 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                             ),
                             MyListTile(
                               title: Text(
-                                'Professionality',
+                                '전문성',
                                 style: editTitleStyle,
                               ),
                               subTitle: Text(
-                                setting.level,
+                                projectEnumFromServer(setting.level),
                                 style: editSubTitleStyle,
                               ),
                             ),
                             MyListTile(
                               title: Text(
-                                'Type',
+                                '유형',
                                 style: editTitleStyle,
                               ),
                               subTitle: Text(
-                                setting.type,
+                                projectEnumFromServer(setting.type),
                                 style: editSubTitleStyle,
                               ),
                             ),
@@ -169,7 +322,7 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                                   child: Icon(Icons.tag, color: Colors.white),
                                   backgroundColor: Colors.red[300]),
                               title: Text(
-                                'Tag',
+                                '태그 (${setting.tag.length}/4)',
                                 style: editTitleStyle,
                               ),
                               subTitle: Container(
@@ -183,16 +336,53 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                                             backgroundColor: titleColor,
                                             deleteIconColor: Colors.red[300],
                                             onDeleted: () async {
-                                              setState(() {
-                                                setting.tag.remove(element);
-                                              });
+                                              var index =
+                                                  setting.tag.indexOf(element);
+                                              var code = await togetherPostSpecialAPI(
+                                                  "/project/deleteProjectTag",
+                                                  "",
+                                                  "/$projectIdx/$userIdx/${setting.tagIdxs[index]}");
+                                              if (code == "not_leader") {
+                                                Get.snackbar("태그 삭제 실패",
+                                                    "팀장만이 태그를 삭제 할 수 있습니다",
+                                                    icon: Icon(
+                                                      Icons
+                                                          .warning_amber_rounded,
+                                                      color: Colors.redAccent,
+                                                    ));
+                                              } else
+                                                setState(() {
+                                                  setting.tag.remove(element);
+                                                });
                                             },
                                           ))
                                       .toList(),
                                 ),
                               ),
                               trailing: IconButton(
-                                  onPressed: () async {},
+                                  onPressed: () async {
+                                    containTag = [];
+                                    mappingTag.keys.forEach((element) {
+                                      if (mappingTag[element] ==
+                                          selectedCategory)
+                                        containTag.add(element);
+                                    });
+                                    containTag.insert(containTag.length, '기타');
+
+                                    selectedTag = containTag[0];
+                                    if (setting.tag.length >= 4) {
+                                      Get.snackbar(
+                                        "태그 추가 실패",
+                                        "태그는 최대 4개까지 설정 할 수 있습니다",
+                                        icon: Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Colors.redAccent,
+                                        ),
+                                      );
+                                    } else
+                                      tagSheet(context, width, height,
+                                          projectIdx, userIdx);
+                                  },
                                   icon: Icon(Icons.add)),
                             ),
                             MyListTile(
@@ -201,15 +391,25 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                                       color: Colors.white),
                                   backgroundColor: Colors.purple[300]),
                               title: Text(
-                                'Members',
+                                '멤버',
                                 style: editTitleStyle,
                               ),
                               subTitle: Text(
-                                setting.members.toString(),
+                                setting.members.toString().substring(
+                                    1, setting.members.toString().length - 1),
                                 style: editSubTitleStyle,
                               ),
                               trailing: IconButton(
-                                  onPressed: () async {},
+                                  onPressed: () async {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (context) =>
+                                                EditMemberPage()))
+                                        .then((value) => setState(() {
+                                              future = fetchSetting();
+                                              print("updated setting");
+                                            }));
+                                  },
                                   icon: Icon(Icons.chevron_right_outlined)),
                             ),
                           ],
@@ -227,6 +427,160 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
             }),
       ),
     );
+  }
+
+  tagSheet(BuildContext context, double width, double height, int projectIdx,
+      int userIdx) {
+    return showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
+        isScrollControlled: true,
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return Padding(
+              padding: MediaQuery.of(context).viewInsets,
+              child: Container(
+                padding: EdgeInsets.only(
+                    left: width * 0.08,
+                    right: width * 0.08,
+                    top: height * 0.02,
+                    bottom: height * 0.02),
+                child: Wrap(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "태그 추가",
+                              style: headingStyle,
+                            ),
+                            MyButton(
+                                width: width * 0.3,
+                                height: 40,
+                                label: "+ 추가",
+                                onTap: () async {
+                                  var tagIdx;
+                                  var tagName;
+                                  var detailName;
+                                  if (selectedCategory == "기타" &&
+                                      selectedTag == "기타") {
+                                    tagIdx = 0;
+                                    tagName = categoryController.text;
+                                    detailName = tagController.text;
+                                  } else if (selectedCategory != "기타" &&
+                                      selectedTag == "기타") {
+                                    tagIdx = 0;
+                                    tagName = selectedCategory;
+                                    detailName = tagController.text;
+                                  } else {
+                                    tagIdx = mappingIdx[selectedTag];
+                                    tagName = selectedCategory;
+                                    detailName = selectedTag;
+                                  }
+
+                                  var code = await togetherPostSpecialAPI(
+                                      "/project/addProjectTag",
+                                      jsonEncode({
+                                        "tag_idx": tagIdx,
+                                        "tag_name": tagName,
+                                        "tag_detail_name": detailName
+                                      }),
+                                      "/$projectIdx/$userIdx");
+
+                                  if (code == "not_leader") {
+                                    Navigator.of(context).pop();
+                                    Get.snackbar(
+                                        "태그 추가 실패", "팀장만이 태그를 추가 할 수 있습니다",
+                                        icon: Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Colors.redAccent,
+                                        ));
+                                  } else {
+                                    Navigator.of(context).pop();
+                                  }
+                                })
+                          ],
+                        ),
+                        MyInputField(
+                          title: "카테고리 선택",
+                          hint: selectedCategory,
+                          suffixIcon: DropdownButton(
+                            dropdownColor: Colors.blueGrey,
+                            underline: Container(),
+                            value: selectedCategory,
+                            items: category.map((value) {
+                              return DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value,
+                                      style: editSubTitleStyle.copyWith(
+                                          color: Colors.white)));
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedCategory = value.toString();
+
+                                containTag = [];
+                                mappingTag.keys.forEach((element) {
+                                  if (mappingTag[element] == selectedCategory)
+                                    containTag.add(element);
+                                });
+                                containTag.add("기타");
+                                selectedTag = containTag.first;
+                              });
+                            },
+                          ),
+                        ),
+                        MyInputField(
+                          title: "태그 선택",
+                          hint: selectedTag,
+                          suffixIcon: DropdownButton(
+                            dropdownColor: Colors.blueGrey,
+                            underline: Container(),
+                            value: selectedTag,
+                            items: containTag.map((value) {
+                              return DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value,
+                                      style: editSubTitleStyle.copyWith(
+                                          color: Colors.white)));
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedTag = value.toString();
+                              });
+                            },
+                          ),
+                        ),
+                        Visibility(
+                            visible: selectedCategory == "기타",
+                            child: MyInputField(
+                              controller: categoryController,
+                              title: "카테고리 입력",
+                              hint: "Input Category",
+                            )),
+                        Visibility(
+                            visible:
+                                selectedCategory == "기타" || selectedTag == "기타",
+                            child: MyInputField(
+                              controller: tagController,
+                              title: "태그 입력",
+                              hint: "Input Tag",
+                            )),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            );
+          });
+        }).then((value) => setState(() {
+          future = fetchSetting();
+        }));
   }
 
   iconButton(double width, String name, IconData icon, Function()? onTap) {

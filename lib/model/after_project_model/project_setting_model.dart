@@ -23,7 +23,6 @@ class ProjectSetting {
       required this.members});
 
   factory ProjectSetting.fromJson(Map<String, dynamic> json) {
-    print(json);
     return ProjectSetting(
         projectName: json['project_name'],
         projectExp: json['project_exp'],

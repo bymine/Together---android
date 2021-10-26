@@ -99,7 +99,7 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "My Project",
+                              "진행중인 프로젝트",
                               style: subHeadingStyle,
                             ),
                             SizedBox(
@@ -115,8 +115,8 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
                           ],
                         ),
                         MyButton(
-                            label: "+ Create Project",
-                            width: width * 0.4,
+                            label: "+ 생성하기",
+                            width: width * 0.3,
                             height: 50,
                             onTap: () {
                               Navigator.of(context)
@@ -158,8 +158,13 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
                                 chatRoom = project.projectIdx;
                                 Provider.of<LiveProject>(context, listen: false)
                                     .enterProject(project);
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => ProjectMainPage()));
+                                Navigator.of(context)
+                                    .push(MaterialPageRoute(
+                                        builder: (context) =>
+                                            ProjectMainPage()))
+                                    .then((value) => setState(() {
+                                          _changed = true;
+                                        }));
                               },
                               child: Container(
                                   decoration: BoxDecoration(

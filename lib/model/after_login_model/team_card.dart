@@ -1,4 +1,4 @@
-class ProjectCard {
+class ProjectResume {
   String projectName;
   String projectExp;
   String startDate;
@@ -8,7 +8,7 @@ class ProjectCard {
   String memberNum;
   String intro;
 
-  ProjectCard(
+  ProjectResume(
       {required this.projectName,
       required this.projectExp,
       required this.startDate,
@@ -18,8 +18,8 @@ class ProjectCard {
       required this.memberNum,
       required this.intro});
 
-  factory ProjectCard.fromJson(Map<String, dynamic> json) {
-    return ProjectCard(
+  factory ProjectResume.fromJson(Map<String, dynamic> json) {
+    return ProjectResume(
         projectName: json['project_name'],
         projectExp: json['project_exp'],
         startDate: json['start_date'],

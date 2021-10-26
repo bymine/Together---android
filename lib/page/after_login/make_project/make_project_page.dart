@@ -413,6 +413,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
             builder: (context) => ShowUserDetailPage(
                   userProfile: userProfile,
                   members: member,
+                  isInsidePjt: false,
                 )))
         .then((newMember) {
       setState(() {

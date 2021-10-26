@@ -6,12 +6,14 @@ class MyButton extends StatelessWidget {
   final Function()? onTap;
   final double? width;
   final double? height;
+  final Color? color;
 
   const MyButton(
       {Key? key,
       required this.label,
       this.width,
       this.height,
+      this.color,
       required this.onTap})
       : super(key: key);
 
@@ -27,7 +29,7 @@ class MyButton extends StatelessWidget {
             : EdgeInsets.zero,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: titleColor,
+          color: color == null ? titleColor : color,
         ),
         child: Center(
             child: Text(

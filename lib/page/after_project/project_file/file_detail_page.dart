@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/listTile.dart';
 import 'package:together_android/constant.dart';
@@ -13,6 +12,7 @@ import 'package:together_android/model/after_project_model/project_file_detail_m
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_project/project_file/file_version_page.dart';
+import 'package:together_android/page/after_project/project_file/file_version_upload_page.dart';
 import 'package:together_android/page/after_project/project_file/reservation_main.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/service/notification_serivice.dart';
@@ -137,19 +137,12 @@ class _FileDetailPageState extends State<FileDetailPage> {
                                   child: fileIconButton(
                                       width * 0.16, "업로드", Icons.upload_file,
                                       () async {
-                                    final ext =
-                                        await getExternalStorageDirectory();
-
-                                    final taskId =
-                                        await FlutterDownloader.enqueue(
-                                            url:
-                                                'http://101.101.216.93:8080/images/\$2a\$10\$URtCikpMZHScKTrF460whuMOWPmMgkILO0iID6x1tP8R2ga08oTKC.png',
-                                            savedDir: ext!.path,
-                                            showNotification:
-                                                true, // show download progress in status bar (for Android)
-                                            openFileFromNotification:
-                                                true, // click on notification to open downloaded file (for Android)
-                                            saveInPublicStorage: true);
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                FileVersionUpload(
+                                                  name: widget.fileName,
+                                                )));
                                   }))
                             ],
                           ),

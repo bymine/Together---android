@@ -715,7 +715,10 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
     return TextField(
       onTap: () {
         Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => MemberSearchPage()));
+            .push(MaterialPageRoute(builder: (context) => MemberSearchPage()))
+            .then((value) => setState(() {
+                  future = fetchMemberMainData();
+                }));
       },
       readOnly: true,
       decoration: InputDecoration(
