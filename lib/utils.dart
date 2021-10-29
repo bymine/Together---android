@@ -314,11 +314,9 @@ String licenseToString(String license1, String license2, String license3) {
   string = string.replaceAll(",,", ",");
 
   if (string[0] == ",") {
-    print("first");
     string = string.substring(1, string.length);
   }
   if (string.length != 0 && string[string.length - 1] == ",") {
-    print("last");
     string = string.substring(0, string.length - 1);
   }
   if (string.length == 0) string = "";

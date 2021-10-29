@@ -90,15 +90,14 @@ class ShowUserDetailPage extends StatelessWidget {
                     MyListTile(
                       leading: CircleAvatar(
                           backgroundColor: Colors.red[300],
-                          child:
-                              Icon(Icons.calendar_today, color: Colors.white)),
+                          child: Icon(Icons.face, color: Colors.white)),
                       title: Text(
                         "나이",
-                        style: editTitleStyle,
+                        style: tileTitleStyle,
                       ),
                       subTitle: Text(
                         userProfile.age,
-                        style: editSubTitleStyle,
+                        style: tileSubTitleStyle,
                       ),
                     ),
                     MyListTile(
@@ -107,7 +106,7 @@ class ShowUserDetailPage extends StatelessWidget {
                           child: Icon(Icons.book, color: Colors.white)),
                       title: Text(
                         "자격증",
-                        style: editTitleStyle,
+                        style: tileTitleStyle,
                       ),
                       subTitle: Text(
                         licenseToString(
@@ -118,7 +117,7 @@ class ShowUserDetailPage extends StatelessWidget {
                             ? "설정 안함"
                             : licenseToString(userProfile.license1,
                                 userProfile.license2, userProfile.license3),
-                        style: editSubTitleStyle,
+                        style: tileSubTitleStyle,
                       ),
                     ),
                     MyListTile(
@@ -127,11 +126,11 @@ class ShowUserDetailPage extends StatelessWidget {
                           child: Icon(Icons.psychology, color: Colors.white)),
                       title: Text(
                         "MBTI",
-                        style: editTitleStyle,
+                        style: tileTitleStyle,
                       ),
                       subTitle: Text(
                         userProfile.mbti,
-                        style: editSubTitleStyle,
+                        style: tileSubTitleStyle,
                       ),
                     ),
                     MyListTile(
@@ -141,11 +140,11 @@ class ShowUserDetailPage extends StatelessWidget {
                               Icon(Icons.location_city, color: Colors.white)),
                       title: Text(
                         "주소",
-                        style: editTitleStyle,
+                        style: tileTitleStyle,
                       ),
                       subTitle: Text(
                         userProfile.address,
-                        style: editSubTitleStyle,
+                        style: tileSubTitleStyle,
                       ),
                     ),
                     MyButton(
@@ -160,14 +159,25 @@ class ShowUserDetailPage extends StatelessWidget {
                               Provider.of<LiveProject>(context, listen: false)
                                   .projectIdx;
                           if (isInsidePjt) {
+                            // 프로젝트 내부 초대
                             final code = await togetherGetAPI(
                                 "/project/inviteUser",
                                 '?project_idx=$projectIdx&user_idx=$userIdx');
                             print(code);
-                            Navigator.of(context)
-                                .pop(userProfile.nickname.toString());
-                            Navigator.of(context).pop();
+                            if (code == "success") {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              Get.snackbar("멤버 초대 성공",
+                                  "${userProfile.nickname}님에게 초대 메세지를 보냈습니다.");
+                            } else {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              Get.snackbar("멤버 초대 실패",
+                                  "${userProfile.nickname}님은 이미 프로젝트 멤버입니다.");
+                            }
                           } else {
+                            print('프로젝트 생성 초대');
+
                             if (members.contains(userProfile.nickname) ==
                                 false) {
                               final code = await togetherGetAPI(
@@ -175,19 +185,11 @@ class ShowUserDetailPage extends StatelessWidget {
                                   '/${userProfile.nickname}');
                               print(code);
                               if (code == "success") {
-                                Get.snackbar("멤버 초대 성공",
-                                    "${userProfile.nickname}님에게 초대 메세지를 보냈습니다.");
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
-                              } else {
-                                Get.snackbar("멤버 초대 실패",
-                                    "${userProfile.nickname}님은 이미 프로젝트 멤버입니다.");
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
+                                Navigator.of(context)
+                                    .pop(userProfile.nickname.toString());
+                                Navigator.of(context)
+                                    .pop(userProfile.nickname.toString());
                               }
-                            } else {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).pop();
                             }
                           }
                         }),

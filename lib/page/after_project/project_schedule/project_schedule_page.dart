@@ -29,8 +29,6 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
   DateTime? _selectedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
-  TextEditingController titleController = TextEditingController();
-  TextEditingController contentController = TextEditingController();
 
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
@@ -137,45 +135,7 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
                 ]),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          "프로젝트 스케줄",
-                          style: subHeadingStyle,
-                        ),
-                        Text(
-                          projectName,
-                          style: headingStyle,
-                        )
-                      ],
-                    ),
-                    MyButton(
-                        label: "+ 추가",
-                        onTap: () async {
-                          if (_rangeSelectionMode ==
-                              RangeSelectionMode.toggledOn) {
-                            startDate = _rangeStart!;
-                            endDate = _rangeEnd ?? startDate;
-                          } else {
-                            startDate = _focusedDay;
-                            endDate = _focusedDay.add(Duration(hours: 1));
-                          }
-
-                          Navigator.of(context)
-                              .push(MaterialPageRoute(
-                                  builder: (context) => AddProjectSchdeule(
-                                        startDate: startDate,
-                                        endDate: endDate,
-                                      )))
-                              .then((value) => setState(() {
-                                    fetchProjectSchdeule();
-                                  }));
-                        })
-                  ],
-                ),
+                headeer(projectName, context),
                 TableCalendar(
                   calendarStyle: CalendarStyle(
                     // markerDecoration: BoxDecoration(
@@ -265,7 +225,7 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
                               ),
                               title: Text(
                                 _selectedSchedule[index].title,
-                                style: editTitleStyle,
+                                style: tileTitleStyle,
                               ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,76 +236,14 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
                                   Text(
                                     _selectedSchedule[index].content,
                                     maxLines: 1,
-                                    style: editSubTitleStyle,
+                                    style: tileSubTitleStyle,
                                   ),
                                   SizedBox(
                                     height: 5,
                                   ),
                                   from == to
-                                      ? Row(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Icon(Icons.event,
-                                                    color: Colors.grey,
-                                                    size: 16),
-                                                SizedBox(
-                                                  width: 5,
-                                                ),
-                                                Text(
-                                                    schdeuleDateFormat(
-                                                        _selectedSchedule[index]
-                                                            .startTime,
-                                                        _selectedSchedule[index]
-                                                            .endTime,
-                                                        true),
-                                                    style: editSubTitleStyle)
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              width: 20,
-                                            ),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.schedule,
-                                                    color: Colors.grey,
-                                                    size: 16),
-                                                SizedBox(
-                                                  width: 5,
-                                                ),
-                                                Text(
-                                                    schdeuleTimeFormat(
-                                                        _selectedSchedule[index]
-                                                            .startTime,
-                                                        _selectedSchedule[index]
-                                                            .endTime),
-                                                    style: editSubTitleStyle)
-                                              ],
-                                            ),
-                                          ],
-                                        )
-                                      : Row(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Icon(Icons.event,
-                                                    color: Colors.grey,
-                                                    size: 16),
-                                                SizedBox(
-                                                  width: 5,
-                                                ),
-                                                Text(
-                                                    schdeuleDateFormat(
-                                                        _selectedSchedule[index]
-                                                            .startTime,
-                                                        _selectedSchedule[index]
-                                                            .endTime,
-                                                        false),
-                                                    style: editSubTitleStyle)
-                                              ],
-                                            ),
-                                          ],
-                                        )
+                                      ? cardDateTimeInfo(index)
+                                      : cardDateInfo(index)
                                 ],
                               ),
                             ),
@@ -358,6 +256,100 @@ class _ProjectSchedulePageState extends State<ProjectSchedulePage> {
           ))
         ],
       ),
+    );
+  }
+
+  cardDateInfo(int index) {
+    return Row(
+      children: [
+        Row(
+          children: [
+            Icon(Icons.event, color: Colors.grey, size: 16),
+            SizedBox(
+              width: 5,
+            ),
+            Text(
+                schdeuleDateFormat(_selectedSchedule[index].startTime,
+                    _selectedSchedule[index].endTime, false),
+                style: tileSubTitleStyle)
+          ],
+        ),
+      ],
+    );
+  }
+
+  cardDateTimeInfo(int index) {
+    return Row(
+      children: [
+        Row(
+          children: [
+            Icon(Icons.event, color: Colors.grey, size: 16),
+            SizedBox(
+              width: 5,
+            ),
+            Text(
+                schdeuleDateFormat(_selectedSchedule[index].startTime,
+                    _selectedSchedule[index].endTime, true),
+                style: tileSubTitleStyle)
+          ],
+        ),
+        SizedBox(
+          width: 20,
+        ),
+        Row(
+          children: [
+            Icon(Icons.schedule, color: Colors.grey, size: 16),
+            SizedBox(
+              width: 5,
+            ),
+            Text(
+                schdeuleTimeFormat(_selectedSchedule[index].startTime,
+                    _selectedSchedule[index].endTime),
+                style: tileSubTitleStyle)
+          ],
+        ),
+      ],
+    );
+  }
+
+  headeer(String projectName, BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          children: [
+            Text(
+              "프로젝트 스케줄",
+              style: subHeadingStyle,
+            ),
+            Text(
+              projectName,
+              style: headingStyle,
+            )
+          ],
+        ),
+        MyButton(
+            label: "+ 추가",
+            onTap: () async {
+              if (_rangeSelectionMode == RangeSelectionMode.toggledOn) {
+                startDate = _rangeStart!;
+                endDate = _rangeEnd ?? startDate;
+              } else {
+                startDate = _focusedDay;
+                endDate = _focusedDay.add(Duration(hours: 1));
+              }
+
+              Navigator.of(context)
+                  .push(MaterialPageRoute(
+                      builder: (context) => AddProjectSchdeule(
+                            startDate: startDate,
+                            endDate: endDate,
+                          )))
+                  .then((value) => setState(() {
+                        fetchProjectSchdeule();
+                      }));
+            })
+      ],
     );
   }
 

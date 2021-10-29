@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:async/async.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -39,12 +37,12 @@ class UserDetailProfilePage extends StatefulWidget {
 
 class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
   late Future future;
-  final AsyncMemoizer _memoizer = AsyncMemoizer();
   TextEditingController nickNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController emailAuthController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController phoneAuthController = TextEditingController();
+
   TextEditingController license1Controller = TextEditingController();
   TextEditingController license2Controller = TextEditingController();
   TextEditingController license3Controller = TextEditingController();
@@ -56,7 +54,6 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
   final nickNameFormkey = GlobalKey<FormState>();
   final phoneFormKey = GlobalKey<FormState>();
   final emailFormKey = GlobalKey<FormState>();
-  final licenseFormKey = GlobalKey<FormState>();
 
   String emailFlag = "";
   String phoneFlag = "";
@@ -75,8 +72,9 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
   Dio dio = new Dio();
   final picker = ImagePicker();
   var pickedFile;
+
   List<FetchHobby> mapHobby = [];
-  List<Invitaion> invitaions = [];
+
   List<FetchHobby> hobbyList = [];
 
   List<String> tagName = [];
@@ -87,6 +85,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
 
   List<String> myTag = [];
   List<String> postTagIdx = [];
+
   Map mappingIdx = Map<String, String>();
   Map mappingName = Map<String, String>();
   Map mappingTag = Map<String, String>();
@@ -95,7 +94,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
   String selectedCategory = "게임";
   String selectedTag = "롤";
 
-  String selectedMBTI = "";
+  List<Invitaion> invitaions = [];
 
   _fetchData() {
     var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
@@ -181,10 +180,12 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
     var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
     invitaions =
         await togetherGetAPI("/user/invitationList", "?user_idx=$userIdx");
+    print(invitaions.length);
   }
 
   @override
   Widget build(BuildContext context) {
+    var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -218,36 +219,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                               SizedBox(
                                 height: height * 0.04,
                               ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  iconButton(
-                                      width, '사진', Icons.camera_alt_outlined,
-                                      () {
-                                    changePhoto();
-                                  }),
-                                  iconButton(width, '일정',
-                                      Icons.calendar_today_outlined, () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                PrivateSchedulePage()));
-                                  }),
-                                  iconButton(
-                                      width,
-                                      '메세지',
-                                      invitaions.isNotEmpty
-                                          ? Icons.mark_email_unread_outlined
-                                          : Icons.mail_outline_outlined, () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                UserInviationPage(
-                                                    invitaion: invitaions)));
-                                  })
-                                ],
-                              ),
+                              myButtons(width, context),
                               SizedBox(
                                 height: height * 0.03,
                               ),
@@ -268,19 +240,14 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                     backgroundColor: Colors.red[300]),
                                 title: Text(
                                   '닉네임',
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subTitle: Text(
                                   profile.userNickName,
-                                  style: editSubTitleStyle,
+                                  style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
-                                    onPressed: () async {
-                                      nickNameController.text =
-                                          profile.userNickName;
-                                      await nickNameSheet(
-                                          width, height, context, profile);
-                                    },
+                                    onPressed: () async {},
                                     icon: Icon(Icons.chevron_right_outlined)),
                               ),
                               MyListTile(
@@ -290,11 +257,11 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         color: Colors.white)),
                                 title: Text(
                                   '이메일',
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subTitle: Text(
                                   profile.userEmail,
-                                  style: editSubTitleStyle,
+                                  style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
                                     onPressed: () {},
@@ -307,17 +274,14 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         color: Colors.white)),
                                 title: Text(
                                   '휴대폰',
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subTitle: Text(
                                   profile.userPhone,
-                                  style: editSubTitleStyle,
+                                  style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
-                                    onPressed: () {
-                                      phoneSheet(
-                                          width, height, context, profile);
-                                    },
+                                    onPressed: () {},
                                     icon: Icon(Icons.chevron_right_outlined)),
                               ),
                               MyListTile(
@@ -327,15 +291,16 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         color: Colors.white)),
                                 title: Text(
                                   'MBTI',
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subTitle: Text(
                                   profile.userMbti,
-                                  style: editSubTitleStyle,
+                                  style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
                                     onPressed: () {
-                                      mbtiSheet(profile, width, height);
+                                      mbtiSheet(
+                                          profile, width, height, userIdx);
                                     },
                                     icon: Icon(Icons.chevron_right_outlined)),
                               ),
@@ -346,16 +311,15 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         color: Colors.white)),
                                 title: Text(
                                   '생일',
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subTitle: Text(
                                   profile.userBirth,
-                                  style: editSubTitleStyle,
+                                  style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
                                     onPressed: () {
-                                      birthSheet(
-                                          width, height, context, profile);
+                                      birthSheet(context, profile, userIdx);
                                     },
                                     icon: Icon(Icons.chevron_right_outlined)),
                               ),
@@ -366,7 +330,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         color: Colors.white)),
                                 title: Text(
                                   '주소',
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subTitle: Text(
                                   addressToString(
@@ -374,15 +338,10 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                       profile.mainAddr,
                                       profile.referenceAddr,
                                       profile.detailAddr),
-                                  style: editSubTitleStyle,
+                                  style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
                                     onPressed: () async {
-                                      var userIdx = Provider.of<SignInModel>(
-                                              context,
-                                              listen: false)
-                                          .userIdx;
-
                                       final juso = await Navigator.push<Juso?>(
                                         context,
                                         MaterialPageRoute(
@@ -415,22 +374,17 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         color: Colors.white)),
                                 title: Text(
                                   '자격증',
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subTitle: Text(
                                   licenseToString(profile.license1,
                                       profile.license2, profile.license3),
-                                  style: editSubTitleStyle,
+                                  style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
                                     onPressed: () {
-                                      license1Controller.text =
-                                          profile.license1;
-                                      license2Controller.text =
-                                          profile.license2;
-                                      license3Controller.text =
-                                          profile.license3;
-                                      licenseSheet(profile);
+                                      licenseSheet(
+                                          width, height, profile, userIdx);
                                     },
                                     icon: Icon(Icons.chevron_right_outlined)),
                               ),
@@ -441,14 +395,18 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                         Icon(Icons.tag, color: Colors.white)),
                                 title: Text(
                                   '취미 (${profile.userHobby.length}/4)',
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subTitle: Container(
                                   child: Wrap(
                                     spacing: 0.5,
                                     children: profile.userHobby.map((hobby) {
                                       return Chip(
-                                        label: Text(hobby),
+                                        label: Text(
+                                          hobby,
+                                          style: tileSubTitleStyle.copyWith(
+                                              color: Colors.black),
+                                        ),
                                         backgroundColor: titleColor,
                                         deleteIconColor: Colors.red[300],
                                         onDeleted: () async {
@@ -470,16 +428,6 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                 ),
                                 trailing: IconButton(
                                     onPressed: () async {
-                                      containTag = [];
-                                      mappingName.keys.forEach((element) {
-                                        if (mappingName[element] ==
-                                            selectedCategory)
-                                          containTag.add(element);
-                                      });
-                                      containTag.insert(
-                                          containTag.length, '기타');
-
-                                      selectedTag = containTag[0];
                                       if (profile.userHobby.length >= 4) {
                                         GET.Get.snackbar(
                                           "취미 추가 실패",
@@ -490,9 +438,12 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                           ),
                                         );
                                       } else {
-                                        tagSheet(
-                                                context, width, height, profile)
-                                            .then((value) => setState(() {}));
+                                        hobbySheet(context, width, height,
+                                                profile, userIdx)
+                                            .then((value) => setState(() {
+                                                  if (value != null)
+                                                    future = _fetchData();
+                                                }));
                                       }
                                     },
                                     icon: Icon(Icons.chevron_right_outlined)),
@@ -509,6 +460,32 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
     );
   }
 
+  myButtons(double width, BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        iconButton(width, '사진', Icons.camera_alt_outlined, () {
+          changePhoto();
+        }),
+        iconButton(width, '일정', Icons.calendar_today_outlined, () {
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => PrivateSchedulePage()));
+        }),
+        messageButton(width, () {
+          Navigator.of(context)
+              .push(MaterialPageRoute(
+                  builder: (context) =>
+                      UserInviationPage(invitaion: invitaions)))
+              .then((value) {
+            setState(() {
+              _fetchInvitaion();
+            });
+          });
+        })
+      ],
+    );
+  }
+
   jusoToFormat(Juso juso, MyProfileDetail profile) {
     profile.mainAddr = mainAdressFormat(juso.sido);
 
@@ -521,13 +498,21 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
     print("main_addr: " + juso.address.split(juso.sigungu).last);
   }
 
-  tagSheet(BuildContext context, double width, double height,
-      MyProfileDetail profile) {
+  hobbySheet(BuildContext context, double width, double height,
+      MyProfileDetail profile, int userIdx) {
+    containTag = [];
+    mappingName.keys.forEach((element) {
+      if (mappingName[element] == selectedCategory) containTag.add(element);
+    });
+    containTag.insert(containTag.length, '기타');
+
+    selectedTag = containTag[0];
+
     return showModalBottomSheet(
         isScrollControlled: true,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setState) {
@@ -535,159 +520,149 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
               child: Padding(
                 padding: MediaQuery.of(context).viewInsets,
                 child: Container(
-                  padding: EdgeInsets.only(
-                      left: width * 0.08,
-                      right: width * 0.08,
-                      top: height * 0.02,
-                      bottom: height * 0.02),
                   child: Wrap(
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Add Hobby",
-                                style: headingStyle,
-                              ),
-                              ElevatedButton(
-                                  onPressed: () async {
-                                    var bigIdx;
-                                    var smallIdx;
-                                    var bigName;
-                                    var smallName;
-                                    var userIdx = Provider.of<SignInModel>(
-                                            context,
-                                            listen: false)
-                                        .userIdx;
+                          BottomSheetTopBar(
+                              title: "취미 추가",
+                              onPressed: () async {
+                                var bigIdx;
+                                var smallIdx;
+                                var bigName;
+                                var smallName;
 
-                                    if (selectedCategory == "기타") {
-                                      if (selectedTag == "기타") {
-                                        bigIdx = -1;
-                                        smallIdx = -1;
-                                        bigName = categoryController.text;
-                                        smallName = tagController.text;
-                                      }
-                                    } else {
-                                      if (selectedTag == "기타") {
-                                        bigIdx =
-                                            mappingCategory[selectedCategory];
-                                        bigName = selectedCategory;
-                                        smallIdx = -1;
-                                        smallName = tagController.text;
-                                      } else {
-                                        bigIdx =
-                                            mappingCategory[selectedCategory];
-                                        bigName = selectedCategory;
-                                        smallIdx = mappingTag[selectedTag];
-                                        smallName = selectedTag;
-                                      }
-                                    }
-
-                                    print(bigIdx);
-                                    print(bigName);
-                                    print(smallIdx);
-                                    print(smallName);
-                                    await togetherPostAPI(
-                                        "/user/add_hobby",
-                                        jsonEncode({
-                                          "user_idx": userIdx,
-                                          "big_idx": bigIdx,
-                                          "small_idx": smallIdx,
-                                          "big_name": bigName,
-                                          "small_name": smallName
-                                        }));
-                                    setState(() {
-                                      if (profile.userHobby
-                                              .contains(selectedTag) ==
-                                          false)
-                                        profile.userHobby.add(selectedTag);
-                                    });
-                                    Navigator.of(context).pop();
-                                  },
-                                  style: elevatedStyle,
-                                  child: Text("+ Add"))
-                            ],
-                          ),
-                          MyInputField(
-                            title: "Select Category",
-                            hint: selectedCategory,
-                            suffixIcon: DropdownButton(
-                              dropdownColor: Colors.blueGrey,
-                              underline: Container(),
-                              value: selectedCategory,
-                              items: categoryName.map((value) {
-                                return DropdownMenuItem(
-                                    value: value,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 14,
-                                      ),
-                                      child: Text(value,
-                                          style: editSubTitleStyle.copyWith(
-                                              color: Colors.white)),
-                                    ));
-                              }).toList(),
-                              onChanged: (value) {
+                                if (selectedCategory == "기타") {
+                                  if (selectedTag == "기타") {
+                                    bigIdx = -1;
+                                    smallIdx = -1;
+                                    bigName = categoryController.text;
+                                    smallName = tagController.text;
+                                  }
+                                } else {
+                                  if (selectedTag == "기타") {
+                                    bigIdx = mappingCategory[selectedCategory];
+                                    bigName = selectedCategory;
+                                    smallIdx = -1;
+                                    smallName = tagController.text;
+                                  } else {
+                                    bigIdx = mappingCategory[selectedCategory];
+                                    bigName = selectedCategory;
+                                    smallIdx = mappingTag[selectedTag];
+                                    smallName = selectedTag;
+                                  }
+                                }
+                                await togetherPostAPI(
+                                    "/user/add_hobby",
+                                    jsonEncode({
+                                      "user_idx": userIdx,
+                                      "big_idx": bigIdx,
+                                      "small_idx": smallIdx,
+                                      "big_name": bigName,
+                                      "small_name": smallName
+                                    }));
                                 setState(() {
-                                  selectedCategory = value.toString();
-                                  containTag = [];
-                                  mappingName.keys.forEach((element) {
-                                    if (mappingName[element] ==
-                                        selectedCategory)
-                                      containTag.add(element);
-                                  });
-                                  containTag.add('기타');
-                                  selectedTag = containTag[0];
-
-                                  print(selectedTag);
+                                  if (profile.userHobby.contains(selectedTag) ==
+                                      false) profile.userHobby.add(selectedTag);
                                 });
-                              },
+                                Navigator.of(context).pop(true);
+                              }),
+                          Container(
+                            padding: EdgeInsets.only(
+                                left: width * 0.04,
+                                right: width * 0.04,
+                                bottom: height * 0.02),
+                            child: Column(
+                              children: [
+                                MyInputField(
+                                  title: "카테고리 선택",
+                                  hint: selectedCategory,
+                                  suffixIcon: Padding(
+                                    padding: const EdgeInsets.only(right: 16),
+                                    child: DropdownButton(
+                                      dropdownColor: Colors.blueGrey,
+                                      underline: Container(),
+                                      value: selectedCategory,
+                                      items: categoryName.map((value) {
+                                        return DropdownMenuItem(
+                                            value: value,
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 14,
+                                              ),
+                                              child: Text(value,
+                                                  style: editSubTitleStyle
+                                                      .copyWith(
+                                                          color: Colors.white)),
+                                            ));
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedCategory = value.toString();
+                                          containTag = [];
+                                          mappingName.keys.forEach((element) {
+                                            if (mappingName[element] ==
+                                                selectedCategory)
+                                              containTag.add(element);
+                                          });
+                                          containTag.add('기타');
+                                          selectedTag = containTag[0];
+
+                                          print(selectedTag);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                MyInputField(
+                                  title: "태그 선택",
+                                  hint: selectedTag,
+                                  suffixIcon: Padding(
+                                    padding: const EdgeInsets.only(right: 16),
+                                    child: DropdownButton(
+                                      dropdownColor: Colors.blueGrey,
+                                      underline: Container(),
+                                      value: selectedTag,
+                                      items: containTag.map((value) {
+                                        return DropdownMenuItem(
+                                            value: value,
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 14,
+                                              ),
+                                              child: Text(value,
+                                                  style: editSubTitleStyle
+                                                      .copyWith(
+                                                          color: Colors.white)),
+                                            ));
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedTag = value.toString();
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Visibility(
+                                    visible: selectedCategory == "기타",
+                                    child: MyInputField(
+                                      controller: categoryController,
+                                      title: "카테고리 입력",
+                                      hint: "카테고리를 입력하세요",
+                                    )),
+                                Visibility(
+                                    visible: selectedCategory == "기타" ||
+                                        selectedTag == "기타",
+                                    child: MyInputField(
+                                      controller: tagController,
+                                      title: "태그 입력",
+                                      hint: "태그를 입력하세요",
+                                    )),
+                              ],
                             ),
                           ),
-                          MyInputField(
-                            title: "Select Tag",
-                            hint: selectedTag,
-                            suffixIcon: DropdownButton(
-                              dropdownColor: Colors.blueGrey,
-                              underline: Container(),
-                              value: selectedTag,
-                              items: containTag.map((value) {
-                                return DropdownMenuItem(
-                                    value: value,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 14,
-                                      ),
-                                      child: Text(value,
-                                          style: editSubTitleStyle.copyWith(
-                                              color: Colors.white)),
-                                    ));
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedTag = value.toString();
-                                });
-                              },
-                            ),
-                          ),
-                          Visibility(
-                              visible: selectedCategory == "기타",
-                              child: MyInputField(
-                                controller: categoryController,
-                                title: "Category",
-                                hint: "Input Category",
-                              )),
-                          Visibility(
-                              visible: selectedCategory == "기타" ||
-                                  selectedTag == "기타",
-                              child: MyInputField(
-                                controller: tagController,
-                                title: "Tag",
-                                hint: "Input Tag",
-                              )),
                         ],
                       )
                     ],
@@ -699,14 +674,14 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
         });
   }
 
-  birthSheet(double width, double height, BuildContext context,
-      MyProfileDetail profile) {
+  birthSheet(BuildContext context, MyProfileDetail profile, userIdx) {
     String year = profile.userBirth.split('-').first;
     String month = profile.userBirth.split('-').last.split('-').first;
     String day = profile.userBirth.split('-').last.split('-').last;
 
     DateTime initalDate =
         DateTime(int.parse(year), int.parse(month), int.parse(day));
+
     GET.Get.bottomSheet(Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -718,9 +693,6 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
           BottomSheetTopBar(
               title: "생일 변경",
               onPressed: () async {
-                var userIdx =
-                    Provider.of<SignInModel>(context, listen: false).userIdx;
-
                 await togetherPostAPI(
                   "/user/edit_detail_profile",
                   jsonEncode(
@@ -759,7 +731,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
         isScrollControlled: true,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
         context: context,
         builder: (context) {
           return SingleChildScrollView(
@@ -856,7 +828,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
         }).then((value) => setState(() {}));
   }
 
-  Row profileHeader(MyProfileDetail profile) {
+  profileHeader(MyProfileDetail profile) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -872,7 +844,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                   style: subHeadingStyle,
                 ),
                 SizedBox(
-                  height: 15,
+                  height: 5,
                 ),
                 Text(
                   profile.userName,
@@ -943,13 +915,71 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
     );
   }
 
+  messageButton(double width, Function()? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: width * 0.2,
+        height: width * 0.2,
+        padding: EdgeInsets.all(4),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xffffe0e0e0),
+                spreadRadius: 2,
+                blurRadius: 2,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ]),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.mail_outline_outlined,
+                  color: pinkClr,
+                  size: 40,
+                ),
+                Text(
+                  "메세지",
+                  style: editSubTitleStyle,
+                )
+              ],
+            ),
+            invitaions.length != 0
+                ? Positioned(
+                    right: 8,
+                    top: 2,
+                    child: Container(
+                      padding: EdgeInsets.all(4),
+                      width: 16,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle, color: Colors.redAccent),
+                      child: Text(
+                        invitaions.length.toString(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )
+                : Container()
+          ],
+        ),
+      ),
+    );
+  }
+
   void phoneSheet(double width, double height, BuildContext context,
       MyProfileDetail profile) {
     phoneController.text = toPhoneString(profile.userPhone);
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
         isScrollControlled: true,
         context: context,
         builder: (context) {
@@ -1142,35 +1172,30 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
         }).then((value) => setState(() {}));
   }
 
-  void licenseSheet(MyProfileDetail profile) {
+  void licenseSheet(
+      double width, double height, MyProfileDetail profile, int userIdx) {
+    license1Controller.text = profile.license1;
+    license2Controller.text = profile.license2;
+    license3Controller.text = profile.license3;
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
         context: context,
         isScrollControlled: true,
         builder: (context) {
-          double width = MediaQuery.of(context).size.width;
-          double height = MediaQuery.of(context).size.height;
-
           return SingleChildScrollView(
             child: StatefulBuilder(
               builder: (context, setState) {
                 return Padding(
                   padding: MediaQuery.of(context).viewInsets,
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                      vertical: width * 0.02,
-                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         BottomSheetTopBar(
                             title: "자격증 변경",
                             onPressed: () async {
-                              var userIdx = Provider.of<SignInModel>(context,
-                                      listen: false)
-                                  .userIdx;
                               String value = licenseToString(
                                   license1Controller.text,
                                   license2Controller.text,
@@ -1202,20 +1227,20 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                             children: [
                               MyInputField(
                                 maxLine: 1,
-                                title: "Certification1",
-                                hint: "Input Certification",
+                                title: "자격증 1",
+                                hint: "첫번째 자격증을 입력하세요",
                                 controller: license1Controller,
                               ),
                               MyInputField(
                                 maxLine: 1,
-                                title: "Certification2",
-                                hint: "Input Certification",
+                                title: "자격증 2",
+                                hint: "두번째 자격증을 입력하세요",
                                 controller: license2Controller,
                               ),
                               MyInputField(
                                 maxLine: 1,
-                                title: "certification3",
-                                hint: "Input Certification",
+                                title: "자격증 3",
+                                hint: "세번째 자격증을 입력하세요",
                                 controller: license3Controller,
                               ),
                             ],
@@ -1231,14 +1256,15 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
         }).then((value) => setState(() {}));
   }
 
-  void mbtiSheet(MyProfileDetail profile, double width, double height) {
-    selectedMBTI = profile.userMbti;
+  void mbtiSheet(
+      MyProfileDetail profile, double width, double height, int userIdx) {
+    var selectedMBTI = profile.userMbti;
 
     showModalBottomSheet(
         context: context,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
         builder: (context) {
           return StatefulBuilder(builder: (context, setState) {
             return Container(
@@ -1249,22 +1275,19 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                       BottomSheetTopBar(
                           title: "MBTI 변경",
                           onPressed: () async {
-                            var userIdx =
-                                Provider.of<SignInModel>(context, listen: false)
-                                    .userIdx;
-
                             await togetherPostAPI(
                               "/user/edit_detail_profile",
                               jsonEncode(
                                 {
                                   "user_idx": userIdx,
                                   "flag": 'mbti',
-                                  "value":
-                                      mbtiList.indexOf(profile.userMbti) + 1
+                                  "value": mbtiList.indexOf(selectedMBTI) + 1
                                 },
                               ),
                             );
-                            setState(() {});
+                            setState(() {
+                              profile.userMbti = selectedMBTI;
+                            });
                             Navigator.of(context).pop();
                           }),
                       Container(
@@ -1275,26 +1298,29 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                             bottom: height * 0.02),
                         child: MyInputField(
                           title: "MBTI",
-                          hint: profile.userMbti,
-                          suffixIcon: DropdownButton(
-                            dropdownColor: Colors.blueGrey,
-                            underline: Container(),
-                            value: profile.userMbti,
-                            items: mbtiList.map((value) {
-                              return DropdownMenuItem(
-                                  value: value,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(value,
-                                        style: editSubTitleStyle.copyWith(
-                                            color: Colors.white)),
-                                  ));
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                profile.userMbti = value.toString();
-                              });
-                            },
+                          hint: selectedMBTI,
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.only(right: 16.0),
+                            child: DropdownButton(
+                              dropdownColor: Colors.blueGrey,
+                              underline: Container(),
+                              value: profile.userMbti,
+                              items: mbtiList.map((value) {
+                                return DropdownMenuItem(
+                                    value: value,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(value,
+                                          style: editSubTitleStyle.copyWith(
+                                              color: Colors.white)),
+                                    ));
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedMBTI = value.toString();
+                                });
+                              },
+                            ),
                           ),
                         ),
                       )

@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
-import 'package:together_android/model/after_login_model/private_schedule_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
 
@@ -117,11 +116,6 @@ class _AddUserSchdeuleState extends State<AddUserSchdeule> {
                     var userIdx =
                         Provider.of<SignInModel>(context, listen: false)
                             .userIdx;
-                    Event event = Event(
-                        title: titleController.text,
-                        content: contentController.text,
-                        startTime: widget.startDate.toIso8601String(),
-                        endTime: widget.endDate.toIso8601String());
                     await togetherPostAPI(
                       "/user/addSchedule",
                       jsonEncode(

@@ -1,14 +1,10 @@
-import 'dart:convert';
 import 'package:date_picker_timeline/date_picker_timeline.dart';
 import 'package:flutter/material.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:together_android/componet/bottom_sheet_top_bar.dart';
 import 'package:together_android/componet/button.dart';
-import 'package:together_android/componet/textfield_widget.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
@@ -222,23 +218,43 @@ class _FileReservationState extends State<FileReservation> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "예약자: " + book.user,
-                        style: GoogleFonts.lato(
-                          textStyle: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            book.user,
+                            style: GoogleFonts.lato(
+                              textStyle:
+                                  tileTitleStyle.copyWith(color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        toDateTimeISO(book.startTime) +
-                            " - " +
-                            toTimeISO(book.endTime),
-                        style: GoogleFonts.lato(
-                          textStyle:
-                              TextStyle(fontSize: 13, color: Colors.grey[100]),
-                        ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.schedule,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            schdeuleTimeFormat(book.startTime, book.endTime),
+                            style: tileTitleStyle.copyWith(color: Colors.white),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -300,257 +316,6 @@ class _FileReservationState extends State<FileReservation> {
       return "Done";
     else
       return "Live";
-  }
-
-  bottomSheetButton(BuildContext context, double width) async {
-    showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16), topRight: Radius.circular(16))),
-        isScrollControlled: true,
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, setState) {
-            return Padding(
-              padding: MediaQuery.of(context).viewInsets,
-              child: Container(
-                child: Wrap(
-                  children: [
-                    BottomSheetTopBar(
-                        title: "파일 예약하기",
-                        onPressed: () async {
-                          int userIdx =
-                              Provider.of<SignInModel>(context, listen: false)
-                                  .userIdx;
-                          int fileIdx =
-                              Provider.of<SimpleFile>(context, listen: false)
-                                  .fileIdx;
-                          var code = await togetherPostAPI(
-                              "/file/detail/reserveFile",
-                              jsonEncode({
-                                'user_idx': userIdx,
-                                'file_idx': fileIdx,
-                                'start_datetime': startDate.toIso8601String(),
-                                'end_datetime': endDate.toIso8601String(),
-                              }));
-                          print(code.toString());
-                          if (code.toString() == "success") {
-                            Navigator.of(context).pop();
-                          } else {
-                            // Get.snackbar("Time Already Reserved",
-                            //     "Pleae Re-Write the time",
-                            //     snackPosition: SnackPosition.TOP,
-                            //     colorText: Color(0xFFff4667),
-                            //     icon: Icon(
-                            //       Icons.warning_amber_rounded,
-                            //       color: Color(0xFFff4667),
-                            //     ),
-                            //     duration: Duration(seconds: 3));
-                          }
-                        }),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          vertical: width * 0.01, horizontal: width * 0.02),
-                      decoration: BoxDecoration(
-                          border: Border(
-                              bottom:
-                                  BorderSide(width: 1, color: Colors.grey))),
-                      child: TextFormFieldWidget(
-                          header: Text(
-                            "시작 시간",
-                            style: TextStyle(fontSize: width * 0.04),
-                          ),
-                          body: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Container(
-                                width: width * 0.45,
-                                padding: EdgeInsets.only(left: width * 0.004),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                        width: 1, color: Colors.grey)),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(toDate(startDate)),
-                                    IconButton(
-                                        onPressed: () async {
-                                          await showDatePicker(
-                                            context: context,
-                                            initialDate: DateTime.now(),
-                                            firstDate: DateTime(2020),
-                                            lastDate: DateTime(2025),
-                                          ).then((value) {
-                                            if (value != null) {
-                                              setState(() {
-                                                startDate = value;
-                                                if (startDate
-                                                    .isAfter(endDate)) {
-                                                  endDate = DateTime(
-                                                    startDate.year,
-                                                    startDate.month,
-                                                    startDate.day,
-                                                  );
-                                                }
-                                              });
-                                            }
-                                          });
-                                        },
-                                        icon: Icon(
-                                            Icons.arrow_drop_down_outlined,
-                                            size: 32))
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                width: width * 0.3,
-                                padding: EdgeInsets.only(left: width * 0.02),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                        width: 1, color: Colors.grey)),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(toTime(startDate)),
-                                    IconButton(
-                                        onPressed: () async {
-                                          await showTimePicker(
-                                                  initialEntryMode:
-                                                      TimePickerEntryMode.input,
-                                                  context: context,
-                                                  initialTime:
-                                                      TimeOfDay.fromDateTime(
-                                                          startDate))
-                                              .then((value) {
-                                            if (value != null) {
-                                              setState(() {
-                                                startDate = DateTime(
-                                                    startDate.year,
-                                                    startDate.month,
-                                                    startDate.day,
-                                                    value.hour,
-                                                    value.minute);
-                                              });
-                                            }
-                                          });
-                                        },
-                                        icon: Icon(
-                                            Icons.arrow_drop_down_outlined,
-                                            size: 32))
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                          footer: null,
-                          heightPadding: 0),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          vertical: width * 0.01, horizontal: width * 0.02),
-                      child: TextFormFieldWidget(
-                          header: Text(
-                            "종료 시간",
-                            style: TextStyle(fontSize: width * 0.04),
-                          ),
-                          body: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Container(
-                                width: width * 0.45,
-                                padding: EdgeInsets.only(left: width * 0.004),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                        width: 1, color: Colors.grey)),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(toDate(endDate)),
-                                    IconButton(
-                                        onPressed: () async {
-                                          await showDatePicker(
-                                            context: context,
-                                            initialDate: startDate,
-                                            firstDate: startDate,
-                                            lastDate: DateTime(2025),
-                                          ).then((value) {
-                                            if (value != null) {
-                                              setState(() {
-                                                endDate = value;
-                                              });
-                                            }
-                                          });
-                                        },
-                                        icon: Icon(
-                                            Icons.arrow_drop_down_outlined,
-                                            size: 32))
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                width: width * 0.3,
-                                padding: EdgeInsets.only(left: width * 0.02),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                        width: 1, color: Colors.grey)),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(toTime(endDate)),
-                                    IconButton(
-                                        onPressed: () async {
-                                          await showTimePicker(
-                                                  initialEntryMode:
-                                                      TimePickerEntryMode.input,
-                                                  context: context,
-                                                  initialTime:
-                                                      TimeOfDay.fromDateTime(
-                                                          startDate))
-                                              .then((value) {
-                                            if (value != null) {
-                                              setState(() {
-                                                endDate = DateTime(
-                                                    endDate.year,
-                                                    endDate.month,
-                                                    endDate.day,
-                                                    value.hour,
-                                                    value.minute);
-                                                if (startDate.isAfter(endDate))
-                                                  endDate = DateTime(
-                                                      endDate.year,
-                                                      endDate.month,
-                                                      endDate.day,
-                                                      startDate.hour + 1,
-                                                      value.minute);
-                                              });
-                                            }
-                                          });
-                                        },
-                                        icon: Icon(
-                                            Icons.arrow_drop_down_outlined,
-                                            size: 32))
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                          footer: null,
-                          heightPadding: 0),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          });
-        }).then((value) => setState(() {}));
   }
 
   _appBar(BuildContext context, String photo) {

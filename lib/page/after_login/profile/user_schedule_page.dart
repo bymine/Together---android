@@ -21,15 +21,12 @@ class PrivateSchedulePage extends StatefulWidget {
 class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
   List<Event> _allEvents = [];
   List<Event> _selectedEvents = [];
-  List datekeys = [];
   CalendarFormat _calendarFormat = CalendarFormat.twoWeeks;
   RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOff;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
-  TextEditingController titleController = TextEditingController();
-  TextEditingController contentController = TextEditingController();
 
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
@@ -129,41 +126,7 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                 ]),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          "내 일정",
-                          style: headingStyle,
-                        ),
-                      ],
-                    ),
-                    MyButton(
-                        label: "+ 추가",
-                        onTap: () async {
-                          if (_rangeSelectionMode ==
-                              RangeSelectionMode.toggledOn) {
-                            startDate = _rangeStart!;
-                            endDate = _rangeEnd ?? startDate;
-                          } else {
-                            startDate = _focusedDay;
-                            endDate = _focusedDay.add(Duration(hours: 1));
-                          }
-
-                          Navigator.of(context)
-                              .push(MaterialPageRoute(
-                                  builder: (context) => AddUserSchdeule(
-                                        startDate: startDate,
-                                        endDate: endDate,
-                                      )))
-                              .then((value) => setState(() {
-                                    fetchPrivateSchedule();
-                                  }));
-                        })
-                  ],
-                ),
+                header(context),
                 TableCalendar(
                   calendarStyle: CalendarStyle(
                     outsideDaysVisible: true,
@@ -186,10 +149,6 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                       _calendarFormat = format;
                     });
                   },
-
-                  // onPageChanged: (focusedDay) {
-                  //   _focusedDay = focusedDay;
-                  // },
                   eventLoader: _getEventsForDay,
                   selectedDayPredicate: (day) {
                     return isSameDay(_selectedDay, day);
@@ -242,7 +201,7 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                             ),
                             title: Text(
                               _selectedEvents[index].title,
-                              style: editTitleStyle,
+                              style: tileTitleStyle,
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,73 +212,14 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
                                 Text(
                                   _selectedEvents[index].content,
                                   maxLines: 2,
-                                  style: editSubTitleStyle,
+                                  style: tileSubTitleStyle,
                                 ),
                                 SizedBox(
                                   height: 5,
                                 ),
-                                from == to
-                                    ? Row(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(Icons.event,
-                                                  color: Colors.grey, size: 16),
-                                              SizedBox(
-                                                width: 5,
-                                              ),
-                                              Text(
-                                                  schdeuleDateFormat(
-                                                      _selectedEvents[index]
-                                                          .startTime,
-                                                      _selectedEvents[index]
-                                                          .endTime,
-                                                      true),
-                                                  style: editSubTitleStyle)
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            width: 20,
-                                          ),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.schedule,
-                                                  color: Colors.grey, size: 16),
-                                              SizedBox(
-                                                width: 5,
-                                              ),
-                                              Text(
-                                                  schdeuleTimeFormat(
-                                                      _selectedEvents[index]
-                                                          .startTime,
-                                                      _selectedEvents[index]
-                                                          .endTime),
-                                                  style: editSubTitleStyle)
-                                            ],
-                                          ),
-                                        ],
-                                      )
-                                    : Row(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(Icons.event,
-                                                  color: Colors.grey, size: 16),
-                                              SizedBox(
-                                                width: 5,
-                                              ),
-                                              Text(
-                                                  schdeuleDateFormat(
-                                                      _selectedEvents[index]
-                                                          .startTime,
-                                                      _selectedEvents[index]
-                                                          .endTime,
-                                                      false),
-                                                  style: editSubTitleStyle)
-                                            ],
-                                          ),
-                                        ],
-                                      )
+                                from == to // 스케줄 시간에따라 표현 다름
+                                    ? cardDateTimeInfo(index)
+                                    : cardDateInfo(index)
                               ],
                             ),
                           ),
@@ -331,6 +231,96 @@ class _PrivateSchedulePageState extends State<PrivateSchedulePage> {
           ))
         ],
       ),
+    );
+  }
+
+  cardDateInfo(int index) {
+    return Row(
+      children: [
+        Row(
+          children: [
+            Icon(Icons.event, color: Colors.grey, size: 16),
+            SizedBox(
+              width: 5,
+            ),
+            Text(
+                schdeuleDateFormat(_selectedEvents[index].startTime,
+                    _selectedEvents[index].endTime, false),
+                style: tileSubTitleStyle)
+          ],
+        ),
+      ],
+    );
+  }
+
+  cardDateTimeInfo(int index) {
+    return Row(
+      children: [
+        Row(
+          children: [
+            Icon(Icons.event, color: Colors.grey, size: 16),
+            SizedBox(
+              width: 5,
+            ),
+            Text(
+                schdeuleDateFormat(_selectedEvents[index].startTime,
+                    _selectedEvents[index].endTime, true),
+                style: tileSubTitleStyle)
+          ],
+        ),
+        SizedBox(
+          width: 20,
+        ),
+        Row(
+          children: [
+            Icon(Icons.schedule, color: Colors.grey, size: 16),
+            SizedBox(
+              width: 5,
+            ),
+            Text(
+                schdeuleTimeFormat(_selectedEvents[index].startTime,
+                    _selectedEvents[index].endTime),
+                style: tileSubTitleStyle)
+          ],
+        ),
+      ],
+    );
+  }
+
+  header(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          children: [
+            Text(
+              "내 일정",
+              style: headingStyle,
+            ),
+          ],
+        ),
+        MyButton(
+            label: "+ 추가",
+            onTap: () async {
+              if (_rangeSelectionMode == RangeSelectionMode.toggledOn) {
+                startDate = _rangeStart!;
+                endDate = _rangeEnd ?? startDate;
+              } else {
+                startDate = _focusedDay;
+                endDate = _focusedDay.add(Duration(hours: 1));
+              }
+
+              Navigator.of(context)
+                  .push(MaterialPageRoute(
+                      builder: (context) => AddUserSchdeule(
+                            startDate: startDate,
+                            endDate: endDate,
+                          )))
+                  .then((value) => setState(() {
+                        fetchPrivateSchedule();
+                      }));
+            })
+      ],
     );
   }
 

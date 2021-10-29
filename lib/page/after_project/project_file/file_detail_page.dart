@@ -164,41 +164,61 @@ class _FileDetailPageState extends State<FileDetailPage> {
                                   child: Icon(Icons.face_outlined,
                                       color: Colors.white),
                                   backgroundColor: Colors.orange[300]),
-                              title: Text('최근 수정자'),
-                              subTitle: Text(detialFile.modifyUser),
+                              title: Text(
+                                '최근 수정자',
+                                style: tileTitleStyle,
+                              ),
+                              subTitle: Text(
+                                detialFile.modifyUser,
+                                style: tileSubTitleStyle,
+                              ),
                               trailing: null),
                           MyListTile(
                               leading: CircleAvatar(
                                   child:
                                       Icon(Icons.history, color: Colors.white),
                                   backgroundColor: Colors.red[300]),
-                              title: Text('최근 수정시간'),
+                              title: Text(
+                                '최근 수정시간',
+                                style: tileTitleStyle,
+                              ),
                               subTitle: Text(
-                                  toDateTimeISO(detialFile.modifyDateTime)),
+                                toDateTimeISO(detialFile.modifyDateTime),
+                                style: tileSubTitleStyle,
+                              ),
                               trailing: null),
                           MyListTile(
                               leading: CircleAvatar(
                                   child: Icon(Icons.border_color_outlined,
                                       color: Colors.white),
                                   backgroundColor: Colors.brown[300]),
-                              title: Text('수정 내용'),
+                              title: Text(
+                                '수정 내용',
+                                style: tileTitleStyle,
+                              ),
                               subTitle: Text(
-                                  toDateTimeISO(detialFile.modifyDateTime)),
+                                toDateTimeISO(detialFile.modifyDateTime),
+                                style: tileSubTitleStyle,
+                              ),
                               trailing: null),
                           MyListTile(
                               leading: CircleAvatar(
                                   child: Icon(Icons.delete_outline_outlined,
                                       color: Colors.white),
                                   backgroundColor: Colors.blue[300]),
-                              title:
-                                  Text("임시 삭제 여부 " + detialFile.tempDeleteFlag),
+                              title: Text(
+                                "임시 삭제 여부 " + detialFile.tempDeleteFlag,
+                                style: tileTitleStyle,
+                              ),
                               subTitle: detialFile.tempDeleteMemberName == ""
                                   ? Text(
                                       '임시 삭제 요청자가 없습니다.',
+                                      style: tileSubTitleStyle,
                                     )
                                   : Text(
                                       '임시 삭제 요청자: ' +
                                           detialFile.tempDeleteMemberName,
+                                      style: tileSubTitleStyle,
                                     ),
                               trailing: null),
                           detialFile.fileType == "All"
@@ -220,17 +240,20 @@ class _FileDetailPageState extends State<FileDetailPage> {
                                                                 0
                                                             ? "다음 수정자"
                                                             : "현재 수정자",
+                                                    style: tileTitleStyle,
                                                   )
                                                 : Text(
                                                     '임시 삭제 요청자: ' +
                                                         detialFile
                                                             .tempDeleteMemberName,
+                                                    style: tileTitleStyle,
                                                   ),
                                         subTitle: Text(
                                           detialFile.reserveName ==
                                                   "예약된 수정자가 없습니다"
                                               ? ""
                                               : detialFile.reserveName,
+                                          style: tileSubTitleStyle,
                                         ),
                                         trailing: null),
                                     MyListTile(
@@ -240,10 +263,19 @@ class _FileDetailPageState extends State<FileDetailPage> {
                                             backgroundColor: Colors.green[300]),
                                         title: detialFile.reserveName ==
                                                 "예약된 수정자가 없습니다"
-                                            ? Text("예약된 시작 시간이 없습니다.")
+                                            ? Text(
+                                                "예약된 시작 시간이 없습니다.",
+                                                style: tileTitleStyle,
+                                              )
                                             : detialFile.currentNextFlag == 0
-                                                ? Text("다음 예약된 수정 시간")
-                                                : Text("현재 예약된 수정 시간"),
+                                                ? Text(
+                                                    "다음 예약된 수정 시간",
+                                                    style: tileTitleStyle,
+                                                  )
+                                                : Text(
+                                                    "현재 예약된 수정 시간",
+                                                    style: tileTitleStyle,
+                                                  ),
                                         subTitle: Text(
                                           detialFile.reserveName ==
                                                   "예약된 수정자가 없습니다"
@@ -254,6 +286,7 @@ class _FileDetailPageState extends State<FileDetailPage> {
                                                   "  ~  " +
                                                   toTime(DateTime.parse(
                                                       detialFile.reserveEnd))),
+                                          style: tileSubTitleStyle,
                                         ),
                                         trailing: null),
                                   ],

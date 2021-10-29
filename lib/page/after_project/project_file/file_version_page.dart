@@ -50,7 +50,7 @@ class _FileVersionPageState extends State<FileVersionPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("File Version", style: subHeadingStyle),
+              Text("파일 버전", style: subHeadingStyle),
               SizedBox(
                 height: 5,
               ),
@@ -87,7 +87,7 @@ class _FileVersionPageState extends State<FileVersionPage> {
                                 title: Text(
                                   " Ver.${data.length - i}",
                                   maxLines: 1,
-                                  style: editTitleStyle,
+                                  style: tileTitleStyle,
                                 ),
                                 subtitle: Visibility(
                                     visible: data[i].showDetail,
@@ -95,23 +95,65 @@ class _FileVersionPageState extends State<FileVersionPage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          "설명: " +
+                                        SizedBox(
+                                          height: 8,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.border_color,
+                                              color: Colors.grey,
+                                              size: 16,
+                                            ),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Text(
                                               data[data.length - i - 1].content,
-                                          style: editSubTitleStyle,
+                                              style: tileSubTitleStyle,
+                                            ),
+                                          ],
                                         ),
-                                        Text(
-                                          "작성자: " +
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.person,
+                                              color: Colors.grey,
+                                              size: 16,
+                                            ),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Text(
                                               data[data.length - i - 1].user,
-                                          style: editSubTitleStyle,
+                                              style: tileSubTitleStyle,
+                                            ),
+                                          ],
                                         ),
-                                        Text(
-                                          "날짜: " +
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.today,
+                                              color: Colors.grey,
+                                              size: 16,
+                                            ),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Text(
                                               toDateTime(DateTime.parse(
                                                       data[data.length - i - 1]
                                                           .time)
                                                   .add(Duration(hours: 9))),
-                                          style: editSubTitleStyle,
+                                              style: tileSubTitleStyle,
+                                            ),
+                                          ],
                                         ),
                                         Visibility(
                                             visible:

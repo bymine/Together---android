@@ -233,14 +233,14 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                projectName,
+                                "공유 파일",
                                 style: subHeadingStyle,
                               ),
                               SizedBox(
                                 height: 5,
                               ),
                               Text(
-                                "Shared Files",
+                                projectName,
                                 style: headingStyle,
                               ),
                               SizedBox(
@@ -297,7 +297,7 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                                           files[index].fileExt,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: editTitleStyle),
+                                      style: tileTitleStyle),
                                   subtitle: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -306,7 +306,7 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                                         files[index].fileType == "Read"
                                             ? "읽기 전용"
                                             : "읽기 쓰기",
-                                        style: editSubTitleStyle,
+                                        style: tileSubTitleStyle,
                                       ),
                                       files[index].status ==
                                                   DownloadTaskStatus.running ||
@@ -425,8 +425,8 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
 
   Container svgFileIcon(double width, String ext, int index) {
     return Container(
-        width: width * 0.12,
-        height: width * 0.12,
+        width: width * 0.1,
+        height: width * 0.1,
         decoration: BoxDecoration(
             border: Border(right: BorderSide(width: 0.5, color: Colors.grey))),
         child: SvgPicture.asset(

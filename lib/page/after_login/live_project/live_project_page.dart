@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:together_android/componet/button.dart';
@@ -187,13 +186,7 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
                                   child: Column(
                                     children: [
                                       projectIntro(width, project),
-                                      SizedBox(
-                                        height: height * 0.01,
-                                      ),
                                       projectMember(project),
-                                      SizedBox(
-                                        height: height * 0.01,
-                                      ),
                                       projectData(project),
                                       SizedBox(
                                         height: height * 0.02,
@@ -275,26 +268,18 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
     return ListTile(
       contentPadding: EdgeInsets.only(
         left: width * 0.04,
-        top: width * 0.04,
+        top: width * 0.02,
       ),
       title: Text(project.projectName,
-          style: GoogleFonts.lato(
-              textStyle: TextStyle(
-                  fontSize: width * 0.052,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold))),
+          style: tileTitleStyle.copyWith(color: Colors.white)),
       subtitle: Padding(
         padding: EdgeInsets.only(
-          left: width * 0.04,
-          top: width * 0.04,
+          left: width * 0.02,
+          top: width * 0.01,
         ),
         child: Text(
           project.projectExp,
-          style: GoogleFonts.lato(
-              textStyle: TextStyle(
-                  fontSize: width * 0.052,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w400)),
+          style: tileSubTitleStyle.copyWith(color: Colors.white),
           maxLines: 3,
         ),
       ),
@@ -311,11 +296,11 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
           children: [
             Text(
               "보관중인 파일",
-              style: TextStyle(color: Colors.white),
+              style: tileSubTitleStyle.copyWith(color: Colors.white),
             ),
             Text(
               project.files.toString() + "개",
-              style: TextStyle(color: Colors.white),
+              style: tileSubTitleStyle.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -329,11 +314,11 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
           children: [
             Text(
               "기간",
-              style: TextStyle(color: Colors.white),
+              style: tileSubTitleStyle.copyWith(color: Colors.white),
             ),
             Text(
-              project.startDate + "~ " + project.endDate,
-              style: TextStyle(color: Colors.white),
+              project.startDate + " ~ " + project.endDate,
+              style: tileSubTitleStyle.copyWith(color: Colors.white),
             )
           ],
         ),
@@ -346,11 +331,7 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
       children: [
         Text(
           "참여 인원 " + project.memberCount.toString() + "명",
-          style: GoogleFonts.lato(
-            textStyle: TextStyle(
-              color: Colors.white,
-            ),
-          ),
+          style: tileSubTitleStyle.copyWith(color: Colors.white),
         ),
         hortCirclePhotos(project)
       ],
@@ -391,7 +372,7 @@ class _LiveProjectBodyState extends State<LiveProjectBody> {
             return Padding(
               padding: const EdgeInsets.only(right: 5),
               child:
-                  CircleAvatorComponent(width: 60, height: 60, serverImage: e),
+                  CircleAvatorComponent(width: 40, height: 40, serverImage: e),
             );
           }).toList(),
         ),

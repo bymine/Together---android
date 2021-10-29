@@ -63,7 +63,7 @@ class _EditMemberPageState extends State<EditMemberPage> {
                           Column(
                             children: [
                               Text(
-                                "Edit Members",
+                                "멤버 정보",
                                 style: subHeadingStyle,
                               ),
                             ],
@@ -94,7 +94,7 @@ class _EditMemberPageState extends State<EditMemberPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     CircleAvatar(
-                                      radius: 32,
+                                      radius: 28,
                                       backgroundImage: NetworkImage(
                                         user.userPhoto,
                                       ),

@@ -69,10 +69,10 @@ class MyProfileDetail {
       license1: json['license1'] ?? "",
       license2: json['license2'] ?? "",
       license3: json['license3'] ?? "",
-      mainAddr: json['main_addr'] == null ? "#" : json['main_addr'],
+      mainAddr: json['main_addr'] == null ? "" : json['main_addr'],
       referenceAddr:
-          json['reference_addr'] == null ? "#" : json['reference_addr'],
-      detailAddr: json['detail_addr'] == null ? "#" : json['detail_addr'],
+          json['reference_addr'] == null ? "" : json['reference_addr'],
+      detailAddr: json['detail_addr'] == null ? "" : json['detail_addr'],
       postNum: json['post_num'] == null ? "" : json['post_num'],
       userMbti: json['user_mbti_name'],
       userHobby: List<String>.from(json['user_hobbies']),

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:search_page/search_page.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
+import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/user_profile_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
@@ -20,6 +21,8 @@ class MakeProjectBody extends StatefulWidget {
 }
 
 class _MakeProjectBodyState extends State<MakeProjectBody> {
+  final formKey = GlobalKey<FormState>();
+
   String projectLevel = "상";
   String projectType = "스터디";
   var levelList = ["상", "중", "하", "설정 안함"];
@@ -94,97 +97,107 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
     return Scaffold(
       appBar: _appBar(context),
       body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.only(
-              left: width * 0.08, right: width * 0.08, bottom: height * 0.02),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Create Team Proejct", style: headingStyle),
-              MyInputField(
+        child: Form(
+          key: formKey,
+          child: Container(
+            padding: EdgeInsets.only(
+                left: width * 0.08, right: width * 0.08, bottom: height * 0.02),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Create Team Proejct", style: headingStyle),
+                MyInputField(
                   title: "Title",
                   hint: "Input Project Title",
-                  controller: titleController),
-              MyInputField(
-                title: "Description",
-                hint: "Input Project Description",
-                controller: expController,
-                maxLine: 5,
-              ),
-              projectGroypButton(
-                  title: "Project Type",
-                  buttons: typeList,
-                  selected: projectType),
-              projectGroypButton(
-                  title: "Project Level",
-                  buttons: levelList,
-                  selected: projectLevel),
-              MyInputField(
-                title: "Start Date",
-                hint: DateFormat.yMd().format(_selectedStart),
-                suffixIcon: IconButton(
-                  onPressed: () async {
-                    _getDateFromUser(true);
+                  controller: titleController,
+                  validator: (value) {
+                    if (value!.isEmpty) return "프로젝트 제목을 입력해주세요";
                   },
-                  icon: Icon(
-                    Icons.calendar_today_outlined,
-                    color: Colors.grey,
+                ),
+                MyInputField(
+                  title: "Description",
+                  hint: "Input Project Description",
+                  controller: expController,
+                  maxLine: 5,
+                  validator: (value) {
+                    if (value!.isEmpty) return "프로젝트 설명을 입력해주세요";
+                  },
+                ),
+                projectGroypButton(
+                    title: "Project Type",
+                    buttons: typeList,
+                    selected: projectType),
+                projectGroypButton(
+                    title: "Project Level",
+                    buttons: levelList,
+                    selected: projectLevel),
+                MyInputField(
+                  title: "Start Date",
+                  hint: toDate(_selectedStart),
+                  suffixIcon: IconButton(
+                    onPressed: () async {
+                      _getDateFromUser(true);
+                    },
+                    icon: Icon(
+                      Icons.calendar_today_outlined,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
-              ),
-              MyInputField(
-                title: "End Date",
-                hint: DateFormat.yMd().format(_selectedEnd),
-                suffixIcon: IconButton(
-                  onPressed: () async {
-                    _getDateFromUser(false);
-                  },
-                  icon: Icon(
-                    Icons.calendar_today_outlined,
-                    color: Colors.grey,
+                MyInputField(
+                  title: "End Date",
+                  hint: toDate(_selectedEnd),
+                  suffixIcon: IconButton(
+                    onPressed: () async {
+                      _getDateFromUser(false);
+                    },
+                    icon: Icon(
+                      Icons.calendar_today_outlined,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
-              ),
-              MyInputField(
-                title: "Project Member",
-                hint: member
-                    .toString()
-                    .substring(1, member.toString().length - 1),
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    openUserList(context);
-                  },
-                  icon: Icon(
-                    Icons.person_add,
-                    color: Colors.grey,
+                MyInputField(
+                  title: "Project Member",
+                  hint: member
+                      .toString()
+                      .substring(1, member.toString().length - 1),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      openUserList(context);
+                    },
+                    icon: Icon(
+                      Icons.person_add,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
-              ),
-              MyInputField(
-                title: "Project Tag",
-                hint: projectTag
-                    .toString()
-                    .substring(1, projectTag.toString().length - 1),
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    showTagBottomSheet(context, width, height).then((value) {
-                      setState(() {});
-                      containTag = [];
-                      tagController.clear();
-                      categoryController.clear();
-                    });
-                  },
-                  icon: Icon(
-                    Icons.tag,
-                    color: Colors.grey,
+                MyInputField(
+                  title: "Project Tag",
+                  hint: projectTag
+                      .toString()
+                      .substring(1, projectTag.toString().length - 1),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      showTagBottomSheet(context, width, height).then((value) {
+                        setState(() {});
+                        containTag = [];
+                        tagController.clear();
+                        categoryController.clear();
+                      });
+                    },
+                    icon: Icon(
+                      Icons.tag,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              createProjectButton(width, height, context)
-            ],
+                SizedBox(
+                  height: 20,
+                ),
+                createProjectButton(width, height, context)
+              ],
+            ),
           ),
         ),
       ),
@@ -198,22 +211,29 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
         child: MyButton(
             label: "Create Project",
             onTap: () async {
-              var code = await togetherPostAPI(
-                  "/project/createProject",
-                  jsonEncode({
-                    "user_idx": Provider.of<SignInModel>(context, listen: false)
-                        .userIdx,
-                    "project_name": titleController.text,
-                    "project_exp": expController.text,
-                    "start_date": _selectedStart.toIso8601String(),
-                    "end_date": _selectedEnd.toIso8601String(),
-                    "professionality": projectEnumFormat(projectLevel),
-                    "project_type": projectEnumFormat(projectType),
-                    "tag_num": projectTag.length,
-                    "tag_name": projectCategory,
-                    "detail_name": projectTag
-                  }));
-              if (code.toString() == "success") Navigator.of(context).pop(true);
+              if (formKey.currentState!.validate()) {
+                loadingAlert(context);
+                var code = await togetherPostAPI(
+                    "/project/createProject",
+                    jsonEncode({
+                      "user_idx":
+                          Provider.of<SignInModel>(context, listen: false)
+                              .userIdx,
+                      "project_name": titleController.text,
+                      "project_exp": expController.text,
+                      "start_date": _selectedStart.toIso8601String(),
+                      "end_date": _selectedEnd.toIso8601String(),
+                      "professionality": projectEnumFormat(projectLevel),
+                      "project_type": projectEnumFormat(projectType),
+                      "tag_num": projectTag.length,
+                      "tag_name": projectCategory,
+                      "detail_name": projectTag
+                    }));
+                if (code != null) Navigator.pop(context);
+
+                if (code.toString() == "success")
+                  Navigator.of(context).pop(true);
+              }
             }));
   }
 
@@ -374,9 +394,15 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
     return showSearch(
         context: context,
         delegate: SearchPage(
+            searchStyle: editTitleStyle,
             showItemsOnEmpty: true,
-            barTheme: ThemeData(appBarTheme: AppBarTheme(color: titleColor)),
+            barTheme: ThemeData(
+                appBarTheme: AppBarTheme(
+                    elevation: 0, backgroundColor: Color(0xffD0EBFF))),
             builder: (person) => Card(
+                  color:
+                      member.contains(person) ? Colors.grey[100] : Colors.white,
+                  elevation: 0,
                   child: ListTile(
                     onTap: () {
                       _showUserDetailFunction(person);
@@ -387,7 +413,10 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                             color: titleColor,
                           )
                         : null,
-                    title: Text(person.toString()),
+                    title: Text(
+                      person.toString(),
+                      style: tileTitleStyle,
+                    ),
                   ),
                 ),
             filter: (person) {

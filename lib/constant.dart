@@ -47,6 +47,18 @@ TextStyle get editSubTitleStyle {
           fontSize: 14, fontWeight: FontWeight.w400, color: Colors.grey[600]));
 }
 
+TextStyle get tileTitleStyle {
+  return GoogleFonts.lato(
+      textStyle: TextStyle(
+          fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black));
+}
+
+TextStyle get tileSubTitleStyle {
+  return GoogleFonts.lato(
+      textStyle: TextStyle(
+          fontSize: 12, fontWeight: FontWeight.w400, color: Colors.grey[600]));
+}
+
 class GradientColors {
   final List<Color> colors;
   GradientColors(this.colors);

@@ -228,7 +228,7 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
           children: [
             Expanded(
               child: TextField(
-                style: editSubTitleStyle,
+                style: tileSubTitleStyle,
                 controller: _textEditingController,
                 decoration: InputDecoration(
                     hintText: "Message here", border: InputBorder.none),
@@ -276,7 +276,7 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
               padding: const EdgeInsets.all(10.0),
               child: Text(
                 toDateDaysISO(date),
-                style: editSubTitleStyle.copyWith(color: Colors.black),
+                style: tileSubTitleStyle.copyWith(color: Colors.black),
               ),
             ),
             Expanded(
@@ -327,7 +327,7 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
                 ? [
                     Text(
                       a.userName,
-                      style: editTitleStyle,
+                      style: tileSubTitleStyle,
                     ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -346,7 +346,7 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
                             ),
                             child: Text(
                               a.messageBody,
-                              style: editSubTitleStyle.copyWith(
+                              style: tileSubTitleStyle.copyWith(
                                   color: Colors.black),
                             ),
                           ),
@@ -396,7 +396,7 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
                             ),
                             child: Text(
                               a.messageBody,
-                              style: editSubTitleStyle.copyWith(
+                              style: tileSubTitleStyle.copyWith(
                                   color: Colors.black),
                             ),
                           ),
@@ -422,7 +422,7 @@ class _ProjectChatPageState extends State<ProjectChatPage> {
       title: Text(
         title,
         maxLines: 1,
-        style: editTitleStyle,
+        style: tileTitleStyle,
       ),
       centerTitle: true,
       actions: [

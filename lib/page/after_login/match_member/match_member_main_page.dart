@@ -11,6 +11,7 @@ import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/model/mappingProject_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
+import 'package:together_android/page/after_login/match_member/condition_search_page.dart';
 import 'package:together_android/page/after_login/match_member/show_my_resume_page.dart';
 import 'package:together_android/page/after_login/match_member/search_resume_page.dart';
 import 'package:together_android/service/api.dart';
@@ -99,7 +100,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Search Member",
+              "프로젝트 멤버 찾기",
               style: subHeadingStyle,
             ),
             SizedBox(
@@ -120,7 +121,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "My Card",
+                  "내 명함",
                   style: editTitleStyle,
                 ),
                 GestureDetector(
@@ -140,7 +141,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                     });
                   },
                   child: Text(
-                    "See All",
+                    "보기",
                     style: editTitleStyle,
                   ),
                 )
@@ -154,7 +155,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
               height: 20,
             ),
             Text(
-              "Recommend List",
+              "추천 리스트",
               style: editTitleStyle,
             ),
             SizedBox(
@@ -164,11 +165,11 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                 ? Center(
                     child: TextButton(
                       onPressed: () {
-                        // Navigator.of(context).push(MaterialPageRoute(
-                        //     builder: (context) => ConditionSearchPage()));
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => ConditionSearchPage()));
                       },
                       child: Text(
-                        "Register for conditional search",
+                        "조건검색을 등록하세요",
                         style: editSubTitleStyle,
                       ),
                     ),
@@ -195,7 +196,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Search Member",
+              "프로젝트 멤버 찾기",
               style: subHeadingStyle,
             ),
             SizedBox(
@@ -213,7 +214,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
               height: 20,
             ),
             Text(
-              "My Card",
+              "내 명함",
               style: editTitleStyle,
             ),
             SizedBox(
@@ -248,7 +249,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                     height: width / 3,
                     child: Center(
                       child: Text(
-                        "+ Add Card",
+                        "+ 등록하기",
                         style: editTitleStyle.copyWith(
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
@@ -259,7 +260,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
               height: 20,
             ),
             Text(
-              "Recommend List",
+              "추천 리스트",
               style: editTitleStyle,
             ),
             SizedBox(
@@ -557,7 +558,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             color: Colors.blueGrey[400]),
-        width: width * 0.4,
+        width: width * 0.35,
         height: width * 0.4,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -627,16 +628,14 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
       padding: EdgeInsets.symmetric(
           vertical: height * 0.02, horizontal: width * 0.06),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16), color: Colors.blueGrey[400]),
+          borderRadius: BorderRadius.circular(16), color: Colors.grey[300]),
       width: width * 0.8,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             resume.name,
-            style: editTitleStyle.copyWith(
-              color: Colors.white,
-            ),
+            style: editTitleStyle,
           ),
           SizedBox(
             height: 10,
@@ -649,15 +648,14 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                   Icon(
                     Icons.psychology,
                     size: 20,
-                    color: Colors.black,
+                    color: Colors.grey,
                   ),
                   SizedBox(
                     width: 5,
                   ),
                   Text(
                     resume.mbti,
-                    style: editTitleStyle.copyWith(
-                        color: Colors.white, fontSize: 14),
+                    style: editSubTitleStyle,
                   ),
                 ],
               ),
@@ -666,7 +664,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                   Icon(
                     Icons.place,
                     size: 20,
-                    color: Colors.black,
+                    color: Colors.grey,
                   ),
                   SizedBox(
                     width: 5,
@@ -674,8 +672,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                   Text(
                     addressToString(false, resume.mainAddr,
                         resume.referenceAddr, resume.detailAddr),
-                    style: editTitleStyle.copyWith(
-                        color: Colors.white, fontSize: 14),
+                    style: editSubTitleStyle,
                     maxLines: 1,
                   ),
                 ],
@@ -692,17 +689,14 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
               Icon(
                 Icons.rate_review,
                 size: 20,
-                color: Colors.black,
+                color: Colors.grey,
               ),
               SizedBox(
                 width: 5,
               ),
               Expanded(
-                child: Text(
-                  resume.comment ?? "나의 소개글이 없습니다.",
-                  style: editTitleStyle.copyWith(
-                      color: Colors.white, fontSize: 14),
-                ),
+                child: Text(resume.comment ?? "나의 소개글이 없습니다.",
+                    style: editSubTitleStyle),
               ),
             ],
           ),
