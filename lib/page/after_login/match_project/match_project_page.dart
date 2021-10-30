@@ -1,3 +1,4 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/constant.dart';
@@ -47,117 +48,139 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              header(name),
               FutureBuilder(
                   future: future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return Text("12");
+                      List<ProjectResume> resumes =
+                          snapshot.data as List<ProjectResume>;
+
+                      return _searchMain(resumes, map, name, width, height);
                     } else if (snapshot.hasError) {
                       print('${snapshot.error}');
                       return Text('${snapshot.error}');
+                    } else if (snapshot.hasData == false &&
+                        snapshot.connectionState == ConnectionState.done) {
+                      return _searchMain(null, map, name, width, height);
                     }
                     return Center(
                       child: CircularProgressIndicator(),
                     );
                   }),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "My Project Cards",
-                    style: editTitleStyle,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => ShowProjectCard(
-                                map: map,
-                              )));
-                    },
-                    child: Text(
-                      "Add Card",
-                      style: editTitleStyle,
-                    ),
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: myPorjectCard
-                      .map((card) => GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => ShowProjectCard(
-                                        card: card,
-                                        map: map,
-                                      )));
-                            },
-                            child: Container(
-                              margin: EdgeInsets.only(right: 8),
-                              padding: EdgeInsets.symmetric(
-                                  vertical: height * 0.04,
-                                  horizontal: width * 0.06),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  color: Colors.blueGrey[400]),
-                              width: width * 0.6,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    card.projectName,
-                                  ),
-                                  Text(card.intro),
-                                  Text(card.professionality)
-                                ],
-                              ),
-                            ),
-                          ))
-                      .toList(),
-                ),
-              ),
-              // DottedBorder(
-              //     strokeWidth: 2,
-              //     radius: Radius.circular(16),
-              //     padding: EdgeInsets.all(0),
-              //     color: Colors.blueGrey,
-              //     strokeCap: StrokeCap.butt,
-              //     borderType: BorderType.RRect,
-              //     child: GestureDetector(
-              //       onTap: () {
-              //         Navigator.of(context).push(MaterialPageRoute(
-              //             builder: (context) => ShowProjectCard(map: map)));
-              //       },
-              //       child: Container(
-              //         decoration: BoxDecoration(
-              //             borderRadius: BorderRadius.circular(16),
-              //             color: Colors.blueGrey),
-              //         width: width / 3,
-              //         height: width / 3,
-              //         child: Center(
-              //           child: Text(
-              //             "+ Add Card",
-              //             style: editTitleStyle.copyWith(
-              //                 color: Colors.white, fontWeight: FontWeight.bold),
-              //           ),
-              //         ),
-              //       ),
-              //     )),
-              SizedBox(
-                height: 20,
-              ),
-              Text(
-                "Recommend List",
-                style: editTitleStyle,
-              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  _searchMain(List<ProjectResume>? resumes, Map<String, int> map, String name,
+      double width, double height) {
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          header(name),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "내 프로젝트",
+                style: editTitleStyle,
+              ),
+              Visibility(
+                visible: resumes != null,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ShowProjectCard(
+                              map: map,
+                            )));
+                  },
+                  child: Text(
+                    "추가하기",
+                    style: editTitleStyle,
+                  ),
+                ),
+              )
+            ],
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          if (resumes != null)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: resumes
+                    .map((card) => GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => ShowProjectCard(
+                                      card: card,
+                                      map: map,
+                                    )));
+                          },
+                          child: Container(
+                            margin: EdgeInsets.only(right: 8),
+                            padding: EdgeInsets.symmetric(
+                                vertical: height * 0.04,
+                                horizontal: width * 0.06),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                color: Colors.blueGrey[400]),
+                            width: width * 0.6,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  card.projectName,
+                                ),
+                                Text(card.comment),
+                                Text(card.professionality)
+                              ],
+                            ),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            )
+          else
+            DottedBorder(
+                strokeWidth: 2,
+                radius: Radius.circular(16),
+                padding: EdgeInsets.all(0),
+                color: Colors.blueGrey,
+                strokeCap: StrokeCap.butt,
+                borderType: BorderType.RRect,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ShowProjectCard(map: map)));
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.blueGrey),
+                    width: width / 2,
+                    height: width / 3,
+                    child: Center(
+                      child: Text(
+                        "+  등록하기",
+                        style: editTitleStyle.copyWith(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                )),
+          SizedBox(
+            height: 20,
+          ),
+          Text(
+            "추천 리스트",
+            style: editTitleStyle,
+          ),
+        ],
       ),
     );
   }
@@ -167,7 +190,7 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Search Team",
+          "프로젝트 찾기",
           style: subHeadingStyle,
         ),
         SizedBox(
@@ -232,33 +255,3 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
     );
   }
 }
-
-List<ProjectResume> myPorjectCard = [
-  ProjectResume(
-      projectName: "1",
-      projectExp: "sadasd",
-      startDate: "d",
-      endDate: "",
-      professionality: "a",
-      projectType: "s",
-      memberNum: "2",
-      intro: "intro intro intro intro"),
-  ProjectResume(
-      projectName: "1",
-      projectExp: "sadasd",
-      startDate: "d",
-      endDate: "",
-      professionality: "a",
-      projectType: "s",
-      memberNum: "2",
-      intro: "intro"),
-  ProjectResume(
-      projectName: "1",
-      projectExp: "sadasd",
-      startDate: "d",
-      endDate: "",
-      professionality: "a",
-      projectType: "s",
-      memberNum: "2",
-      intro: "intro")
-];

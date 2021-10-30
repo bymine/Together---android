@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:async/async.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +38,6 @@ class UserDetailProfilePage extends StatefulWidget {
 
 class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
   late Future future;
-  final AsyncMemoizer _memoizer = AsyncMemoizer();
   TextEditingController nickNameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController emailAuthController = TextEditingController();

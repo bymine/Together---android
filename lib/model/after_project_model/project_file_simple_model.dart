@@ -8,7 +8,10 @@ class SimpleFile extends ChangeNotifier {
   String fileType;
   String fileFlag;
 
-  String link =
+  String readLink =
+      'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf';
+
+  String writeLink =
       'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf';
 
   String? taskId;

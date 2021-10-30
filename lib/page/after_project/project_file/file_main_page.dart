@@ -39,11 +39,9 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
   ReceivePort _port = ReceivePort();
 
   fetchFileSimpleDetail() async {
-    return this._memoizer.runOnce(() async {
-      var projectIdx =
-          Provider.of<LiveProject>(context, listen: false).projectIdx;
-      return await togetherGetAPI("/file/main", "?project_idx=$projectIdx");
-    });
+    var projectIdx =
+        Provider.of<LiveProject>(context, listen: false).projectIdx;
+    return await togetherGetAPI("/file/main", "?project_idx=$projectIdx");
   }
 
   @override
@@ -147,8 +145,10 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
     return externalStorageDirPath;
   }
 
-  Future<Null> _prepare() async {
+  _prepare() async {
     final tasks = await FlutterDownloader.loadTasks();
+
+    tasks!.forEach((element) {});
 
     _permissionReady = await _checkPermission();
     if (_permissionReady) {
@@ -160,10 +160,14 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
     });
   }
 
-  void _requestDownload(SimpleFile task) async {
+  void _requestDownload(SimpleFile task, bool isReadMode) async {
+    var name = isReadMode
+        ? task.fileName + ".pdf"
+        : task.fileName + "." + task.fileExt;
+    print(await File(_localPath + "/" + name).exists());
     task.taskId = await FlutterDownloader.enqueue(
-      url: task.link,
-      fileName: task.fileName + "." + task.fileExt,
+      url: isReadMode ? task.readLink : task.writeLink,
+      fileName: name,
       savedDir: _localPath,
       showNotification: true,
       openFileFromNotification: true,
@@ -322,24 +326,82 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                                   ),
                                   trailing: IconButton(
                                       onPressed: () async {
-                                        _requestDownload(files[index]);
+                                        if (files[index].fileType == "All") {
+                                          showModalBottomSheet(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  20),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                  20))),
+                                              context: context,
+                                              builder: (context) {
+                                                return Container(
+                                                  child: Wrap(
+                                                    alignment:
+                                                        WrapAlignment.center,
+                                                    children: [
+                                                      Column(
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .symmetric(
+                                                                    vertical:
+                                                                        8),
+                                                            child: Text(
+                                                              "파일 다운로드",
+                                                              style: editTitleStyle
+                                                                  .copyWith(
+                                                                      fontSize:
+                                                                          18),
+                                                            ),
+                                                          ),
+                                                          Divider(
+                                                            thickness: 1,
+                                                          ),
+                                                          TextButton(
+                                                              onPressed: () {
+                                                                _requestDownload(
+                                                                    files[
+                                                                        index],
+                                                                    true);
 
-                                        // if (files[index].status ==
-                                        //     DownloadTaskStatus.undefined) {
-                                        //   _requestDownload(files[index]);
-                                        // } else if (files[index].status ==
-                                        //     DownloadTaskStatus.running) {
-                                        //   _pauseDownload(files[index]);
-                                        // } else if (files[index].status ==
-                                        //     DownloadTaskStatus.paused) {
-                                        //   _resumeDownload(files[index]);
-                                        // } else if (files[index].status ==
-                                        //     DownloadTaskStatus.complete) {
-                                        //   _delete(files[index]);
-                                        // } else if (files[index].status ==
-                                        //     DownloadTaskStatus.failed) {
-                                        //   _retryDownload(files[index]);
-                                        // }
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                              child: Text(
+                                                                  "읽기 전용 다운로드")),
+                                                          Divider(
+                                                            thickness: 1,
+                                                          ),
+                                                          TextButton(
+                                                              onPressed: () {
+                                                                _requestDownload(
+                                                                    files[
+                                                                        index],
+                                                                    false);
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                              child: Text(
+                                                                "수정 전용 다운로드",
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .redAccent),
+                                                              )),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              });
+                                        }
                                       },
                                       icon: Icon(Icons.file_download)),
                                 ),

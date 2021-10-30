@@ -68,8 +68,8 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 Text("Create Account", style: headingStyle),
                 MyInputField(
-                  title: "E-mail",
-                  hint: "together@naver.com",
+                  title: "이메일",
+                  hint: "Input your E-mail",
                   controller: signUpEmail,
                   type: TextInputType.emailAddress,
                   titleButton: ElevatedButton(
@@ -102,7 +102,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 MyInputField(
-                  title: "Passsword",
+                  title: "비밀번호",
                   hint: "",
                   type: TextInputType.visiblePassword,
                   controller: signUpPassword1,
@@ -123,7 +123,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 MyInputField(
-                  title: "Re-Passsword",
+                  title: "비밀번호 확인",
                   hint: "",
                   type: TextInputType.visiblePassword,
                   controller: signUpPassword2,
@@ -147,7 +147,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 MyInputField(
-                  title: "Name",
+                  title: "이름",
                   hint: "",
                   controller: signUpName,
                   validator: (value) {
@@ -155,7 +155,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 MyInputField(
-                  title: "NickName",
+                  title: "닉네임",
                   hint: "",
                   controller: signUpNickName,
                   titleButton: ElevatedButton(
@@ -210,7 +210,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 MyInputField(
-                  title: "Phone",
+                  title: "휴대전화",
                   hint: "- 없이 입력하세요",
                   type: TextInputType.number,
                   controller: signUpPhone,
@@ -240,7 +240,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       width, context, phoneFieldFlag, phoneCodeFlag.value),
                 ),
                 MyInputField(
-                  title: "Birth",
+                  title: "생일",
                   hint: DateFormat.yMd().format(_selectedDate),
                   suffixIcon: IconButton(
                       onPressed: () {

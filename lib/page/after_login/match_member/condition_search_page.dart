@@ -104,7 +104,7 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Detail Search", style: headingStyle),
+                      Text("팀원 조건 검색", style: headingStyle),
                       SizedBox(
                         height: 10,
                       ),
@@ -167,7 +167,7 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                 height: 20,
               ),
               Text(
-                "Age",
+                "나이",
                 style: editTitleStyle,
               ),
               SizedBox(
@@ -190,21 +190,21 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                 },
               ),
               MyInputField(
-                title: "license1",
+                title: "자격증1",
                 hint: "Input license1",
                 controller: licenseController1,
               ),
               MyInputField(
-                title: "license2",
+                title: "자격증2",
                 hint: "Input license2",
                 controller: licenseController2,
               ),
               MyInputField(
-                  title: "license3",
+                  title: "자격증3",
                   hint: "Input license3",
                   controller: licenseController3),
               MyInputField(
-                title: "Hobby (${myTag.length}/3)",
+                title: "취미 (${myTag.length}/3)",
                 hint:
                     myTag.toString().substring(1, myTag.toString().length - 1),
                 suffixIcon: IconButton(
@@ -219,7 +219,7 @@ class _ConditionSearchPageState extends State<ConditionSearchPage> {
                 ),
               ),
               MyInputField(
-                title: "Address",
+                title: "주소",
                 hint: selectedAddress,
                 suffixIcon: IconButton(
                   onPressed: () async {

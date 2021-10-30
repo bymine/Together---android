@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:group_button/group_button.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:search_page/search_page.dart';
 import 'package:together_android/componet/button.dart';
@@ -239,7 +238,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
 
   showTagBottomSheet(BuildContext context, double width, double height) {
     return showModalBottomSheet(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         isScrollControlled: true,
         context: context,
         builder: (context) {
@@ -267,82 +266,89 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                         MyInputField(
                           title: "Select Category",
                           hint: selectedCategory,
-                          suffixIcon: DropdownButton(
-                            dropdownColor: Colors.blueGrey,
-                            underline: Container(),
-                            value: selectedCategory,
-                            items: category.map((value) {
-                              return DropdownMenuItem(
-                                  value: value,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 14,
-                                    ),
-                                    child: Text(value,
-                                        style: editSubTitleStyle.copyWith(
-                                            color: Colors.white)),
-                                  ));
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedCategory = value.toString();
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: DropdownButton(
+                              dropdownColor: Colors.blueGrey,
+                              underline: Container(),
+                              value: selectedCategory,
+                              items: category.map((value) {
+                                return DropdownMenuItem(
+                                    value: value,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 14,
+                                      ),
+                                      child: Text(value,
+                                          style: editSubTitleStyle.copyWith(
+                                              color: Colors.white)),
+                                    ));
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCategory = value.toString();
 
-                                if (value == "기타") {
-                                  selectedTag = "기타";
-                                } else {
-                                  containTag = [];
-                                  mappingTag.keys.forEach((element) {
-                                    if (mappingTag[element] == selectedCategory)
-                                      containTag.add(element);
-                                  });
-                                  containTag.add("기타");
-                                  selectedTag = containTag[0];
-                                }
+                                  if (value == "기타") {
+                                    selectedTag = "기타";
+                                  } else {
+                                    containTag = [];
+                                    mappingTag.keys.forEach((element) {
+                                      if (mappingTag[element] ==
+                                          selectedCategory)
+                                        containTag.add(element);
+                                    });
+                                    containTag.add("기타");
+                                    selectedTag = containTag[0];
+                                  }
 
-                                print(containTag);
-                              });
-                            },
+                                  print(containTag);
+                                });
+                              },
+                            ),
                           ),
                         ),
                         MyInputField(
                           title: "Select Tag",
                           hint: selectedTag,
-                          suffixIcon: DropdownButton(
-                            dropdownColor: Colors.blueGrey,
-                            underline: Container(),
-                            value: selectedTag,
-                            items: selectedCategory != "기타"
-                                ? containTag.map((value) {
-                                    return DropdownMenuItem(
-                                        value: value,
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 14),
-                                          child: Text(
-                                            value,
-                                            style: editSubTitleStyle.copyWith(
-                                                color: Colors.white),
-                                          ),
-                                        ));
-                                  }).toList()
-                                : ['기타'].map((value) {
-                                    return DropdownMenuItem(
-                                        value: value,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            value,
-                                            style: editSubTitleStyle.copyWith(
-                                                color: Colors.white),
-                                          ),
-                                        ));
-                                  }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedTag = value.toString();
-                                print(selectedTag);
-                              });
-                            },
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: DropdownButton(
+                              dropdownColor: Colors.blueGrey,
+                              underline: Container(),
+                              value: selectedTag,
+                              items: selectedCategory != "기타"
+                                  ? containTag.map((value) {
+                                      return DropdownMenuItem(
+                                          value: value,
+                                          child: Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 14),
+                                            child: Text(
+                                              value,
+                                              style: editSubTitleStyle.copyWith(
+                                                  color: Colors.white),
+                                            ),
+                                          ));
+                                    }).toList()
+                                  : ['기타'].map((value) {
+                                      return DropdownMenuItem(
+                                          value: value,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              value,
+                                              style: editSubTitleStyle.copyWith(
+                                                  color: Colors.white),
+                                            ),
+                                          ));
+                                    }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedTag = value.toString();
+                                  print(selectedTag);
+                                });
+                              },
+                            ),
                           ),
                         ),
                         Visibility(

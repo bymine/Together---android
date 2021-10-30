@@ -1,25 +1,32 @@
 class ProjectResume {
+  int projectIdx;
   String projectName;
   String projectExp;
   String startDate;
   String endDate;
   String professionality;
   String projectType;
-  String memberNum;
-  String intro;
+  List<String> categoryName;
+  List<String> tagName;
+  int memberNum;
+  String comment;
 
   ProjectResume(
-      {required this.projectName,
+      {required this.projectIdx,
+      required this.projectName,
       required this.projectExp,
       required this.startDate,
       required this.endDate,
       required this.professionality,
       required this.projectType,
+      required this.categoryName,
+      required this.tagName,
       required this.memberNum,
-      required this.intro});
+      required this.comment});
 
   factory ProjectResume.fromJson(Map<String, dynamic> json) {
     return ProjectResume(
+        projectIdx: json['project_idx'],
         projectName: json['project_name'],
         projectExp: json['project_exp'],
         startDate: json['start_date'],
@@ -27,6 +34,8 @@ class ProjectResume {
         professionality: json['professionality'],
         projectType: json['project_type'],
         memberNum: json['member_num'],
-        intro: json['comment']);
+        categoryName: List<String>.from(json['tag']),
+        tagName: List<String>.from(json['tag_detail']),
+        comment: json['comment']);
   }
 }

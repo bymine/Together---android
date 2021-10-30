@@ -57,7 +57,10 @@ class MyInputField extends StatelessWidget {
               Expanded(
                 child: TextFormField(
                   controller: controller,
-                  readOnly: suffixIcon == null ? false : true,
+                  readOnly: suffixIcon != null &&
+                          (title != "비밀번호" && title != "비밀번호 확인")
+                      ? true
+                      : false,
                   autofocus: false,
                   obscureText: isHidePw ?? false,
                   keyboardType: type,

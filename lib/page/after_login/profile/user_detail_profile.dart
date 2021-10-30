@@ -21,6 +21,7 @@ import 'package:together_android/model/after_login_model/invitaion_model.dart';
 import 'package:together_android/model/after_login_model/my_profile_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_login/main_page.dart';
+import 'package:together_android/page/after_login/profile/edit_private_user_info_page.dart';
 import 'package:together_android/page/after_login/profile/user_address_page.dart';
 import 'package:together_android/page/after_login/profile/user_invitaion_page.dart';
 import 'package:together_android/page/after_login/profile/user_schedule_page.dart';
@@ -247,7 +248,20 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                   style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
-                                    onPressed: () async {},
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditPrivateUserPage(
+                                                    type: "NickName",
+                                                    value: profile.userNickName,
+                                                  )))
+                                          .then((value) {
+                                        setState(() {
+                                          future = _fetchData();
+                                        });
+                                      });
+                                    },
                                     icon: Icon(Icons.chevron_right_outlined)),
                               ),
                               MyListTile(
@@ -264,7 +278,18 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                   style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditPrivateUserPage(
+                                                    type: "Email",
+                                                    value: profile.userEmail,
+                                                  )))
+                                          .then((value) => setState(() {
+                                                future = _fetchData();
+                                              }));
+                                    },
                                     icon: Icon(Icons.chevron_right_outlined)),
                               ),
                               MyListTile(
@@ -281,7 +306,19 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                   style: tileSubTitleStyle,
                                 ),
                                 trailing: IconButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditPrivateUserPage(
+                                                    type: "Phone",
+                                                    value: toPhoneString(
+                                                        profile.userPhone),
+                                                  )))
+                                          .then((value) => setState(() {
+                                                future = _fetchData();
+                                              }));
+                                    },
                                     icon: Icon(Icons.chevron_right_outlined)),
                               ),
                               MyListTile(
