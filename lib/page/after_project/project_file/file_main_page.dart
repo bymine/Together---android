@@ -32,22 +32,24 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
   late Future future;
   final AsyncMemoizer _memoizer = AsyncMemoizer();
 
-  List<SimpleFile>? _tasks;
+  List<SimpleFile>? _tasks = [];
   late bool _isLoading;
   late bool _permissionReady;
   late String _localPath;
   ReceivePort _port = ReceivePort();
 
   fetchFileSimpleDetail() async {
+    print("File main futurebuilder ");
     var projectIdx =
         Provider.of<LiveProject>(context, listen: false).projectIdx;
-    return await togetherGetAPI("/file/main", "?project_idx=$projectIdx");
+    _tasks = await togetherGetAPI("/file/main", "?project_idx=$projectIdx");
+    setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
-    future = fetchFileSimpleDetail();
+    fetchFileSimpleDetail();
 
     _bindBackgroundIsolate();
 
@@ -121,7 +123,8 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
   }
 
   Future<void> _prepareSaveDir() async {
-    _localPath = (await _findLocalPath())!;
+    var project = Provider.of<LiveProject>(context, listen: false).projectName;
+    _localPath = (await _findLocalPath())! + "/$project";
     final savedDir = Directory(_localPath);
     bool hasExisted = await savedDir.exists();
     if (!hasExisted) {
@@ -146,27 +149,35 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
   }
 
   _prepare() async {
-    final tasks = await FlutterDownloader.loadTasks();
-
-    tasks!.forEach((element) {});
-
     _permissionReady = await _checkPermission();
     if (_permissionReady) {
       await _prepareSaveDir();
     }
+    print(_localPath);
+    final tasks = await FlutterDownloader.loadTasks();
+    print(tasks);
+    // tasks!.forEach((task) {
+    //   if (task.savedDir == _localPath) {
+    //     for (SimpleFile file in _tasks!) {
+
+    //     }
+    //   }
+    // });
 
     setState(() {
       _isLoading = false;
     });
   }
 
-  void _requestDownload(SimpleFile task, bool isReadMode) async {
-    var name = isReadMode
-        ? task.fileName + ".pdf"
-        : task.fileName + "." + task.fileExt;
-    print(await File(_localPath + "/" + name).exists());
+  void _requestDownload(
+    SimpleFile task,
+  ) async {
+    var name = task.fileName + "." + task.fileExt;
+
+    print(name);
+
     task.taskId = await FlutterDownloader.enqueue(
-      url: isReadMode ? task.readLink : task.writeLink,
+      url: task.fileUrl,
       fileName: name,
       savedDir: _localPath,
       showNotification: true,
@@ -178,13 +189,6 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
       print("aaaaaaaaaaaaaa" + task.taskId.toString());
       print("aaaaaaaaaaaaaa" + task.progress.toString());
     });
-  }
-
-  void _delete(SimpleFile task) async {
-    await FlutterDownloader.remove(
-        taskId: task.taskId!, shouldDeleteContent: true);
-    await _prepare();
-    setState(() {});
   }
 
   void _cancelDownload(SimpleFile task) async {
@@ -205,6 +209,21 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
     task.taskId = newTaskId;
   }
 
+  void _delete(SimpleFile task) async {
+    await FlutterDownloader.remove(
+        taskId: task.taskId!, shouldDeleteContent: true);
+    await _prepare();
+    setState(() {});
+  }
+
+  Future<bool> _openDownloadedFile(SimpleFile? task) {
+    if (task != null) {
+      return FlutterDownloader.open(taskId: task.taskId!);
+    } else {
+      return Future.value(false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -214,256 +233,254 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
         Provider.of<LiveProject>(context, listen: false).projectName;
 
     return Scaffold(
-      appBar: _appBar(context, photo),
-      body: FutureBuilder(
-          future: future,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              var files = snapshot.data as List<SimpleFile>;
-              return SingleChildScrollView(
-                child: Container(
-                  padding: EdgeInsets.only(
-                      left: width * 0.04,
-                      right: width * 0.04,
-                      top: height * 0.02,
-                      bottom: height * 0.02),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "공유 파일",
-                                style: subHeadingStyle,
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
-                              Text(
-                                projectName,
-                                style: headingStyle,
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
-                            ],
-                          ),
-                          MyButton(
-                              label: "+ Upload File",
-                              width: width * 0.4,
-                              height: 50,
-                              onTap: () {
-                                Navigator.of(context)
-                                    .push(MaterialPageRoute(
-                                        builder: (context) => FileUploadPage()))
-                                    .then((value) {
-                                  setState(() {
-                                    future = fetchFileSimpleDetail();
-                                  });
-                                });
-                              }),
-                        ],
-                      ),
-                      Container(
-                        child: ListView.builder(
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: files.length,
-                            itemBuilder: (context, index) {
-                              return Card(
-                                color: Colors.green[50],
-                                child: ListTile(
-                                  onTap: () {
-                                    Provider.of<SimpleFile>(context,
-                                            listen: false)
-                                        .setFileService(files[index]);
-
-                                    Navigator.of(context)
-                                        .push(MaterialPageRoute(
-                                            builder: (context) =>
-                                                FileDetailPage(
-                                                  fileName:
-                                                      files[index].fileName +
-                                                          "." +
-                                                          files[index].fileExt,
-                                                )))
-                                        .then((value) => setState(() {}));
-                                  },
-                                  leading: svgFileIcon(
-                                      width, files[index].fileExt, index),
-                                  title: Text(
-                                      files[index].fileName +
-                                          "." +
-                                          files[index].fileExt,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: tileTitleStyle),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        files[index].fileType == "Read"
-                                            ? "읽기 전용"
-                                            : "읽기 쓰기",
-                                        style: tileSubTitleStyle,
-                                      ),
-                                      files[index].status ==
-                                                  DownloadTaskStatus.running ||
-                                              files[index].status ==
-                                                  DownloadTaskStatus.paused
-                                          ? LinearProgressIndicator(
-                                              value:
-                                                  files[index].progress! / 100,
-                                            )
-                                          : Container(),
-                                      Text(files[index].status.toString())
-                                    ],
-                                  ),
-                                  trailing: IconButton(
-                                      onPressed: () async {
-                                        if (files[index].fileType == "All") {
-                                          showModalBottomSheet(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                          topLeft:
-                                                              Radius.circular(
-                                                                  20),
-                                                          topRight:
-                                                              Radius.circular(
-                                                                  20))),
-                                              context: context,
-                                              builder: (context) {
-                                                return Container(
-                                                  child: Wrap(
-                                                    alignment:
-                                                        WrapAlignment.center,
-                                                    children: [
-                                                      Column(
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .symmetric(
-                                                                    vertical:
-                                                                        8),
-                                                            child: Text(
-                                                              "파일 다운로드",
-                                                              style: editTitleStyle
-                                                                  .copyWith(
-                                                                      fontSize:
-                                                                          18),
-                                                            ),
-                                                          ),
-                                                          Divider(
-                                                            thickness: 1,
-                                                          ),
-                                                          TextButton(
-                                                              onPressed: () {
-                                                                _requestDownload(
-                                                                    files[
-                                                                        index],
-                                                                    true);
-
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop();
-                                                              },
-                                                              child: Text(
-                                                                  "읽기 전용 다운로드")),
-                                                          Divider(
-                                                            thickness: 1,
-                                                          ),
-                                                          TextButton(
-                                                              onPressed: () {
-                                                                _requestDownload(
-                                                                    files[
-                                                                        index],
-                                                                    false);
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop();
-                                                              },
-                                                              child: Text(
-                                                                "수정 전용 다운로드",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .redAccent),
-                                                              )),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              });
-                                        }
-                                      },
-                                      icon: Icon(Icons.file_download)),
-                                ),
-                              );
-                            }),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            } else if (snapshot.hasData == false &&
-                snapshot.connectionState == ConnectionState.done) {
-              return Container(
-                width: width,
-                height: height,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+        appBar: _appBar(context, photo),
+        body: SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.only(
+                left: width * 0.04,
+                right: width * 0.04,
+                top: height * 0.02,
+                bottom: height * 0.02),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "진행 중인 프로젝트가 없습니다.",
-                      style: headingStyle.copyWith(fontSize: 18),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "공유 파일",
+                          style: subHeadingStyle,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          projectName,
+                          style: headingStyle,
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                      ],
                     ),
-                    Text(
-                      "새로운 프로젝트를 생성 하세요",
-                      style: subHeadingStyle.copyWith(fontSize: 14),
-                    ),
-                    SizedBox(
-                      height: height * 0.08,
-                    ),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                            minimumSize: Size(width * 0.6, height * 0.1),
-                            primary: Colors.green.withOpacity(0.5)),
-                        onPressed: () async {
+                    MyButton(
+                        label: "+ Upload File",
+                        width: width * 0.4,
+                        height: 50,
+                        onTap: () {
                           Navigator.of(context)
                               .push(MaterialPageRoute(
                                   builder: (context) => FileUploadPage()))
                               .then((value) {
                             setState(() {
-                              future = fetchFileSimpleDetail();
+                              fetchFileSimpleDetail();
                             });
                           });
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.cloud_upload),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text("파일 업로드 하기"),
-                          ],
-                        ))
+                        }),
                   ],
                 ),
-              );
-            }
-            return Center(child: CircularProgressIndicator());
-          }),
-    );
+                Builder(
+                  builder: (context) => _tasks == null
+                      ? Text("Empty Shared File")
+                      : ListView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _tasks!.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              color: Colors.green[50],
+                              child: ListTile(
+                                onTap: () {
+                                  Provider.of<SimpleFile>(context,
+                                          listen: false)
+                                      .setFileService(_tasks![index]);
+
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(
+                                          builder: (context) => FileDetailPage(
+                                                fileName:
+                                                    _tasks![index].fileName +
+                                                        "." +
+                                                        _tasks![index].fileExt,
+                                              )))
+                                      .then((value) => setState(() {}));
+                                },
+                                leading: svgFileIcon(
+                                    width, _tasks![index].fileExt, index),
+                                title: Text(
+                                  _tasks![index].fileName +
+                                      "." +
+                                      _tasks![index].fileExt,
+                                  style: tileTitleStyle,
+                                  maxLines: 2,
+                                ),
+                                subtitle: Column(
+                                  children: [
+                                    Text(_tasks![index].taskId.toString()),
+                                    Text(_tasks![index].status.toString()),
+                                  ],
+                                ),
+                                trailing: _buildActionForTask(_tasks![index]),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
+
+  existFileCheck(String name) async {
+    var value = await File(name).exists();
+    print(value);
+  }
+
+  Widget? _buildActionForTask(SimpleFile task) {
+    if (task.status == DownloadTaskStatus.undefined) {
+      return RawMaterialButton(
+        onPressed: () {
+          if (task.status == DownloadTaskStatus.undefined) {
+            _requestDownload(task);
+          } else if (task.status == DownloadTaskStatus.running) {
+            _pauseDownload(task);
+          } else if (task.status == DownloadTaskStatus.paused) {
+            _resumeDownload(task);
+          } else if (task.status == DownloadTaskStatus.complete) {
+            _delete(task);
+          } else if (task.status == DownloadTaskStatus.failed) {
+            _retryDownload(task);
+          }
+        },
+        child: Icon(Icons.file_download),
+        shape: CircleBorder(),
+        constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+      );
+    } else if (task.status == DownloadTaskStatus.running) {
+      return RawMaterialButton(
+        onPressed: () {
+          if (task.status == DownloadTaskStatus.undefined) {
+            _requestDownload(task);
+          } else if (task.status == DownloadTaskStatus.running) {
+            _pauseDownload(task);
+          } else if (task.status == DownloadTaskStatus.paused) {
+            _resumeDownload(task);
+          } else if (task.status == DownloadTaskStatus.complete) {
+            _delete(task);
+          } else if (task.status == DownloadTaskStatus.failed) {
+            _retryDownload(task);
+          }
+        },
+        child: Icon(
+          Icons.pause,
+          color: Colors.red,
+        ),
+        shape: CircleBorder(),
+        constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+      );
+    } else if (task.status == DownloadTaskStatus.paused) {
+      return RawMaterialButton(
+        onPressed: () {
+          if (task.status == DownloadTaskStatus.undefined) {
+            _requestDownload(task);
+          } else if (task.status == DownloadTaskStatus.running) {
+            _pauseDownload(task);
+          } else if (task.status == DownloadTaskStatus.paused) {
+            _resumeDownload(task);
+          } else if (task.status == DownloadTaskStatus.complete) {
+            _delete(task);
+          } else if (task.status == DownloadTaskStatus.failed) {
+            _retryDownload(task);
+          }
+        },
+        child: Icon(
+          Icons.play_arrow,
+          color: Colors.green,
+        ),
+        shape: CircleBorder(),
+        constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+      );
+    } else if (task.status == DownloadTaskStatus.complete) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          InkWell(
+            onTap: () {
+              _openDownloadedFile(task).then((success) {
+                if (!success) {
+                  Scaffold.of(context).showSnackBar(
+                      SnackBar(content: Text('Cannot open this file')));
+                }
+              });
+            },
+            child: Text(
+              '보기',
+              style: TextStyle(color: Colors.green),
+            ),
+          ),
+          RawMaterialButton(
+            onPressed: () {
+              if (task.status == DownloadTaskStatus.undefined) {
+                _requestDownload(task);
+              } else if (task.status == DownloadTaskStatus.running) {
+                _pauseDownload(task);
+              } else if (task.status == DownloadTaskStatus.paused) {
+                _resumeDownload(task);
+              } else if (task.status == DownloadTaskStatus.complete) {
+                _delete(task);
+              } else if (task.status == DownloadTaskStatus.failed) {
+                _retryDownload(task);
+              }
+            },
+            child: Icon(
+              Icons.delete_forever,
+              color: Colors.red,
+            ),
+            shape: CircleBorder(),
+            constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+          )
+        ],
+      );
+    } else if (task.status == DownloadTaskStatus.canceled) {
+      return Text('Canceled', style: TextStyle(color: Colors.red));
+    } else if (task.status == DownloadTaskStatus.failed) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text('Failed', style: TextStyle(color: Colors.red)),
+          RawMaterialButton(
+            onPressed: () {
+              if (task.status == DownloadTaskStatus.undefined) {
+                _requestDownload(task);
+              } else if (task.status == DownloadTaskStatus.running) {
+                _pauseDownload(task);
+              } else if (task.status == DownloadTaskStatus.paused) {
+                _resumeDownload(task);
+              } else if (task.status == DownloadTaskStatus.complete) {
+                _delete(task);
+              } else if (task.status == DownloadTaskStatus.failed) {
+                _retryDownload(task);
+              }
+            },
+            child: Icon(
+              Icons.refresh,
+              color: Colors.green,
+            ),
+            shape: CircleBorder(),
+            constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+          )
+        ],
+      );
+    } else if (task.status == DownloadTaskStatus.enqueued) {
+      return Text('Pending', style: TextStyle(color: Colors.orange));
+    } else {
+      return null;
+    }
   }
 
   // Icon trailingIcon(SimpleFile file) {

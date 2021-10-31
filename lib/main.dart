@@ -52,11 +52,13 @@ class MyApp extends StatelessWidget {
                 photoes: [])),
         ChangeNotifierProvider(
             create: (_) => SimpleFile(
-                fileIdx: 0,
-                fileName: "",
-                fileExt: "",
-                fileType: "",
-                fileFlag: "")),
+                  fileIdx: 0,
+                  fileName: "",
+                  fileExt: "",
+                  fileType: "",
+                  fileFlag: "",
+                  fileUrl: "",
+                )),
         ChangeNotifierProvider(create: (_) => MappingProject(map: Map()))
       ],
       child: GetMaterialApp(

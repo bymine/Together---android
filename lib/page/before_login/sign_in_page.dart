@@ -177,12 +177,16 @@ class _SignInPageState extends State<SignInPage> {
 
   _signInFunction(double width) async {
     if (signInFromKey.currentState!.validate()) {
+      loadingAlert(context);
       var signInModel = await togetherPostAPI(
           '/user/login',
           jsonEncode({
             "user_email": emailController.text,
             "user_pw": pwController.text
           })) as SignInModel;
+
+      Navigator.of(context).pop();
+
       if (signInModel.signInCode == "success") {
         Provider.of<SignInModel>(context, listen: false)
             .setSignInSuccess(signInModel);

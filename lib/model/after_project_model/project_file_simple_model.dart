@@ -7,12 +7,7 @@ class SimpleFile extends ChangeNotifier {
   String fileExt;
   String fileType;
   String fileFlag;
-
-  String readLink =
-      'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf';
-
-  String writeLink =
-      'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf';
+  String fileUrl;
 
   String? taskId;
   int? progress = 0;
@@ -23,7 +18,8 @@ class SimpleFile extends ChangeNotifier {
       required this.fileName,
       required this.fileExt,
       required this.fileType,
-      required this.fileFlag});
+      required this.fileFlag,
+      required this.fileUrl});
 
   factory SimpleFile.fromJson(Map<String, dynamic> json) {
     return SimpleFile(
@@ -31,7 +27,8 @@ class SimpleFile extends ChangeNotifier {
         fileName: json['file_origin_name'],
         fileExt: json['file_extension'],
         fileType: json['file_type'],
-        fileFlag: json['file_sema_flag']);
+        fileFlag: json['file_sema_flag'],
+        fileUrl: json['fileUrl']);
   }
 
   void setFileService(SimpleFile simpleFile) {

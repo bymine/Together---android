@@ -19,8 +19,8 @@ import 'package:together_android/model/after_login_model/user_profile_model.dart
 import 'package:together_android/page/after_project/project_file/reservation_main.dart';
 import 'package:together_android/page/after_project/project_setting/edit_project_member_page.dart';
 
-//String serverUrl = "http://101.101.216.93:8080";
-String serverUrl = "http://10.0.2.2:8080";
+String serverUrl = "http://101.101.216.93:8080";
+//String serverUrl = "http://10.0.2.2:8080";
 
 Future togetherGetAPI(String service, String parameter) async {
   final response = await http.get(Uri.parse(serverUrl + service + parameter));
