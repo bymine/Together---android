@@ -9,6 +9,7 @@ import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/after_login/match_project/search_project_page.dart';
 import 'package:together_android/page/after_login/match_project/show_my_project_card_page.dart';
 import 'package:together_android/service/api.dart';
+import 'package:together_android/utils.dart';
 
 class MatchProjectBody extends StatefulWidget {
   const MatchProjectBody({Key? key}) : super(key: key);
@@ -112,37 +113,75 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: resumes
-                    .map((card) => GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => ShowProjectCard(
-                                      card: card,
-                                      map: map,
-                                    )));
-                          },
-                          child: Container(
-                            margin: EdgeInsets.only(right: 8),
-                            padding: EdgeInsets.symmetric(
-                                vertical: height * 0.04,
-                                horizontal: width * 0.06),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: Colors.blueGrey[400]),
-                            width: width * 0.6,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  card.projectName,
-                                ),
-                                Text(card.comment),
-                                Text(card.professionality)
-                              ],
-                            ),
+                children: resumes.map((card) {
+                  var index = resumes.indexOf(card);
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(
+                              builder: (context) => ShowProjectCard(
+                                    card: card,
+                                    map: map,
+                                  )))
+                          .then((value) => setState(() {
+                                future = fetchTeamMatchData();
+                              }));
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(right: 8),
+                      padding: EdgeInsets.symmetric(
+                          vertical: height * 0.04, horizontal: width * 0.04),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: BasicColor.basicColor[index]),
+                      width: width * 0.6,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            card.projectName,
+                            style: editTitleStyle.copyWith(color: Colors.white),
                           ),
-                        ))
-                    .toList(),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Row(
+                            children: [
+                              Icon(Icons.border_color,
+                                  color: Colors.white, size: 16),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Text(
+                                card.comment,
+                                style: editSubTitleStyle.copyWith(
+                                    color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 4,
+                          ),
+                          Row(
+                            children: [
+                              Icon(Icons.calendar_today,
+                                  size: 16, color: Colors.white),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              Text(
+                                schdeuleDateFormat(
+                                    card.startDate, card.endDate, false),
+                                style: editSubTitleStyle.copyWith(
+                                    color: Colors.white),
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             )
           else

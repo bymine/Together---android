@@ -11,6 +11,7 @@ import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/live_project_model.dart';
 import 'package:together_android/model/after_login_model/user_profile_model.dart';
+import 'package:together_android/model/after_project_model/project_apply_member_model.dart';
 import 'package:together_android/model/after_project_model/project_setting_model.dart';
 import 'package:together_android/model/after_project_model/show_user_list_model.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
@@ -18,6 +19,7 @@ import 'package:together_android/page/after_login/main_page.dart';
 import 'package:together_android/page/after_login/make_project/show_user_detail_page.dart';
 import 'package:together_android/page/after_project/project_setting/edit_project_info_page.dart';
 import 'package:together_android/page/after_project/project_setting/edit_project_member_page.dart';
+import 'package:together_android/page/after_project/project_setting/show_apply_List_page.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
 import 'package:async/async.dart';
@@ -43,6 +45,8 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
   Map mappingIdx = Map<String, String>();
   String selectedCategory = "";
   String selectedTag = "";
+
+  List<ProjectApplyMember> applyList = [];
   fetchSetting() async {
     var projectIdx =
         Provider.of<LiveProject>(context, listen: false).projectIdx;
@@ -71,6 +75,14 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
     print("user");
   }
 
+  _fetchApplyList() async {
+    var projectIdx =
+        Provider.of<LiveProject>(context, listen: false).projectIdx;
+    applyList = await togetherGetAPI(
+        "/project/applicationList", '?project_idx=$projectIdx');
+    print(applyList.length);
+  }
+
   void fetchTagList() async {
     List parsedTag = await togetherGetAPI("/project/getTagList", "");
     parsedTag.forEach((element) {
@@ -86,19 +98,15 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
     category.removeAt(0);
     tag.removeAt(0);
     if (category.contains("기타") == false) category.add('기타');
-    print(mappingIdx);
-    print(category);
-    print(tag);
-    print(mappingTag);
     selectedCategory = category.first;
     selectedTag = tag.first;
-
-    print("tag");
   }
 
   @override
   void initState() {
     super.initState();
+    _fetchApplyList();
+
     fetchUserList();
     fetchTagList();
     future = fetchSetting();
@@ -165,8 +173,20 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                iconButton(
-                                    width, "메세지", Icons.email, () => null),
+                                messageButton(width, () {
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(
+                                          builder: (context) =>
+                                              ShowApplyListPage(
+                                                applyList: applyList,
+                                              )))
+                                      .then((value) {
+                                    setState(() {
+                                      _fetchApplyList();
+                                      future = fetchSetting();
+                                    });
+                                  });
+                                }),
                                 iconButton(
                                     width,
                                     "편집",
@@ -325,7 +345,7 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                                   child: Icon(Icons.tag, color: Colors.white),
                                   backgroundColor: Colors.red[300]),
                               title: Text(
-                                '태그 (${setting.tag.length}/4)',
+                                '태그 (${setting.tag.length}/3)',
                                 style: tileTitleStyle,
                               ),
                               subTitle: Container(
@@ -365,10 +385,10 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                               ),
                               trailing: IconButton(
                                   onPressed: () async {
-                                    if (setting.tag.length >= 4) {
+                                    if (setting.tag.length >= 3) {
                                       Get.snackbar(
                                         "태그 추가 실패",
-                                        "태그는 최대 4개까지 설정 할 수 있습니다",
+                                        "태그는 최대 3개까지 설정 할 수 있습니다",
                                         icon: Icon(
                                           Icons.warning_amber_rounded,
                                           color: Colors.redAccent,
@@ -420,6 +440,64 @@ class _ProjectSettingPageState extends State<ProjectSettingPage> {
                 child: CircularProgressIndicator(),
               );
             }),
+      ),
+    );
+  }
+
+  messageButton(double width, Function()? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: width * 0.2,
+        height: width * 0.2,
+        padding: EdgeInsets.all(4),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xffffe0e0e0),
+                spreadRadius: 2,
+                blurRadius: 2,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ]),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.mail_outline_outlined,
+                  color: pinkClr,
+                  size: 40,
+                ),
+                Text(
+                  "메세지",
+                  style: editSubTitleStyle,
+                )
+              ],
+            ),
+            applyList.length != 0
+                ? Positioned(
+                    right: 8,
+                    top: 2,
+                    child: Container(
+                      padding: EdgeInsets.all(4),
+                      width: 16,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle, color: Colors.redAccent),
+                      child: Text(
+                        applyList.length.toString(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )
+                : Container()
+          ],
+        ),
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'package:group_button/group_button.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
+import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:path/path.dart' as Path;
 import 'package:together_android/model/after_login_model/live_project_model.dart';
@@ -117,6 +118,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
             MyButton(
                 label: "Upload",
                 onTap: () async {
+                  loadingAlert(context);
                   try {
                     var userIdx =
                         Provider.of<SignInModel>(context, listen: false)
@@ -147,9 +149,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
                           options: Options(headers: {
                             "Content-Type": "multipart/form-data"
                           }));
-
-                      print(response.statusCode);
-                      print(response.data);
+                      if (response.data != null) Navigator.of(context).pop();
 
                       if (response.toString() == "success") {
                         Navigator.pop(context, true);

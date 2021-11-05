@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/componet/button.dart';
+import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/team_card.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/page/after_login/match_project/condition_team_page.dart';
 import 'package:together_android/service/api.dart';
+import 'package:together_android/utils.dart';
 
 class SearchTeamPage extends StatefulWidget {
   const SearchTeamPage({Key? key}) : super(key: key);
@@ -24,6 +29,11 @@ class _SearchTeamPageState extends State<SearchTeamPage> {
     var userIdx = Provider.of<SignInModel>(context, listen: false).userIdx;
 
     return togetherGetAPI("/teamMatching/projectList/card", "?$userIdx");
+  }
+
+  conditionProjcetCardList(var body) async {
+    print(body);
+    return togetherPostAPI("/teamMatching/team/condition/table", body);
   }
 
   @override
@@ -61,7 +71,210 @@ class _SearchTeamPageState extends State<SearchTeamPage> {
                             ProjectResume card =
                                 isInput ? cards[index] : containCard[index];
                             return GestureDetector(
-                              onTap: () {},
+                              onTap: () {
+                                showModalBottomSheet(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(16),
+                                            topRight: Radius.circular(16))),
+                                    isScrollControlled: true,
+                                    context: context,
+                                    builder: (context) {
+                                      return SingleChildScrollView(
+                                        child: Container(
+                                          padding: EdgeInsets.only(
+                                              left: width * 0.08,
+                                              right: width * 0.08,
+                                              top: height * 0.02,
+                                              bottom: height * 0.02),
+                                          child: Wrap(
+                                            children: [
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                      card.projectName +
+                                                          " 프로젝트 상세 정보",
+                                                      style: tileTitleStyle),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.description,
+                                                          size: 16,
+                                                          color: Colors.grey),
+                                                      SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Text(
+                                                        card.projectExp,
+                                                        style: editSubTitleStyle
+                                                            .copyWith(
+                                                                fontSize: 14),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.school,
+                                                              size: 16,
+                                                              color:
+                                                                  Colors.grey),
+                                                          SizedBox(
+                                                            width: 5,
+                                                          ),
+                                                          Text(
+                                                            projectEnumFromServer(
+                                                                card.professionality),
+                                                            style:
+                                                                editSubTitleStyle
+                                                                    .copyWith(
+                                                                        fontSize:
+                                                                            14),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      SizedBox(
+                                                        width: 20,
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.info,
+                                                              size: 16,
+                                                              color:
+                                                                  Colors.grey),
+                                                          SizedBox(
+                                                            width: 5,
+                                                          ),
+                                                          Text(
+                                                            projectEnumFromServer(
+                                                                card.projectType),
+                                                            style:
+                                                                editSubTitleStyle
+                                                                    .copyWith(
+                                                                        fontSize:
+                                                                            14),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.calendar_today,
+                                                          size: 16,
+                                                          color: Colors.grey),
+                                                      SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Text(
+                                                        schdeuleDateFormat(
+                                                            card.startDate,
+                                                            card.endDate,
+                                                            false),
+                                                        style: editSubTitleStyle
+                                                            .copyWith(
+                                                                fontSize: 14),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.person,
+                                                          size: 16,
+                                                          color: Colors.grey),
+                                                      SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Text(
+                                                        card.memberNum
+                                                            .toString(),
+                                                        style: editSubTitleStyle
+                                                            .copyWith(
+                                                                fontSize: 14),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.tag,
+                                                          size: 16,
+                                                          color: Colors.grey),
+                                                      SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Text(
+                                                        card.tagName
+                                                            .toString()
+                                                            .substring(
+                                                                1,
+                                                                card.tagName
+                                                                        .toString()
+                                                                        .length -
+                                                                    1),
+                                                        style: editSubTitleStyle
+                                                            .copyWith(
+                                                                fontSize: 14),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Text(
+                                                    "소개",
+                                                    style: tileTitleStyle,
+                                                  ),
+                                                  SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Text(
+                                                    card.comment,
+                                                    style: editSubTitleStyle,
+                                                  ),
+                                                  SizedBox(
+                                                    height: 16,
+                                                  ),
+                                                  Center(
+                                                    child: MyButton(
+                                                        label: "Apply",
+                                                        onTap: () async {
+                                                          loadingAlert(context);
+                                                          var code = await togetherGetAPI(
+                                                              "/teamMatching/team/application",
+                                                              '?user_idx=${user.userIdx}&project_idx=${card.projectIdx}');
+
+                                                          print(code);
+                                                          if (code != null)
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        }),
+                                                  )
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    });
+                              },
                               child: Container(
                                 margin: EdgeInsets.only(top: 12),
                                 padding: EdgeInsets.symmetric(
@@ -72,7 +285,94 @@ class _SearchTeamPageState extends State<SearchTeamPage> {
                                     color: Colors.blueGrey[400]),
                                 width: width * 0.8,
                                 child: Column(
-                                  children: [Text(card.projectName)],
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      card.projectName,
+                                      style: editTitleStyle.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(Icons.school,
+                                                size: 16, color: Colors.white),
+                                            SizedBox(
+                                              width: 5,
+                                            ),
+                                            Text(
+                                              projectEnumFromServer(
+                                                  card.professionality),
+                                              style: editTitleStyle.copyWith(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            )
+                                          ],
+                                        ),
+                                        SizedBox(
+                                          width: 20,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(Icons.info,
+                                                size: 16, color: Colors.white),
+                                            SizedBox(
+                                              width: 5,
+                                            ),
+                                            Text(
+                                              projectEnumFromServer(
+                                                  card.projectType),
+                                              style: editTitleStyle.copyWith(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            )
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.calendar_today,
+                                            size: 16, color: Colors.white),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text(
+                                          schdeuleDateFormat(card.startDate,
+                                              card.endDate, false),
+                                          style: editTitleStyle.copyWith(
+                                              color: Colors.white,
+                                              fontSize: 14),
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.person,
+                                            size: 16, color: Colors.white),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text(
+                                          card.memberNum.toString(),
+                                          style: editTitleStyle.copyWith(
+                                              color: Colors.white,
+                                              fontSize: 14),
+                                        )
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -120,8 +420,12 @@ class _SearchTeamPageState extends State<SearchTeamPage> {
         ),
         IconButton(
             onPressed: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ConditionTeamPage()));
+              Navigator.of(context)
+                  .push(MaterialPageRoute(
+                      builder: (context) => ConditionTeamPage()))
+                  .then((value) {
+                if (value != null) future = conditionProjcetCardList(value);
+              });
             },
             icon: Icon(Icons.tune))
       ],

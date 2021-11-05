@@ -8,6 +8,7 @@ import 'package:together_android/model/after_login_model/live_project_model.dart
 import 'package:together_android/model/after_login_model/my_profile_model.dart';
 import 'package:together_android/model/after_login_model/private_schedule_model.dart';
 import 'package:together_android/model/after_login_model/team_card.dart';
+import 'package:together_android/model/after_project_model/project_apply_member_model.dart';
 import 'package:together_android/model/after_project_model/project_file_detail_model.dart';
 import 'package:together_android/model/after_project_model/project_file_simple_model.dart';
 import 'package:together_android/model/after_project_model/project_file_version_model.dart';
@@ -112,6 +113,12 @@ Future togetherGetAPI(String service, String parameter) async {
 
     case "/project/detailSchedule":
       return json.decode(utf8.decode(response.bodyBytes));
+
+    case "/project/applicationList":
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<ProjectApplyMember>((json) => ProjectApplyMember.fromJson(json))
+          .toList();
+      return returnData;
 
     case "/member/search/cards":
       print(response.statusCode);
@@ -252,6 +259,19 @@ Future togetherPostAPI(String service, String body) async {
     case "/member/search/invite":
       print(response.body);
       return response.body;
+
+    case "/teamMatching/team/condition/table":
+      print(response.body);
+      print(response.statusCode);
+      var returnData = jsonDecode(utf8.decode(response.bodyBytes))
+          .map<ProjectResume>((json) => ProjectResume.fromJson(json))
+          .toList();
+
+      if (returnData.toString() == "[]") {
+        return;
+      } else {
+        return returnData;
+      }
 
     default:
       return response.body;

@@ -431,7 +431,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                     child:
                                         Icon(Icons.tag, color: Colors.white)),
                                 title: Text(
-                                  '취미 (${profile.userHobby.length}/4)',
+                                  '취미 (${profile.userHobby.length}/3)',
                                   style: tileTitleStyle,
                                 ),
                                 subTitle: Container(
@@ -465,10 +465,10 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                                 ),
                                 trailing: IconButton(
                                     onPressed: () async {
-                                      if (profile.userHobby.length >= 4) {
+                                      if (profile.userHobby.length >= 3) {
                                         GET.Get.snackbar(
                                           "취미 추가 실패",
-                                          "최대 4개까지 설정 할 수 있습니다",
+                                          "최대 3개까지 설정 할 수 있습니다",
                                           icon: Icon(
                                             Icons.warning_amber_rounded,
                                             color: Colors.redAccent,

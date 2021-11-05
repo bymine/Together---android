@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
+import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
@@ -100,6 +101,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                           itemCount:
                               isInput ? cards.length : containCard.length,
                           itemBuilder: (context, index) {
+                            print("index: " + index.toString());
                             MemberResume card =
                                 isInput ? cards[index] : containCard[index];
                             return GestureDetector(
@@ -298,136 +300,151 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                             height: 10,
                           ),
                           Text(
-                            "Profile",
+                            "프로필",
                             style: editTitleStyle,
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.person,
-                                      size: 20,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text(
-                                      detailCard.name,
-                                      style: editSubTitleStyle,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.psychology,
-                                      size: 20,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text(
-                                      detailCard.mbti,
-                                      style: editSubTitleStyle,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.face,
-                                      size: 20,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text(
-                                      detailCard.age.toString() + "살",
-                                      style: editSubTitleStyle,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.place,
-                                      size: 20,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text(
-                                      addressToString(
-                                          false,
-                                          detailCard.mainAddr,
-                                          detailCard.referenceAddr,
-                                          detailCard.detailAddr), // 수정 필요
-                                      style: editSubTitleStyle,
-                                      maxLines: 1,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.book,
-                                      size: 20,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text(
-                                      detailCard.licens.isEmpty
-                                          ? "no comment"
-                                          : detailCard.licens
-                                              .toString()
-                                              .substring(1,
-                                                  detailCard.licens.length - 1),
-                                      style: editSubTitleStyle,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.tag,
-                                      size: 20,
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text(
-                                      detailCard.hobbys.isEmpty
-                                          ? "no comment"
-                                          : detailCard.hobbys
-                                              .toString()
-                                              .substring(1,
-                                                  detailCard.hobbys.length - 1),
-                                      style: editSubTitleStyle,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                          Column(
+                            children: [
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.person,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    detailCard.name,
+                                    style: editSubTitleStyle,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.psychology,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    detailCard.mbti,
+                                    style: editSubTitleStyle,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.face,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    detailCard.age.toString() + "살",
+                                    style: editSubTitleStyle,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.place,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    addressToString(
+                                        false,
+                                        detailCard.mainAddr,
+                                        detailCard.referenceAddr,
+                                        detailCard.detailAddr), // 수정 필요
+                                    style: editSubTitleStyle,
+                                    maxLines: 1,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.book,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    detailCard.licens.isEmpty
+                                        ? "no comment"
+                                        : detailCard.licens
+                                            .toString()
+                                            .substring(1,
+                                                detailCard.licens.length - 1),
+                                    style: editSubTitleStyle,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.tag,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    detailCard.hobbys.isEmpty
+                                        ? "no comment"
+                                        : detailCard.hobbys
+                                            .toString()
+                                            .substring(1,
+                                                detailCard.hobbys.length - 1),
+                                    style: editSubTitleStyle,
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                           SizedBox(
                             height: 16,
                           ),
                           Text(
-                            "Introduce",
+                            "소개",
                             style: editTitleStyle,
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 16.0),
+                            padding: const EdgeInsets.only(top: 5),
                             child: Text(
                               detailCard.comment ?? "no comment",
                               style: editSubTitleStyle,
@@ -437,11 +454,11 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                             height: 16,
                           ),
                           Text(
-                            "Experience",
+                            "경험",
                             style: editTitleStyle,
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 16.0),
+                            padding: const EdgeInsets.only(top: 5),
                             child: Text(detailCard.resume ?? "no comment",
                                 style: editSubTitleStyle),
                           ),
@@ -452,7 +469,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                             child: MyButton(
                                 label: "Invite",
                                 onTap: () async {
-                                  Navigator.of(context).pop();
+                                  loadingAlert(context);
 
                                   var code = await togetherPostAPI(
                                       "/member/search/invite",
@@ -464,7 +481,8 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                                         "member_idx": detailCard.idx,
                                         "project_idx": map[_selectProject]
                                       }));
-
+                                  if (code != null) Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
                                   inviteSnackbar(code.toString());
                                 }),
                           )
@@ -480,11 +498,9 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
   }
 
   inviteSnackbar(code) {
-    // String body = snackBarMessage(code);
-
     return Get.snackbar(
-      code == "success" ? "Success Invite" : 'Failed Invite',
-      snackBarMessage(code.toString()),
+      code == "success" ? "프로젝트 초대 성공" : '프로젝트 초대 실패',
+      invitteMessage(code.toString()),
       icon: code == "success"
           ? Icon(
               Icons.check_circle,
@@ -498,25 +514,6 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
       animationDuration: Duration(milliseconds: 800),
       snackPosition: SnackPosition.TOP,
     );
-  }
-
-  String snackBarMessage(String code) {
-    switch (code) {
-      case "already_in":
-        return "Already in project member";
-      case "already_sent":
-        return "Already sent invitaion";
-      case "not_leader":
-        return "Only leaders can invite";
-      case "self_invite":
-        return "Can't invite yourself";
-      case "error":
-        return "An error occurs";
-      case "success":
-        return "Invitaion success";
-      default:
-        return "";
-    }
   }
 
   Row _seachBar(List<MemberResume> cards) {

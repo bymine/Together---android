@@ -8,6 +8,8 @@ const Color yellowClr = Color(0xFFFFB746);
 const Color pinkClr = Color(0xFFff4667);
 const Color darkBlue = Color(0xff123456);
 
+const Color card = Color(0xFF61A3FE);
+
 // // appBar title style
 // TextStyle get appBarTitleStlye {
 //   return GoogleFonts.lato(
@@ -77,6 +79,17 @@ class GradientTemplate {
     GradientColors(GradientColors.sea),
     GradientColors(GradientColors.mango),
     GradientColors(GradientColors.fire),
+  ];
+}
+
+class BasicColor {
+  static List<Color> basicColor = [
+    Color(0xFFF4AE64),
+    Color(0xFFEB638A),
+    Color(0xFFBB7AF2),
+    Color(0xFF61A3FE),
+    Color(0xFFF4AE64),
+    Color(0xFFEB638A),
   ];
 }
 

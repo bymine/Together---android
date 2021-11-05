@@ -6,6 +6,7 @@ import 'package:android_path_provider/android_path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +31,6 @@ class ProjectFilePage extends StatefulWidget with WidgetsBindingObserver {
 
 class _ProjectFilePageState extends State<ProjectFilePage> {
   late Future future;
-  final AsyncMemoizer _memoizer = AsyncMemoizer();
 
   List<SimpleFile>? _tasks = [];
   late bool _isLoading;
@@ -54,11 +54,9 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
     _bindBackgroundIsolate();
 
     FlutterDownloader.registerCallback(downloadCallback);
-
+    _prepare();
     _isLoading = true;
     _permissionReady = false;
-
-    _prepare();
   }
 
   @override
@@ -153,15 +151,33 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
     if (_permissionReady) {
       await _prepareSaveDir();
     }
-    print(_localPath);
-    final tasks = await FlutterDownloader.loadTasks();
-    print(tasks);
-    // tasks!.forEach((task) {
-    //   if (task.savedDir == _localPath) {
-    //     for (SimpleFile file in _tasks!) {
 
-    //     }
-    //   }
+    // final tasks = await FlutterDownloader.loadTasksWithRawQuery(
+    //     query: 'SELECT * FROM task WHERE progress = 100');
+
+    // tasks!.forEach((element) {
+    //   if (element.savedDir == _localPath) print(element.filename);
+    // });
+
+    // print(_localPath);
+    // String query = 'SELECT * FROM task WHERE progress = 100 ';
+
+    // try {
+    //   final tasks = await FlutterDownloader.loadTasksWithRawQuery(query: query);
+    // tasks!.forEach((element) {
+    //   print(element.filename);
+    // });
+    // } catch (e) {
+    //   print(e);
+    // }
+
+    // _tasks!.forEach((element) async {
+    //   // print(_localPath + "/" + element.fileName + "." + element.fileExt);
+    //   if (await File(_localPath + element.fileName + "." + element.fileExt)
+    //       .exists())
+    //     print("yes");
+    //   else
+    //     print("no");
     // });
 
     setState(() {
@@ -175,7 +191,7 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
     var name = task.fileName + "." + task.fileExt;
 
     print(name);
-
+    Get.snackbar("파일 다운로드", "파일 다운로드 중입니다");
     task.taskId = await FlutterDownloader.enqueue(
       url: task.fileUrl,
       fileName: name,
@@ -234,57 +250,103 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
 
     return Scaffold(
         appBar: _appBar(context, photo),
-        body: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.only(
-                left: width * 0.04,
-                right: width * 0.04,
-                top: height * 0.02,
-                bottom: height * 0.02),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "공유 파일",
-                          style: subHeadingStyle,
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          projectName,
-                          style: headingStyle,
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                      ],
-                    ),
-                    MyButton(
-                        label: "+ Upload File",
-                        width: width * 0.4,
-                        height: 50,
-                        onTap: () {
-                          Navigator.of(context)
-                              .push(MaterialPageRoute(
-                                  builder: (context) => FileUploadPage()))
-                              .then((value) {
-                            setState(() {
-                              fetchFileSimpleDetail();
+        body: Builder(
+          builder: (context) => _tasks == null
+              ? Container(
+                  width: width,
+                  height: height,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "진행 중인 프로젝트가 없습니다.",
+                        style: headingStyle.copyWith(fontSize: 18),
+                      ),
+                      Text(
+                        "새로운 프로젝트를 생성 하세요",
+                        style: subHeadingStyle.copyWith(fontSize: 14),
+                      ),
+                      SizedBox(
+                        height: height * 0.08,
+                      ),
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              minimumSize: Size(width * 0.6, height * 0.1),
+                              primary: Colors.green.withOpacity(0.5)),
+                          onPressed: () async {
+                            Navigator.of(context)
+                                .push(MaterialPageRoute(
+                                    builder: (context) => FileUploadPage()))
+                                .then((value) {
+                              setState(() {
+                                future = fetchFileSimpleDetail();
+                              });
                             });
-                          });
-                        }),
-                  ],
-                ),
-                Builder(
-                  builder: (context) => _tasks == null
-                      ? Text("Empty Shared File")
-                      : ListView.builder(
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.cloud_upload),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              Text("파일 업로드 하기"),
+                            ],
+                          ))
+                    ],
+                  ),
+                )
+              : SingleChildScrollView(
+                  child: Container(
+                    padding: EdgeInsets.only(
+                        left: width * 0.04,
+                        right: width * 0.04,
+                        top: height * 0.02,
+                        bottom: height * 0.02),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "공유 파일",
+                                  style: subHeadingStyle,
+                                ),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  projectName,
+                                  style: headingStyle,
+                                ),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                              ],
+                            ),
+                            MyButton(
+                                label: "+ Upload File",
+                                width: width * 0.4,
+                                height: 50,
+                                onTap: () {
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(
+                                          builder: (context) =>
+                                              FileUploadPage()))
+                                      .then((value) {
+                                    setState(() {
+                                      fetchFileSimpleDetail();
+                                    });
+                                  });
+                                }),
+                          ],
+                        ),
+                        ListView.builder(
                           physics: NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: _tasks!.length,
@@ -305,7 +367,9 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                                                         "." +
                                                         _tasks![index].fileExt,
                                               )))
-                                      .then((value) => setState(() {}));
+                                      .then((value) => setState(() {
+                                            fetchFileSimpleDetail();
+                                          }));
                                 },
                                 leading: svgFileIcon(
                                     width, _tasks![index].fileExt, index),
@@ -316,21 +380,17 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                                   style: tileTitleStyle,
                                   maxLines: 2,
                                 ),
-                                subtitle: Column(
-                                  children: [
-                                    Text(_tasks![index].taskId.toString()),
-                                    Text(_tasks![index].status.toString()),
-                                  ],
-                                ),
                                 trailing: _buildActionForTask(_tasks![index]),
+                                // subtitle:
+                                //     Text(_tasks![index].taskId ?? "no match"),
                               ),
                             );
                           },
                         ),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          ),
         ));
   }
 
@@ -404,46 +464,31 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
         constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
       );
     } else if (task.status == DownloadTaskStatus.complete) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          InkWell(
-            onTap: () {
-              _openDownloadedFile(task).then((success) {
-                if (!success) {
-                  Scaffold.of(context).showSnackBar(
-                      SnackBar(content: Text('Cannot open this file')));
-                }
-              });
-            },
-            child: Text(
-              '보기',
-              style: TextStyle(color: Colors.green),
+      return RawMaterialButton(
+        onPressed: () {
+          _openDownloadedFile(task).then((success) {
+            if (!success) {
+              Scaffold.of(context).showSnackBar(
+                  SnackBar(content: Text('Cannot open this file')));
+            }
+          });
+        },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text("열기"),
+            SizedBox(
+              width: 5,
             ),
-          ),
-          RawMaterialButton(
-            onPressed: () {
-              if (task.status == DownloadTaskStatus.undefined) {
-                _requestDownload(task);
-              } else if (task.status == DownloadTaskStatus.running) {
-                _pauseDownload(task);
-              } else if (task.status == DownloadTaskStatus.paused) {
-                _resumeDownload(task);
-              } else if (task.status == DownloadTaskStatus.complete) {
-                _delete(task);
-              } else if (task.status == DownloadTaskStatus.failed) {
-                _retryDownload(task);
-              }
-            },
-            child: Icon(
-              Icons.delete_forever,
-              color: Colors.red,
+            Icon(
+              Icons.open_in_new,
+              color: Colors.grey,
             ),
-            shape: CircleBorder(),
-            constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
-          )
-        ],
+          ],
+        ),
+        shape: CircleBorder(),
+        constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
       );
     } else if (task.status == DownloadTaskStatus.canceled) {
       return Text('Canceled', style: TextStyle(color: Colors.red));
@@ -482,25 +527,6 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
       return null;
     }
   }
-
-  // Icon trailingIcon(SimpleFile file) {
-  //   if (file.status == DownloadTaskStatus.undefined)
-  //     return Icon(Icons.file_download);
-  //   else if (file.status == DownloadTaskStatus.running)
-  //     return Icon(Icons.pause);
-  //   else if (file.status == DownloadTaskStatus.paused)
-  //     return Icon(Icons.play_arrow);
-  //   else if (file.status == DownloadTaskStatus.complete)
-  //     return Icon(Icons.delete_forever);
-  //   else if (file.status == DownloadTaskStatus.canceled)
-  //     return Icon(Icons.cancel);
-  //   else if (file.status == DownloadTaskStatus.failed)
-  //     return Icon(Icons.refresh);
-  //   else if (file.status == DownloadTaskStatus.enqueued)
-  //     return Icon(Icons.equalizer_rounded);
-  //   else
-  //     return Icon(Icons.check_box);
-  // }
 
   Container svgFileIcon(double width, String ext, int index) {
     return Container(

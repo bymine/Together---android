@@ -106,14 +106,14 @@ class _MyMemberCardState extends State<MyMemberCard> {
 
                 Container(
                   child: MyInputField(
-                    title: "Introduce",
+                    title: "소개",
                     hint: "Input Introduce about me",
                     controller: introController,
                     maxLine: 5,
                   ),
                 ),
                 MyInputField(
-                  title: "Experience",
+                  title: "경험",
                   hint: "Input Experience",
                   controller: experienceController,
                   maxLine: 5,

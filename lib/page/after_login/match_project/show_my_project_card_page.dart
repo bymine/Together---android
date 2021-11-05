@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
+import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/team_card.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
@@ -79,12 +80,7 @@ class _ShowProjectCardState extends State<ShowProjectCard> {
                         label:
                             widget.card == null ? "+ Add Card" : "Update Card",
                         onTap: () async {
-                          print(jsonEncode({
-                            "project_idx": widget.card == null
-                                ? myProject[_selectProject]!.projectIdx
-                                : widget.card!.projectIdx,
-                            "comment": commentController.text
-                          }));
+                          loadingAlert(context);
                           var code = await togetherPostAPI(
                               "/teamMatching/projectList/card/build",
                               jsonEncode({
@@ -94,6 +90,8 @@ class _ShowProjectCardState extends State<ShowProjectCard> {
                                 "comment": commentController.text
                               }));
                           print(code);
+                          if (code != null) Navigator.of(context).pop();
+                          Navigator.of(context).pop();
                         })
                   ],
                 ),

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
+import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/MemberResume.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
@@ -180,7 +181,8 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                       children: recCards.map<Widget>((e) {
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
-                          child: recResumeCard(height, width, e),
+                          child: recResumeCard(
+                              height, width, e, recCards.indexOf(e)),
                         );
                       }).toList(),
                     ),
@@ -307,7 +309,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                             ),
                           ),
                           MyInputField(
-                            title: "Select Project",
+                            title: "초대할 프로젝트 선택",
                             hint: _selectProject.isEmpty
                                 ? "First Create a Project!!"
                                 : _selectProject,
@@ -346,13 +348,16 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                             height: 10,
                           ),
                           Text(
-                            "Profile",
+                            "프로필",
                             style: editTitleStyle,
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 16),
+                            padding: const EdgeInsets.only(left: 0),
                             child: Column(
                               children: [
+                                SizedBox(
+                                  height: 5,
+                                ),
                                 Row(
                                   children: [
                                     Icon(
@@ -369,10 +374,13 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                                     ),
                                   ],
                                 ),
+                                SizedBox(
+                                  height: 5,
+                                ),
                                 Row(
                                   children: [
                                     Icon(
-                                      Icons.psychology,
+                                      Icons.psychology_outlined,
                                       size: 20,
                                       color: Colors.grey,
                                     ),
@@ -384,6 +392,9 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                                       style: editSubTitleStyle,
                                     ),
                                   ],
+                                ),
+                                SizedBox(
+                                  height: 5,
                                 ),
                                 Row(
                                   children: [
@@ -400,6 +411,9 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                                       style: editSubTitleStyle,
                                     ),
                                   ],
+                                ),
+                                SizedBox(
+                                  height: 5,
                                 ),
                                 Row(
                                   children: [
@@ -422,6 +436,9 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                                     ),
                                   ],
                                 ),
+                                SizedBox(
+                                  height: 5,
+                                ),
                                 Row(
                                   children: [
                                     Icon(
@@ -443,6 +460,9 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                                     ),
                                   ],
                                 ),
+                                SizedBox(
+                                  height: 5,
+                                ),
                                 Row(
                                   children: [
                                     Icon(
@@ -458,8 +478,12 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                                           ? "no comment"
                                           : detailCard.hobbys
                                               .toString()
-                                              .substring(1,
-                                                  detailCard.hobbys.length - 1),
+                                              .substring(
+                                                  1,
+                                                  detailCard.hobbys
+                                                          .toString()
+                                                          .length -
+                                                      1),
                                       style: editSubTitleStyle,
                                     ),
                                   ],
@@ -471,11 +495,11 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                             height: 16,
                           ),
                           Text(
-                            "Introduce",
+                            "소개",
                             style: editTitleStyle,
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 16.0),
+                            padding: const EdgeInsets.only(top: 5),
                             child: Text(
                               detailCard.comment ?? "no comment",
                               style: editSubTitleStyle,
@@ -485,11 +509,11 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                             height: 16,
                           ),
                           Text(
-                            "Experience",
+                            "경험",
                             style: editTitleStyle,
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 16.0),
+                            padding: const EdgeInsets.only(top: 5),
                             child: Text(detailCard.resume ?? "no comment",
                                 style: editSubTitleStyle),
                           ),
@@ -498,10 +522,9 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                           ),
                           Center(
                             child: MyButton(
-                                label: "Invite",
+                                label: "초대하기",
                                 onTap: () async {
-                                  Navigator.of(context).pop();
-
+                                  loadingAlert(context);
                                   var code = await togetherPostAPI(
                                       "/member/search/invite",
                                       jsonEncode({
@@ -512,6 +535,8 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                                         "member_idx": detailCard.idx,
                                         "project_idx": map[_selectProject]
                                       }));
+                                  if (code != null) Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
 
                                   inviteSnackbar(code.toString());
                                 }),
@@ -529,7 +554,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
 
   inviteSnackbar(code) {
     return Get.snackbar(
-      code == "success" ? "Success Invite" : 'Failed Invite',
+      code == "success" ? "프로젝트 초대 성공" : '프로젝트 초대 실패',
       invitteMessage(code.toString()),
       icon: code == "success"
           ? Icon(
@@ -546,7 +571,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
     );
   }
 
-  recResumeCard(double height, double width, MemberResume resume) {
+  recResumeCard(double height, double width, MemberResume resume, int index) {
     return GestureDetector(
       onTap: () {
         var map = Provider.of<MappingProject>(context, listen: false).map;
@@ -557,7 +582,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
             vertical: height * 0.02, horizontal: width * 0.06),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: Colors.blueGrey[400]),
+            color: BasicColor.basicColor[index]),
         width: width * 0.35,
         height: width * 0.4,
         child: Column(
@@ -585,7 +610,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                 Icon(
                   Icons.face,
                   size: 20,
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
                 SizedBox(
                   width: 5,
@@ -603,9 +628,9 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
             Row(
               children: [
                 Icon(
-                  Icons.psychology,
+                  Icons.psychology_outlined,
                   size: 20,
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
                 SizedBox(
                   width: 5,
@@ -628,14 +653,14 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
       padding: EdgeInsets.symmetric(
           vertical: height * 0.02, horizontal: width * 0.06),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16), color: Colors.grey[300]),
+          color: Color(0xFF61A3FE), borderRadius: BorderRadius.circular(16)),
       width: width * 0.8,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             resume.name,
-            style: editTitleStyle,
+            style: editTitleStyle.copyWith(color: Colors.white),
           ),
           SizedBox(
             height: 10,
@@ -646,16 +671,16 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
               Row(
                 children: [
                   Icon(
-                    Icons.psychology,
+                    Icons.psychology_outlined,
                     size: 20,
-                    color: Colors.grey,
+                    color: Colors.white,
                   ),
                   SizedBox(
                     width: 5,
                   ),
                   Text(
                     resume.mbti,
-                    style: editSubTitleStyle,
+                    style: editSubTitleStyle.copyWith(color: Colors.white),
                   ),
                 ],
               ),
@@ -664,7 +689,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                   Icon(
                     Icons.place,
                     size: 20,
-                    color: Colors.grey,
+                    color: Colors.white,
                   ),
                   SizedBox(
                     width: 5,
@@ -672,7 +697,7 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
                   Text(
                     addressToString(false, resume.mainAddr,
                         resume.referenceAddr, resume.detailAddr),
-                    style: editSubTitleStyle,
+                    style: editSubTitleStyle.copyWith(color: Colors.white),
                     maxLines: 1,
                   ),
                 ],
@@ -689,14 +714,14 @@ class _MatchMemberBodyState extends State<MatchMemberBody> {
               Icon(
                 Icons.rate_review,
                 size: 20,
-                color: Colors.grey,
+                color: Colors.white,
               ),
               SizedBox(
                 width: 5,
               ),
               Expanded(
                 child: Text(resume.comment ?? "나의 소개글이 없습니다.",
-                    style: editSubTitleStyle),
+                    style: editSubTitleStyle.copyWith(color: Colors.white)),
               ),
             ],
           ),

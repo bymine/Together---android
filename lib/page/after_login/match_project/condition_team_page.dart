@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:group_button/group_button.dart';
+import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
 import 'package:together_android/constant.dart';
+import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
 import 'package:together_android/utils.dart';
 
@@ -25,7 +29,10 @@ class _ConditionTeamPageState extends State<ConditionTeamPage> {
   List<String> category = [];
   List<String> tag = [];
   List<String> containTag = [];
-  List<String> selectTagList = [];
+  List<String> selectList = [];
+
+  String selectTag = "";
+  String selectCategory = "";
 
   Map mappingTag = Map<String, String>();
   Map mappingIdx = Map<String, String>();
@@ -46,14 +53,8 @@ class _ConditionTeamPageState extends State<ConditionTeamPage> {
     });
     category.removeAt(0);
     tag.removeAt(0);
-    print(mappingIdx);
-    print(category);
-    print(tag);
-    print(mappingTag);
     selectedCategory = category.first;
     selectedTag = tag.first;
-
-    print("tag");
   }
 
   @override
@@ -68,6 +69,7 @@ class _ConditionTeamPageState extends State<ConditionTeamPage> {
 
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<SignInModel>(context, listen: false);
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -116,7 +118,28 @@ class _ConditionTeamPageState extends State<ConditionTeamPage> {
                       )
                     ],
                   ),
-                  MyButton(label: "설정하기", onTap: () async {})
+                  MyButton(
+                      label: "설정하기",
+                      onTap: () async {
+                        // any --> ""
+                        Navigator.of(context).pop(jsonEncode({
+                          "user_idx": user.userIdx,
+                          "tag_name": selectCategory, // ""
+                          "tag_detail_name": selectTag, // ""
+                          "start_date": _selectedStart.toIso8601String(),
+                          "end_date": _selectedEnd.toIso8601String(),
+                          "professionality":
+                              projectEnumFormat(_selectedLevel) == "Any"
+                                  ? ""
+                                  : projectEnumFormat(_selectedLevel),
+                          "project_type":
+                              projectEnumFormat(_selectedType) == "Any"
+                                  ? ""
+                                  : projectEnumFormat(_selectedType),
+                          "member_num": 5,
+                          "flag": isSave ? 1 : 0
+                        }));
+                      })
                 ],
               ),
               SizedBox(
@@ -182,10 +205,8 @@ class _ConditionTeamPageState extends State<ConditionTeamPage> {
                       },
                     ),
                     MyInputField(
-                      title: "태그 (${selectTagList.length}/4)",
-                      hint: selectTagList
-                          .toString()
-                          .substring(1, selectTagList.toString().length - 1),
+                      title: "태그",
+                      hint: selectTag,
                       suffixIcon: IconButton(
                         onPressed: () {
                           tagSheet(context, width, height);
@@ -254,10 +275,10 @@ class _ConditionTeamPageState extends State<ConditionTeamPage> {
                               height: 50,
                               label: "+ 추가",
                               onTap: () {
-                                print("click");
                                 setState(() {
-                                  if (selectTagList.contains(selectedTag) ==
-                                      false) selectTagList.add(selectedTag);
+                                  if (selectTag != selectedTag)
+                                    selectTag = selectedTag;
+                                  selectCategory = selectedCategory;
                                 });
                                 Navigator.of(context).pop();
                               })

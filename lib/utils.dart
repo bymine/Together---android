@@ -3,17 +3,17 @@ import 'package:intl/intl.dart';
 String invitteMessage(String code) {
   switch (code) {
     case "already_in":
-      return "Already in project member";
+      return "이미 프로젝트 멤버 입니다";
     case "already_sent":
-      return "Already sent invitaion";
+      return "이미 초대 메세지를 보냈습니다";
     case "not_leader":
-      return "Only leaders can invite";
+      return "프로젝트의 리더만이 초대할 수 있습니다";
     case "self_invite":
-      return "Can't invite yourself";
+      return "자기 자신을 초대할 수 없습니다";
     case "error":
-      return "An error occurs";
+      return "에러가 발생했습니다";
     case "success":
-      return "Invitaion success";
+      return "초대메세지를 전송했습니다";
     default:
       return "";
   }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
+import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';
@@ -41,20 +42,20 @@ class _AddUserSchdeuleState extends State<AddUserSchdeule> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Add Schedule", style: headingStyle),
+              Text("스케줄 추가", style: headingStyle),
               MyInputField(
-                title: "Title",
-                hint: "Input Schdeule Title",
+                title: "제목",
+                hint: "제목을 입력하세요",
                 controller: titleController,
               ),
               MyInputField(
-                title: "Note",
-                hint: "Input Schdeule Description",
+                title: "메모",
+                hint: "메모할 내용을 입력하세요",
                 maxLine: 3,
                 controller: contentController,
               ),
               MyInputField(
-                title: "Start Day",
+                title: "시작 시간",
                 hint: toDate(widget.startDate),
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -67,7 +68,7 @@ class _AddUserSchdeuleState extends State<AddUserSchdeule> {
                 ),
               ),
               MyInputField(
-                title: "Start Time",
+                title: "시작 날짜",
                 hint: toAMPMTimeISO(widget.startDate.toIso8601String()),
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -80,7 +81,7 @@ class _AddUserSchdeuleState extends State<AddUserSchdeule> {
                 ),
               ),
               MyInputField(
-                title: "End Day",
+                title: "종료 시간",
                 hint: toDate(widget.endDate),
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -93,7 +94,7 @@ class _AddUserSchdeuleState extends State<AddUserSchdeule> {
                 ),
               ),
               MyInputField(
-                title: "End Time",
+                title: "종료 날짜",
                 hint: toAMPMTimeISO(widget.endDate.toIso8601String()),
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -109,14 +110,15 @@ class _AddUserSchdeuleState extends State<AddUserSchdeule> {
                 height: 20,
               ),
               MyButton(
-                  label: "+ Add Schedule",
+                  label: "+ 추가 하기",
                   width: width,
                   height: 50,
                   onTap: () async {
                     var userIdx =
                         Provider.of<SignInModel>(context, listen: false)
                             .userIdx;
-                    await togetherPostAPI(
+                    loadingAlert(context);
+                    var code = await togetherPostAPI(
                       "/user/addSchedule",
                       jsonEncode(
                         {
@@ -130,6 +132,7 @@ class _AddUserSchdeuleState extends State<AddUserSchdeule> {
                         },
                       ),
                     );
+                    if (code != null) Navigator.of(context).pop();
 
                     Navigator.of(context).pop();
                   })
