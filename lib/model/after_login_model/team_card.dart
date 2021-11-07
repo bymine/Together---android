@@ -10,6 +10,7 @@ class ProjectResume {
   List<String> tagName;
   int memberNum;
   String comment;
+  int myFlag;
 
   ProjectResume(
       {required this.projectIdx,
@@ -22,7 +23,8 @@ class ProjectResume {
       required this.categoryName,
       required this.tagName,
       required this.memberNum,
-      required this.comment});
+      required this.comment,
+      required this.myFlag});
 
   factory ProjectResume.fromJson(Map<String, dynamic> json) {
     return ProjectResume(
@@ -36,6 +38,7 @@ class ProjectResume {
         memberNum: json['member_num'],
         categoryName: List<String>.from(json['tag']),
         tagName: List<String>.from(json['tag_detail']),
-        comment: json['comment']);
+        comment: json['comment'],
+        myFlag: json['my_flag']);
   }
 }

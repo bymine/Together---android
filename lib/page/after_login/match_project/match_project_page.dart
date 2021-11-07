@@ -1,6 +1,8 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:together_android/componet/button.dart';
+import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/after_login_model/team_card.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
@@ -77,6 +79,21 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
 
   _searchMain(List<ProjectResume>? resumes, Map<String, int> map, String name,
       double width, double height) {
+    List<ProjectResume> myCard = [];
+    List<ProjectResume> recCard = [];
+
+    resumes!.forEach((element) {
+      if (element.myFlag == 1)
+        myCard.add(element);
+      else
+        recCard.add(element);
+    });
+
+    recCard.forEach((element) {
+      if (myCard.contains(element) == true) recCard.remove(element);
+    });
+    print(myCard.length);
+    print(recCard.length);
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +107,7 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
                 style: editTitleStyle,
               ),
               Visibility(
-                visible: resumes != null,
+                visible: myCard.isNotEmpty,
                 child: GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
@@ -109,12 +126,12 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
           SizedBox(
             height: 10,
           ),
-          if (resumes != null)
+          if (resumes.isNotEmpty)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: resumes.map((card) {
-                  var index = resumes.indexOf(card);
+                children: myCard.map((card) {
+                  var index = myCard.indexOf(card);
                   return GestureDetector(
                     onTap: () {
                       Navigator.of(context)
@@ -152,10 +169,13 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
                               SizedBox(
                                 width: 8,
                               ),
-                              Text(
-                                card.comment,
-                                style: editSubTitleStyle.copyWith(
-                                    color: Colors.white),
+                              Expanded(
+                                child: Text(
+                                  card.comment,
+                                  maxLines: 1,
+                                  style: editSubTitleStyle.copyWith(
+                                      color: Colors.white),
+                                ),
                               ),
                             ],
                           ),
@@ -219,6 +239,289 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
             "추천 리스트",
             style: editTitleStyle,
           ),
+          SizedBox(
+            height: 8,
+          ),
+          recCard.isEmpty
+              ? Center(
+                  child: TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      "조건검색을 등록하세요",
+                      style: editSubTitleStyle,
+                    ),
+                  ),
+                )
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                      children: recCard.map<Widget>((card) {
+                    int index = BasicColor.basicColor.length -
+                        recCard.indexOf(card) -
+                        1;
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        right: 8,
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16))),
+                              isScrollControlled: true,
+                              context: context,
+                              builder: (context) {
+                                return SingleChildScrollView(
+                                  child: Container(
+                                    padding: EdgeInsets.only(
+                                        left: width * 0.08,
+                                        right: width * 0.08,
+                                        top: height * 0.02,
+                                        bottom: height * 0.02),
+                                    child: Wrap(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                card.projectName +
+                                                    " 프로젝트 상세 정보",
+                                                style: tileTitleStyle),
+                                            SizedBox(
+                                              height: 10,
+                                            ),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.description,
+                                                    size: 16,
+                                                    color: Colors.grey),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  card.projectExp,
+                                                  style: editSubTitleStyle
+                                                      .copyWith(fontSize: 14),
+                                                )
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            Row(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Icon(Icons.school,
+                                                        size: 16,
+                                                        color: Colors.grey),
+                                                    SizedBox(
+                                                      width: 5,
+                                                    ),
+                                                    Text(
+                                                      projectEnumFromServer(
+                                                          card.professionality),
+                                                      style: editSubTitleStyle
+                                                          .copyWith(
+                                                              fontSize: 14),
+                                                    )
+                                                  ],
+                                                ),
+                                                SizedBox(
+                                                  width: 20,
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Icon(Icons.info,
+                                                        size: 16,
+                                                        color: Colors.grey),
+                                                    SizedBox(
+                                                      width: 5,
+                                                    ),
+                                                    Text(
+                                                      projectEnumFromServer(
+                                                          card.projectType),
+                                                      style: editSubTitleStyle
+                                                          .copyWith(
+                                                              fontSize: 14),
+                                                    )
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.calendar_today,
+                                                    size: 16,
+                                                    color: Colors.grey),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  schdeuleDateFormat(
+                                                      card.startDate,
+                                                      card.endDate,
+                                                      false),
+                                                  style: editSubTitleStyle
+                                                      .copyWith(fontSize: 14),
+                                                )
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.person,
+                                                    size: 16,
+                                                    color: Colors.grey),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  card.memberNum.toString(),
+                                                  style: editSubTitleStyle
+                                                      .copyWith(fontSize: 14),
+                                                )
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.tag,
+                                                    size: 16,
+                                                    color: Colors.grey),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  card.tagName
+                                                      .toString()
+                                                      .substring(
+                                                          1,
+                                                          card.tagName
+                                                                  .toString()
+                                                                  .length -
+                                                              1),
+                                                  style: editSubTitleStyle
+                                                      .copyWith(fontSize: 14),
+                                                )
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height: 10,
+                                            ),
+                                            Text(
+                                              "소개",
+                                              style: tileTitleStyle,
+                                            ),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            Text(
+                                              card.comment,
+                                              style: editSubTitleStyle,
+                                            ),
+                                            SizedBox(
+                                              height: 16,
+                                            ),
+                                            Center(
+                                              child: MyButton(
+                                                  label: "Apply",
+                                                  onTap: () async {
+                                                    var user = Provider.of<
+                                                            SignInModel>(
+                                                        context,
+                                                        listen: false);
+
+                                                    loadingAlert(context);
+                                                    var code = await togetherGetAPI(
+                                                        "/teamMatching/team/application",
+                                                        '?user_idx=${user.userIdx}&project_idx=${card.projectIdx}');
+
+                                                    print(code);
+                                                    if (code != null)
+                                                      Navigator.of(context)
+                                                          .pop();
+
+                                                    Navigator.of(context).pop();
+                                                  }),
+                                            )
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              });
+                        },
+                        child: Container(
+                          margin: EdgeInsets.only(right: 8),
+                          padding: EdgeInsets.symmetric(
+                              vertical: height * 0.04,
+                              horizontal: width * 0.04),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              color: BasicColor.basicColor[index]),
+                          width: width * 0.6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                card.projectName,
+                                style: editTitleStyle.copyWith(
+                                    color: Colors.white),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(Icons.border_color,
+                                      color: Colors.white, size: 16),
+                                  SizedBox(
+                                    width: 8,
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      card.comment,
+                                      maxLines: 1,
+                                      style: editSubTitleStyle.copyWith(
+                                          color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 4,
+                              ),
+                              Row(
+                                children: [
+                                  Icon(Icons.calendar_today,
+                                      size: 16, color: Colors.white),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    schdeuleDateFormat(
+                                        card.startDate, card.endDate, false),
+                                    style: editSubTitleStyle.copyWith(
+                                        color: Colors.white),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList()),
+                )
         ],
       ),
     );
@@ -254,7 +557,10 @@ class _MatchProjectBodyState extends State<MatchProjectBody> {
     return TextField(
       onTap: () {
         Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => SearchTeamPage()));
+            .push(MaterialPageRoute(builder: (context) => SearchTeamPage()))
+            .then((value) => setState(() {
+                  future = fetchTeamMatchData();
+                }));
       },
       readOnly: true,
       decoration: InputDecoration(

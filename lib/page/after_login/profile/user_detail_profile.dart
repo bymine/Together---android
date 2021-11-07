@@ -1295,8 +1295,15 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
 
   void mbtiSheet(
       MyProfileDetail profile, double width, double height, int userIdx) {
-    var selectedMBTI = profile.userMbti;
+    var selectedMBTI;
+    setState(() {
+      if (profile.userMbti == "설정 안함")
+        selectedMBTI = mbtiList.first;
+      else
+        selectedMBTI = profile.userMbti;
+    });
 
+    print(selectedMBTI);
     showModalBottomSheet(
         context: context,
         shape: RoundedRectangleBorder(
@@ -1341,7 +1348,7 @@ class _UserDetailProfilePageState extends State<UserDetailProfilePage> {
                             child: DropdownButton(
                               dropdownColor: Colors.blueGrey,
                               underline: Container(),
-                              value: profile.userMbti,
+                              value: selectedMBTI,
                               items: mbtiList.map((value) {
                                 return DropdownMenuItem(
                                     value: value,

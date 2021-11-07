@@ -88,8 +88,8 @@ class BasicColor {
     Color(0xFFEB638A),
     Color(0xFFBB7AF2),
     Color(0xFF61A3FE),
-    Color(0xFFF4AE64),
-    Color(0xFFEB638A),
+    // Color(0xFFF4AE64),
+    // Color(0xFFEB638A),
   ];
 }
 

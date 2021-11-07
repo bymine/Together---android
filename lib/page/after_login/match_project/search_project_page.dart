@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
@@ -379,8 +377,38 @@ class _SearchTeamPageState extends State<SearchTeamPage> {
                           })
                     ],
                   );
-                } else if (snapshot.hasError) return Text('${snapshot.error}');
-
+                } else if (snapshot.hasError)
+                  return Text('${snapshot.error}');
+                else if (snapshot.hasData == false &&
+                    snapshot.connectionState == ConnectionState.done) {
+                  return Column(
+                    children: [
+                      _seachBar([]),
+                      Visibility(
+                        child: Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  future = fetchProjectCardList();
+                                });
+                              },
+                              style: TextButton.styleFrom(
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  padding: EdgeInsets.zero),
+                              child: Text(
+                                "See All",
+                                style: editTitleStyle,
+                              ),
+                            )),
+                      ),
+                      Container(
+                          height: 500,
+                          child: Center(child: Text("Not found!"))),
+                    ],
+                  );
+                }
                 return CircularProgressIndicator();
               },
             )),
@@ -424,7 +452,10 @@ class _SearchTeamPageState extends State<SearchTeamPage> {
                   .push(MaterialPageRoute(
                       builder: (context) => ConditionTeamPage()))
                   .then((value) {
-                if (value != null) future = conditionProjcetCardList(value);
+                if (value != null)
+                  setState(() {
+                    future = conditionProjcetCardList(value);
+                  });
               });
             },
             icon: Icon(Icons.tune))

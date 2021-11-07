@@ -104,7 +104,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Create Team Proejct", style: headingStyle),
+                Text("Create Team Project", style: headingStyle),
                 MyInputField(
                   title: "Title",
                   hint: "Input Project Title",
@@ -262,7 +262,7 @@ class _MakeProjectBodyState extends State<MakeProjectBody> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Add Proejct Tag", style: headingStyle),
+                        Text("Add Project Tag", style: headingStyle),
                         MyInputField(
                           title: "Select Category",
                           hint: selectedCategory,

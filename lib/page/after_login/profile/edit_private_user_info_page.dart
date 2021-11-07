@@ -6,7 +6,6 @@ import 'package:flutter_countdown_timer/countdown_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:together_android/componet/button.dart';
 import 'package:together_android/componet/input_field.dart';
-import 'package:together_android/componet/showDialog.dart';
 import 'package:together_android/constant.dart';
 import 'package:together_android/model/before_login_model/sign_in_model.dart';
 import 'package:together_android/service/api.dart';

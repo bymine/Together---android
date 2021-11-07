@@ -259,11 +259,11 @@ class _ProjectFilePageState extends State<ProjectFilePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "진행 중인 프로젝트가 없습니다.",
+                        "공유된 파일이 없습니다.",
                         style: headingStyle.copyWith(fontSize: 18),
                       ),
                       Text(
-                        "새로운 프로젝트를 생성 하세요",
+                        "새로운 파일을 업로드하세요",
                         style: subHeadingStyle.copyWith(fontSize: 14),
                       ),
                       SizedBox(

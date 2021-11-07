@@ -74,7 +74,8 @@ class MyProfileDetail {
           json['reference_addr'] == null ? "" : json['reference_addr'],
       detailAddr: json['detail_addr'] == null ? "" : json['detail_addr'],
       postNum: json['post_num'] == null ? "" : json['post_num'],
-      userMbti: json['user_mbti_name'],
+      userMbti:
+          json['user_mbti_name'] == "NULL" ? "설정 안함" : json['user_mbti_name'],
       userHobby: List<String>.from(json['user_hobbies']),
       userHobbyIdx: List<int>.from(json['user_hobby_idxes']),
       hobbyIdx: List<int>.from(hobby),
