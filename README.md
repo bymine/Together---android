@@ -14,6 +14,8 @@
 - Spring Boot
 - MySql
 
+### 발표 자료
+https://docs.google.com/presentation/d/13quktCWVs9tJMZO539qi7FuT43E-V_3M/edit?usp=sharing&ouid=101450411759470315645&rtpof=true&sd=true
 
 
 ## Getting Started
