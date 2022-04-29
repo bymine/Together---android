@@ -17,4 +17,6 @@
 
 
 
+### 주요 화면
 
+![Frame 23](https://user-images.githubusercontent.com/71866185/165899765-ef566e29-a87e-46e5-9b4b-246f0883de80.png)
